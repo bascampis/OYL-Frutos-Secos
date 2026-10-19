@@ -40,6 +40,7 @@ data class CartLine(
  @Query("SELECT * FROM cart_items WHERE ownerAlias = :alias AND productId = :product LIMIT 1")
  suspend fun getCartItem(alias: String, product: String): CartItemEntity?
  @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertCart(value: CartItemEntity)
+ @Query("DELETE FROM cart_items WHERE ownerAlias = :alias") suspend fun clearCart(alias: String)
  @Query("DELETE FROM cart_items WHERE ownerAlias = :alias AND productId = :product")
  suspend fun removeCart(alias: String, product: String)
 }

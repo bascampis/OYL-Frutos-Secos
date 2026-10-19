@@ -22,8 +22,9 @@ fun CatalogScreen(ownerAlias: String, isAdmin: Boolean, onBack: () -> Unit, onCa
  var query by remember { mutableStateOf("") }
  var category by remember { mutableStateOf("Todas") }
  var selected by remember { mutableStateOf<ProductEntity?>(null) }
+ var serverOnline by remember { mutableStateOf(false) }
  val scope = rememberCoroutineScope()
- LaunchedEffect(Unit) { repo.seedDemoProducts() }
+ LaunchedEffect(Unit) { repo.seedDemoProducts(); serverOnline = repo.syncFromServer() }
  if (selected != null) {
   val item = selected!!
   AlertDialog(onDismissRequest = { selected = null }, title = { Text(item.name) },
@@ -42,7 +43,7 @@ fun CatalogScreen(ownerAlias: String, isAdmin: Boolean, onBack: () -> Unit, onCa
       label = { Text(value, style = MaterialTheme.typography.labelSmall) })
     }
    }
-   Text("Precios y existencias ficticios. No se consulta el backend.", style = MaterialTheme.typography.bodySmall)
+   Text(if (serverOnline) "Productos sincronizados con Spring Boot." else "Servidor desconectado: caché DEMO, stock no confirmado.", style = MaterialTheme.typography.bodySmall)
    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
     OutlinedButton(onClick = onBack) { Text("Volver") }
     if (!isAdmin) Button(onClick = onCart) { Text("Mi carrito") }

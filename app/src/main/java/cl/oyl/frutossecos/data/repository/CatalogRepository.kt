@@ -1,6 +1,7 @@
 package cl.oyl.frutossecos.data.repository
 
 import cl.oyl.frutossecos.data.local.*
+import cl.oyl.frutossecos.data.remote.OylNetwork
 import kotlinx.coroutines.flow.Flow
 
 /** Datos sintéticos: no existe todavía disponibilidad oficial de servidor. */
@@ -18,6 +19,14 @@ class CatalogRepository(private val dao: CatalogDao) {
    ProductEntity("OY006", "Cranberries", "Deshidratados", "Arándanos rojos deshidratados", "250 g", 2890, 16)
   ))
  }
+ suspend fun syncFromServer(): Boolean = try {
+  val remote = OylNetwork.api.products()
+  dao.saveProducts(remote.map {
+   ProductEntity(it.id,it.name,it.category,it.description ?: "",it.presentation ?: "",it.price,it.stock,it.active)
+  })
+  true
+ } catch (_: Exception) { false }
+ suspend fun clearCart(owner:String) = dao.clearCart(owner)
  suspend fun changeCart(owner: String, productId: String, delta: Int) {
   val product = dao.getProduct(productId) ?: return
   val current = dao.getCartItem(owner, productId)?.quantity ?: 0
