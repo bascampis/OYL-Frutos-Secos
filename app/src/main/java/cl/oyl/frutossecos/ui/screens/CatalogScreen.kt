@@ -1,6 +1,8 @@
 package cl.oyl.frutossecos.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,7 +36,7 @@ fun CatalogScreen(ownerAlias: String, isAdmin: Boolean, onBack: () -> Unit, onCa
  Scaffold(topBar = { TopAppBar(title = { Text("Catálogo OYL · DEMO") }) }) { padding ->
   Column(Modifier.padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
    OutlinedTextField(query, { query = it }, label = { Text("Buscar productos") }, modifier = Modifier.fillMaxWidth())
-   Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+   Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
     listOf("Todas", "Frutos secos", "Semillas", "Deshidratados").forEach { value ->
      FilterChip(selected = category == value, onClick = { category = value },
       label = { Text(value, style = MaterialTheme.typography.labelSmall) })
