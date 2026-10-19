@@ -8,4 +8,6 @@ object Routes {
  const val ABOUT = "about"
  const val CATALOG = "catalog"
  const val CART = "cart"
+ const val QR = "qr"
+ const val MAP = "map"
 }

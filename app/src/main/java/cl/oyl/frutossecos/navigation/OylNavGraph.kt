@@ -38,7 +38,8 @@ import cl.oyl.frutossecos.viewmodel.*
     val active = user
     if (active != null) DashboardScreen(active, onAbout = { nav.navigate(Routes.ABOUT) },
      onLogout = ::logOut, onProfile = { nav.navigate(Routes.PROFILE) },
-     onCatalog = { nav.navigate(Routes.CATALOG) }, onCart = { nav.navigate(Routes.CART) })
+     onCatalog = { nav.navigate(Routes.CATALOG) }, onCart = { nav.navigate(Routes.CART) },
+     onQr = { nav.navigate(Routes.QR) }, onMap = { nav.navigate(Routes.MAP) })
     else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true } } }
    }
    composable(Routes.PROFILE) {
@@ -56,6 +57,8 @@ import cl.oyl.frutossecos.viewmodel.*
     if (active != null && active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE)
      CartScreen(active.alias, onBack = { nav.popBackStack() })
    }
+   composable(Routes.QR) { if (user != null) QrScannerScreen(onBack = { nav.popBackStack() }) }
+   composable(Routes.MAP) { if (user != null) MapScreen(onBack = { nav.popBackStack() }) }
    composable(Routes.ABOUT) { AboutScreen(onBack = { nav.popBackStack() }) }
   }
  }

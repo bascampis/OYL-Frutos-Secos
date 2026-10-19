@@ -36,6 +36,7 @@ dependencies {
  implementation("androidx.room:room-runtime:2.6.1")
  implementation("androidx.room:room-ktx:2.6.1")
  kapt("androidx.room:room-compiler:2.6.1")
+ implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
  implementation("com.squareup.retrofit2:retrofit:2.11.0")
  implementation("com.squareup.retrofit2:converter-gson:2.11.0")
  testImplementation("junit:junit:4.13.2")
