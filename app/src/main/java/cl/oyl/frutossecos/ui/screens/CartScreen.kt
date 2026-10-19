@@ -8,13 +8,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cl.oyl.frutossecos.OylApplication
+import cl.oyl.frutossecos.data.remote.*
 import cl.oyl.frutossecos.data.local.ProductEntity
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(ownerAlias: String, onBack: () -> Unit) {
- val db = (androidx.compose.ui.platform.LocalContext.current.applicationContext as OylApplication).database
+ var submitting by remember { mutableStateOf(false) }
+ var message by remember { mutableStateOf("") }
+ var delivery by remember { mutableStateOf("Retiro") }
  val repo = (androidx.compose.ui.platform.LocalContext.current.applicationContext as OylApplication).catalogRepository
  val cart by repo.cart(ownerAlias).collectAsState(initial = emptyList())
  val products by repo.products.collectAsState(initial = emptyList())
@@ -41,7 +44,27 @@ fun CartScreen(ownerAlias: String, onBack: () -> Unit) {
     }
    }
    Text("Total referencial: $" + total + " CLP", style = MaterialTheme.typography.titleLarge)
-   Text("Confirmación de pedidos disponible cuando se integre el servidor.", color = MaterialTheme.colorScheme.secondary)
+   Text("La solicitud se valida en Spring Boot. Sin servidor no se confirma nada.", color = MaterialTheme.colorScheme.secondary)
+   Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FilterChip(selected = delivery == "Retiro", onClick = { delivery = "Retiro" }, label = { Text("Retiro") })
+    FilterChip(selected = delivery == "Entrega", onClick = { delivery = "Entrega" }, label = { Text("Entrega") })
+   }
+   Button(enabled = cart.isNotEmpty() && !submitting, modifier = Modifier.fillMaxWidth(), onClick = {
+    scope.launch {
+     submitting = true
+     message = ""
+     try {
+      val order = OylNetwork.api.order(RemoteOrderRequest(ownerAlias, delivery,
+       cart.map { RemoteOrderItem(it.productId, it.quantity) }))
+      repo.clearCart(ownerAlias)
+      repo.syncFromServer()
+      message = "Pedido " + order.id.take(8) + " · " + order.status + "\nTotal oficial: $" + order.total
+     } catch (e: Exception) {
+      message = "No se confirmó el pedido: revisa conexión y stock. " + (e.localizedMessage ?: "")
+     } finally { submitting = false }
+    }
+   }) { Text(if (submitting) "Validando..." else "Confirmar solicitud en servidor") }
+   if (message.isNotBlank()) Text(message)
    Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Volver al catálogo") }
   }
  }

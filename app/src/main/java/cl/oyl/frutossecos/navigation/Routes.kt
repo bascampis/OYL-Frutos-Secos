@@ -10,4 +10,5 @@ object Routes {
  const val CART = "cart"
  const val QR = "qr"
  const val MAP = "map"
+ const val ORDERS = "orders"
 }
