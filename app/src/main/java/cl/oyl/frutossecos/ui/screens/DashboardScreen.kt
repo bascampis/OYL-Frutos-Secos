@@ -14,7 +14,7 @@ import cl.oyl.frutossecos.ui.components.FeatureTile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(user: DemoUser, onAbout: () -> Unit, onLogout: () -> Unit, onProfile: () -> Unit) {
+fun DashboardScreen(user: DemoUser, onAbout: () -> Unit, onLogout: () -> Unit, onProfile: () -> Unit, onCatalog: () -> Unit, onCart: () -> Unit) {
  val admin = user.role == UserRole.ADMINISTRADOR
  Scaffold(topBar = { TopAppBar(title = { Text("OYL Frutos Secos") }, actions = {
   IconButton(onClick = onLogout) { Icon(Icons.Outlined.Logout, "Cerrar sesión") }
@@ -31,6 +31,8 @@ fun DashboardScreen(user: DemoUser, onAbout: () -> Unit, onLogout: () -> Unit, o
     }
    }
    Button(onClick = onProfile, modifier = Modifier.fillMaxWidth()) { Text("Mi perfil") }
+   Button(onClick = onCatalog, modifier = Modifier.fillMaxWidth()) { Text("Abrir catálogo de demostración") }
+   if (!admin) Button(onClick = onCart, modifier = Modifier.fillMaxWidth()) { Text("Mi carrito") }
    Text("Próximos módulos", style = MaterialTheme.typography.titleLarge)
    if (admin) {
     FeatureTile("Productos", "Edición de catálogo", "Siguiente fase")

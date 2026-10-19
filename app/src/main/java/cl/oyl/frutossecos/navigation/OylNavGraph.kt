@@ -37,13 +37,24 @@ import cl.oyl.frutossecos.viewmodel.*
    composable(Routes.DASHBOARD) {
     val active = user
     if (active != null) DashboardScreen(active, onAbout = { nav.navigate(Routes.ABOUT) },
-     onLogout = ::logOut, onProfile = { nav.navigate(Routes.PROFILE) })
+     onLogout = ::logOut, onProfile = { nav.navigate(Routes.PROFILE) },
+     onCatalog = { nav.navigate(Routes.CATALOG) }, onCart = { nav.navigate(Routes.CART) })
     else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true } } }
    }
    composable(Routes.PROFILE) {
     val active = user
     if (active != null) ProfileScreen(active, onBack = { nav.popBackStack() }, onLogout = ::logOut)
     else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) }
+   }
+   composable(Routes.CATALOG) {
+    val active = user
+    if (active != null) CatalogScreen(active.alias, active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
+     onBack = { nav.popBackStack() }, onCart = { nav.navigate(Routes.CART) })
+   }
+   composable(Routes.CART) {
+    val active = user
+    if (active != null && active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE)
+     CartScreen(active.alias, onBack = { nav.popBackStack() })
    }
    composable(Routes.ABOUT) { AboutScreen(onBack = { nav.popBackStack() }) }
   }
