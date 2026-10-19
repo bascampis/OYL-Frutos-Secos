@@ -34,7 +34,7 @@ data class CartLine(
  @Query("SELECT * FROM products WHERE active = 1 ORDER BY name") fun products(): Flow<List<ProductEntity>>
  @Query("SELECT * FROM products WHERE id = :id LIMIT 1") suspend fun getProduct(id: String): ProductEntity?
  @Query("SELECT COUNT(*) FROM products") suspend fun productCount(): Int
- @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun saveProducts(values: List<ProductEntity>)
+ @Upsert suspend fun saveProducts(values: List<ProductEntity>)
  @Query("SELECT * FROM cart_items WHERE ownerAlias = :alias ORDER BY productId")
  fun cartRaw(alias: String): Flow<List<CartItemEntity>>
  @Query("SELECT * FROM cart_items WHERE ownerAlias = :alias AND productId = :product LIMIT 1")
