@@ -12,4 +12,5 @@ object Routes {
  const val MAP = "map"
  const val ORDERS = "orders"
  const val ADMIN = "admin"
+ const val NOTIFICATIONS = "notifications"
 }
