@@ -36,4 +36,4 @@ jobs:
       - name: Compile Android and run unit tests
         run: |
           chmod +x gradlew
-          ./gradlew :app:testDebugUnitTest --no-daemon
+          ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace --info
