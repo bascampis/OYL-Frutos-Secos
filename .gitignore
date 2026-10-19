@@ -1,0 +1,21 @@
+# Gradle / compilación
+.gradle/
+**/build/
+*.apk
+*.aab
+# IDE y equipo local
+.idea/
+*.iml
+local.properties
+.cxx/
+.externalNativeBuild/
+# Sistemas operativos
+.DS_Store
+Thumbs.db
+# Credenciales y configuraciones no versionadas
+.env
+.env.*
+*.keystore
+*.jks
+key.properties
+google-services.json
