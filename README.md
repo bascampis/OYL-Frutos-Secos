@@ -65,3 +65,23 @@ Mantener commits **reales** en `main`, documentar actividad del equipo y tareas 
 El ZIP 01 incluyó un mecanismo de arranque compilado localmente en lugar del `gradle-wrapper.jar` oficial. Conviene regenerar y verificar el Wrapper oficial desde una instalación legítima de Gradle antes de la entrega, sin cambiar arbitrariamente la versión.
 
 Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
+
+## Planificación del proyecto
+
+La planificación de OYL Frutos Secos se realiza
+mediante Trello, utilizando un tablero compartido
+entre los integrantes del equipo.
+
+Tablero de Trello:
+[OYL Frutos Secos - DSY1105](https://trello.com/invite/b/6ad592d5b21864ef22331411/ATTI82ce34dee0663009dc827e7d14b22176E5003B1A/oyl-frutos-secos-dsy1105)
+
+### Organización del trabajo
+
+- Por hacer: funcionalidades pendientes.
+- En desarrollo: tareas en implementación.
+- En revisión: funcionalidades pendientes de pruebas.
+- Finalizado: tareas implementadas y verificadas.
+- Bloqueado: tareas con impedimentos identificados.
+
+Las tarjetas incluyen responsables, descripción,
+checklists y evidencias del trabajo realizado.
