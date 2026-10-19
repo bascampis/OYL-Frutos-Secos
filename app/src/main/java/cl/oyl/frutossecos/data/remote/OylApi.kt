@@ -11,7 +11,15 @@ data class RemoteOrderRequest(val clientAlias:String,val fulfillment:String,val 
 data class RemoteOrderLine(val id:Long,val productId:String,val productName:String,val quantity:Int,val unitPrice:Int)
 data class RemoteOrder(val id:String,val clientAlias:String,val createdAt:String,val total:Int,
  val status:String,val fulfillment:String,val lines:List<RemoteOrderLine>)
+data class ProductInputDto(val id:String,val name:String,val category:String,val description:String,
+ val presentation:String,val price:Int,val stock:Int,val active:Boolean)
+data class StockDeltaDto(val delta:Int)
+data class OrderStatusDto(val status:String)
 interface OylApi {
+ @PUT("api/admin/products") suspend fun saveProduct(@Body value:ProductInputDto):RemoteProduct
+ @PATCH("api/admin/products/{id}/stock") suspend fun adjustStock(@Path("id") id:String,@Body value:StockDeltaDto):RemoteProduct
+ @GET("api/admin/orders") suspend fun allOrders():List<RemoteOrder>
+ @PATCH("api/admin/orders/{id}/status") suspend fun setStatus(@Path("id") id:String,@Body value:OrderStatusDto):RemoteOrder
  @GET("api/products") suspend fun products():List<RemoteProduct>
  @POST("api/orders") suspend fun order(@Body request:RemoteOrderRequest):RemoteOrder
  @GET("api/orders") suspend fun orders(@Query("clientAlias") alias:String):List<RemoteOrder>

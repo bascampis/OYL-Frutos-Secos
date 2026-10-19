@@ -11,4 +11,5 @@ object Routes {
  const val QR = "qr"
  const val MAP = "map"
  const val ORDERS = "orders"
+ const val ADMIN = "admin"
 }

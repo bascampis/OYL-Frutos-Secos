@@ -40,7 +40,7 @@ import cl.oyl.frutossecos.viewmodel.*
      onLogout = ::logOut, onProfile = { nav.navigate(Routes.PROFILE) },
      onCatalog = { nav.navigate(Routes.CATALOG) }, onCart = { nav.navigate(Routes.CART) },
      onQr = { nav.navigate(Routes.QR) }, onMap = { nav.navigate(Routes.MAP) },
-     onOrders = { nav.navigate(Routes.ORDERS) })
+     onOrders = { nav.navigate(Routes.ORDERS) }, onAdmin = { nav.navigate(Routes.ADMIN) })
     else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true } } }
    }
    composable(Routes.PROFILE) {
@@ -64,6 +64,10 @@ import cl.oyl.frutossecos.viewmodel.*
     val active = user
     if (active != null && active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE)
      OrdersScreen(active.alias, onBack = { nav.popBackStack() })
+   }
+   composable(Routes.ADMIN) {
+    if (user?.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR)
+     AdminScreen(onBack = { nav.popBackStack() })
    }
    composable(Routes.ABOUT) { AboutScreen(onBack = { nav.popBackStack() }) }
   }
