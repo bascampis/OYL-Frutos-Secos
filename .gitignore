@@ -19,3 +19,7 @@ Thumbs.db
 *.jks
 key.properties
 google-services.json
+
+# Embedded backend demo database
+backend/data/
+backend/target/
