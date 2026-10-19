@@ -50,7 +50,7 @@ import cl.oyl.frutossecos.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, onBack: () -> Unit, onAuthenticated: (DemoUser) -> Unit) {
+fun LoginScreen(viewModel: LoginViewModel, onBack: () -> Unit, onAuthenticated: (DemoUser) -> Unit, onRegister: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(false) }
     val submit = { viewModel.signIn(onAuthenticated) }

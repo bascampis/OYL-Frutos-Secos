@@ -2,74 +2,50 @@ package cl.oyl.frutossecos.navigation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import cl.oyl.frutossecos.ui.screens.AboutScreen
-import cl.oyl.frutossecos.ui.screens.DashboardScreen
-import cl.oyl.frutossecos.ui.screens.LoginScreen
-import cl.oyl.frutossecos.ui.screens.WelcomeScreen
-import cl.oyl.frutossecos.viewmodel.LoginViewModel
-import cl.oyl.frutossecos.viewmodel.SessionViewModel
+import androidx.navigation.compose.*
+import cl.oyl.frutossecos.domain.model.DemoUser
+import cl.oyl.frutossecos.ui.screens.*
+import cl.oyl.frutossecos.viewmodel.*
 
-@Composable
-fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
-    val navController = rememberNavController()
-    val session by sessionViewModel.user.collectAsState()
-
-    Surface(modifier = Modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = Routes.WELCOME) {
-            composable(Routes.WELCOME) {
-                WelcomeScreen(
-                    onBegin = { navController.navigate(Routes.LOGIN) },
-                    onAbout = { navController.navigate(Routes.ABOUT) }
-                )
-            }
-            composable(Routes.LOGIN) {
-                val loginViewModel: LoginViewModel = viewModel()
-                LoginScreen(
-                    viewModel = loginViewModel,
-                    onBack = { navController.popBackStack() },
-                    onAuthenticated = { user ->
-                        sessionViewModel.startSession(user)
-                        navController.navigate(Routes.DASHBOARD) {
-                            popUpTo(Routes.WELCOME) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            }
-            composable(Routes.DASHBOARD) {
-                if (session == null) {
-                    LaunchedEffect(Unit) {
-                        navController.navigate(Routes.LOGIN) {
-                            popUpTo(Routes.DASHBOARD) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                } else {
-                    DashboardScreen(
-                        user = requireNotNull(session),
-                        onAbout = { navController.navigate(Routes.ABOUT) },
-                        onLogout = {
-                            sessionViewModel.endSession()
-                            navController.navigate(Routes.LOGIN) {
-                                popUpTo(Routes.DASHBOARD) { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        }
-                    )
-                }
-            }
-            composable(Routes.ABOUT) {
-                AboutScreen(onBack = { navController.popBackStack() })
-            }
-        }
-    }
+@Composable fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
+ val nav = rememberNavController()
+ val user by sessionViewModel.user.collectAsState()
+ fun loggedIn(value: DemoUser) {
+  sessionViewModel.startSession(value)
+  nav.navigate(Routes.DASHBOARD) { popUpTo(Routes.WELCOME) { inclusive = true }; launchSingleTop = true }
+ }
+ fun logOut() {
+  sessionViewModel.endSession()
+  nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true }; launchSingleTop = true }
+ }
+ Surface(Modifier.fillMaxSize()) {
+  NavHost(nav, startDestination = if (user == null) Routes.WELCOME else Routes.DASHBOARD) {
+   composable(Routes.WELCOME) {
+    WelcomeScreen(onBegin = { nav.navigate(Routes.LOGIN) }, onAbout = { nav.navigate(Routes.ABOUT) })
+   }
+   composable(Routes.LOGIN) {
+    val vm: LoginViewModel = viewModel()
+    LoginScreen(vm, onBack = { nav.popBackStack() }, onAuthenticated = ::loggedIn, onRegister = { nav.navigate(Routes.REGISTER) })
+   }
+   composable(Routes.REGISTER) {
+    val vm: RegisterViewModel = viewModel()
+    RegisterScreen(vm, onBack = { nav.popBackStack() }, onDone = ::loggedIn)
+   }
+   composable(Routes.DASHBOARD) {
+    val active = user
+    if (active != null) DashboardScreen(active, onAbout = { nav.navigate(Routes.ABOUT) },
+     onLogout = ::logOut, onProfile = { nav.navigate(Routes.PROFILE) })
+    else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true } } }
+   }
+   composable(Routes.PROFILE) {
+    val active = user
+    if (active != null) ProfileScreen(active, onBack = { nav.popBackStack() }, onLogout = ::logOut)
+    else LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) }
+   }
+   composable(Routes.ABOUT) { AboutScreen(onBack = { nav.popBackStack() }) }
+  }
+ }
 }
