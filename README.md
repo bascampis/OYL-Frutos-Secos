@@ -1,120 +1,67 @@
-# OYL Frutos Secos — Android / ZIP 01
+# OYL Frutos Secos — Proyecto Android de DSY1105
 
-Proyecto académico de **DSY1105, Duoc UC**, desarrollado en **Kotlin**, **Jetpack Compose**, **Material Design 3** y **MVVM**.
+Aplicación **académica y de demostración** (Duoc UC). Kotlin, Jetpack Compose, Material 3, MVVM, Room, Retrofit y backend Spring Boot + H2. Este proyecto **no está preparado para uso comercial**.
 
-**Estado:** versión base 0.1.0 (ZIP 01). Este repositorio es un MVP en construcción, **no es un sistema de ventas real**.
+## Estado de desarrollo
+**Código implementado en GitHub, no compilado ni validado en Android Studio después de la versión ZIP 01.**
 
-## Qué funciona en ZIP 01
+- Bienvenida, login local, registro, validaciones desacopladas, roles, sesión persistente y perfil.
+- Room para clientes registrados, catálogo en caché y carrito independiente por alias.
+- Catálogo sintético con búsqueda, categorías, ficha simple y carrito editable.
+- Confirmación de solicitudes desde el cliente mediante API REST; sin servidor, el pedido **no se confirma**.
+- Historial de pedidos del backend para el cliente.
+- Administración académica: edición/alta de productos, movimientos de stock y cambio de estados.
+- QR con Google Code Scanner (Google Play Services y dispositivo compatible).
+- Ubicación aproximada nativa (permiso) y enlace a aplicación de mapas externa; **sin puntos OYL confirmados**.
+- Notificaciones **locales de prueba**, no push FCM; separadas por usuario.
+- Tema verde, navegación Compose y animación de bienvenida.
 
-- Pantalla de bienvenida con animación de entrada.
-- Navegación real entre Bienvenida → Inicio de sesión → Panel; pantalla «Acerca del proyecto».
-- Cambio de rol **Cliente** / **Administrador**.
-- Formulario con validaciones separadas en `domain/validation` y retroalimentación en los campos.
-- Autenticación **local de demostración**, sin conexión remota, con mensajes de error.
-- Pantalla de inicio diferenciada por rol, botón «Acerca de» y cierre de sesión.
-- Pruebas unitarias escritas para la validación del formulario.
+### Sin terminar / pendiente de validar
+- **Compilar y ejecutar todos los cambios en Android Studio**, pruebas de dispositivo, accesibilidad y pruebas de integración.
+- Seguridad/autorización en API de administración, autenticación backend, endurecimiento de passwords y HTTPS.
+- Notificaciones push reales desde servidor, puntos de retiro verificados y mapa integrado.
+- Fotografías de productos mediante cámara y subida a backend.
+- Flujos de pago (no exigidos para MVP), APK release y pruebas de concurrencia automatizadas.
+- Formularios con iconos y errores visuales por cada campo en todas las pantallas.
+- Trello compartido, evidencias de evaluación y nombre de integrantes (se debe completar).
 
-### Cuenta ficticia para ingresar
+## Requisitos
+- Android Studio compatible con Android Gradle Plugin 8.9.2 y Kotlin 2.1.20.
+- JDK 17 y Android SDK 35. Emulador Pixel con Google Play recomendado.
+- Para pedidos/stock reales de **demostración**, Java 17 y Maven 3.9+ para el proyecto `backend/`.
 
-| Rol | Alias/correo | Contraseña ficticia |
-|---|---|---|
-| Cliente | `cliente` | `DemoOYL2026!` |
-| Administrador | `admin@admin.cl` | `DemoOYL2026!` |
+## Ejecutar Android
+1. Clona `https://github.com/bascampis/OYL-Frutos-Secos.git` o actualiza tu copia con `git pull origin main`.
+2. Abre en Android Studio la **carpeta raíz** que contiene `settings.gradle.kts` (no solo `app`).
+3. Sincroniza Gradle y ejecuta **Build > Make Project**. La primera vez requiere internet.
+4. Selecciona emulador con Android 8+ y presiona Run.
+5. Si falla la compilación, conserva la salida de **Build Output** para depurar antes de entregar.
 
-En el formulario puedes pulsar **«Rellenar credenciales de demostración»** después de elegir el rol. Estas cuentas están codificadas solo para **enseñanza**, no para uso real. El PDF especifica el correo del administrador, **no especifica su contraseña**: aquí se inventó exclusivamente para pruebas. No hay datos de usuarios reales ni contraseñas de producción.
+Las credenciales académicas de demostración siguen siendo cliente `cliente` o administrador `admin@admin.cl`, contraseña ficticia `DemoOYL2026!`. No las utilices para sistemas reales. Puedes registrar cuentas inventadas con alias y correo de prueba. Nunca ingreses datos personales reales.
 
-## Cómo abrir por primera vez en Android Studio (Windows)
+## Iniciar backend Spring Boot
+1. Abre otra terminal en `backend/` y ejecuta `mvn spring-boot:run` (Java 17).
+2. Comprueba `http://localhost:8080/api/health`, debe mostrar `ACADEMIC_DEMO`.
+3. En el emulador, Android utiliza `http://10.0.2.2:8080/` para conectar con tu PC.
+4. Entra al catálogo y verifica que diga **sincronizado con Spring Boot** antes de confirmar pedidos.
+5. Si el backend está apagado, el catálogo muestra copia local ficticia y el botón de confirmar **debe fallar sin generar pedido**.
 
-1. Descarga el archivo `OYL_Frutos_Secos_ZIP01.zip` y extrae todo su contenido, por ejemplo en `Documentos/OYL-Proyecto/`.
-2. Abre **Android Studio → Open** y selecciona **la carpeta `OYL-Frutos-Secos`** (la que contiene `settings.gradle.kts`, `app` y `gradlew.bat`). **No** abras solo `app`.
-3. Si Android Studio pregunta si confías en el proyecto, confirma solo si el ZIP provino de esta conversación y revisaste su contenido.
-4. Espera a que termine **Gradle Sync**. Necesitas internet **en tu PC**, JDK 17 y **Android SDK 35** instalados. La primera vez se descargan Gradle 8.11.1 y las dependencias.
-5. Abre **Tools → Device Manager** y crea/inicia un emulador con Android 8.0 (API 26) o superior, o conecta un teléfono con depuración USB.
-6. En la barra superior, selecciona la configuración **app** y pulsa **Run ▶**. Espera a ver «OYL Frutos Secos».
-7. Pulsa **Comenzar → Cliente → Rellenar credenciales de demostración → Iniciar sesión**. Comprueba que aparece el panel Cliente. Pulsa **Salir**. Repite con Administrador.
+El cleartext HTTP se permite solo hacia `10.0.2.2` para laboratorio. Teléfono físico requiere adaptar IP/red y configuración de seguridad. **No expongas el backend a internet:** los endpoints administrativos no tienen autenticación ni control de roles en el servidor y el endpoint de historial usa alias suministrado por cliente.
 
-Si **Run** está desactivado o hay error, envía una captura de **Build Output** o el mensaje exacto. No borres carpetas de sistema ni cambies versiones al azar.
+## Pruebas manuales mínimas
+1. Cliente y administrador ficticios: login, logout, persistencia de sesión.
+2. Registro de dos perfiles ficticios, guardado/edición, comprobación de independencia.
+3. Catálogo, filtros, detalle, carrito con cantidades independientes y persistencia al reiniciar.
+4. Con backend: nuevo pedido, descuento stock y lectura de historial; sin backend: rechazo visible.
+5. Administrador: cambiar precio, ajustar stock, cambiar estado de pedido y comprobar desde cliente.
+6. QR: escanear código `OY001`, verificar ficha local; código inválido y cancelación.
+7. Ubicación: aceptar/denegar permiso; notificación local y permiso Android 13+.
+8. Ejecutar pruebas unitarias (validadores) y comprobar funcionamiento en emulador.
 
-## Comprobar desde la terminal (opcional)
+## GitHub, rúbrica y entrega
+Mantener commits **reales** en `main`, documentar actividad del equipo y tareas en Trello. Revisar `docs/ESTADO_IMPLEMENTACION.md` y los PDF del caso. Antes de fecha límite guardar evidencias, APK release, ZIP de GitHub, README con integrantes y entrega AVA. **No realizar commits después de la fecha oficial de entrega**, ya que la pauta académica los penaliza.
 
-Abre **Terminal** en Android Studio, en la carpeta raíz (junto a `gradlew.bat`):
+## Aviso sobre Gradle Wrapper
+El ZIP 01 incluyó un mecanismo de arranque compilado localmente en lugar del `gradle-wrapper.jar` oficial. Conviene regenerar y verificar el Wrapper oficial desde una instalación legítima de Gradle antes de la entrega, sin cambiar arbitrariamente la versión.
 
-```powershell
-.\gradlew.bat testDebugUnitTest
-.\gradlew.bat assembleDebug
-```
-
-El APK de depuración, si compila, estará en `app/build/outputs/apk/debug/app-debug.apk`.
-
-> **Comprobación real de esta entrega:** la estructura, XML y archivo ZIP fueron comprobados fuera de Android Studio. Las reglas puras de validación se ejecutaron localmente con Kotlin. **No se compiló el APK** porque el entorno que creó este ZIP no tiene instalado Android SDK ni puede descargar Gradle y las librerías Android. La compilación completa debe comprobarse en tu PC.
-
-## Gradle Wrapper: detalle de procedencia
-
-Esta entrega incluye `gradlew`, `gradlew.bat`, `gradle-wrapper.properties` y `gradle-wrapper.jar`. **El JAR es un bootstrap Java pequeño, con código fuente visible en `gradle/wrapper/bootstrap-src`, NO es el binario oficial del Gradle Wrapper**, pues este entorno no pudo descargarlo.
-
-El bootstrap descarga exclusivamente Gradle **8.11.1** desde `services.gradle.org`, valida el SHA-256 esperado antes de extraerlo y lanza Gradle. Para tener **el Gradle Wrapper oficial** después de una sincronización exitosa, en la raíz del proyecto puedes ejecutar `gradle wrapper --gradle-version 8.11.1 --distribution-type bin` usando una instalación oficial de Gradle, o pedir al profesor / equipo que genere el wrapper desde Android Studio y compartir su `gradle-wrapper.jar` oficial. El JAR de esta entrega es auditable, pero no debe hacerse pasar por un binario firmado de Gradle.
-
-## Arquitectura y carpetas
-
-```text
-OYL-Frutos-Secos/
-├── app/
-│   ├── build.gradle.kts
-│   └── src/
-│       ├── main/
-│       │   ├── AndroidManifest.xml
-│       │   ├── java/cl/oyl/frutossecos/
-│       │   │   ├── MainActivity.kt
-│       │   │   ├── navigation/       # Rutas Navigation Compose
-│       │   │   ├── ui/screens/       # Pantallas
-│       │   │   ├── ui/components/    # Componentes reutilizables
-│       │   │   ├── ui/theme/         # Tema Material 3
-│       │   │   ├── viewmodel/        # Estado y eventos, MVVM
-│       │   │   ├── data/repository/  # Interfaz y repositorio demo
-│       │   │   ├── data/local/       # Reservado, Room en ZIP 02
-│       │   │   ├── data/remote/      # Reservado, Retrofit más adelante
-│       │   │   └── domain/validation/ # Reglas independientes de UI
-│       │   └── res/
-│       └── test/                 # Tests JUnit
-├── gradle/wrapper/
-├── docs/
-├── gradlew, gradlew.bat
-├── settings.gradle.kts
-└── build.gradle.kts
-```
-
-Paquete y aplicación: `cl.oyl.frutossecos` (mantener en todas las etapas). Gradle Kotlin DSL, Java 17, minSdk 26, compileSdk/targetSdk 35, AGP 8.9.2, Kotlin/Compose plugin 2.1.20 y Compose BOM 2025.04.01. El tema utiliza verde, blanco y tonos naturales de la referencia visual del caso.
-
-## Lo que todavía NO funciona
-
-- **ZIP 02:** registro, perfiles y sesiones persistentes con Room/SQLite.
-- **ZIP 03:** catálogo, categorías, búsqueda, fichas y carrito separado por cliente.
-- **ZIP 04:** confirmación e historial de pedidos, administración, Retrofit y backend Spring Boot real o demostración señalizada (sin fingir stock oficial).
-- **ZIP 05:** escáner QR por cámara, mapa/ubicación y permisos.
-- **ZIP 06:** animaciones adicionales, notificaciones, accesibilidad, más pruebas y evidencia.
-
-**No hay** Room, Retrofit, Spring Boot, cámara, GPS, QR, pedidos ni stock sincronizado en esta versión. Las tarjetas del panel muestran los módulos futuros como texto **no interactivo** para no crear botones falsos.
-
-## Git y colaboración
-
-Crea un repositorio público **cuando el proyecto esté abierto y probado**. Si es nuevo:
-
-```bash
-git init
-git branch -M main
-git status
-git add .
-git commit -m "feat(android): crear base Compose MVVM con login demo"
-git remote add origin URL_DE_TU_REPOSITORIO
-git push -u origin main
-```
-
-No ejecutes `git init` si esta carpeta **ya es un repositorio Git**. Si trabajas con un proyecto grupal existente, coordina primero con el equipo y no sustituyas su `.git` ni su historial. Revisa `git status` antes de cada commit. `local.properties`, llaves y archivos compilados quedan excluidos con `.gitignore`.
-
-**Importante:** la pauta indica que **no se deben hacer cambios en el repositorio entre la entrega y la evaluación**. Consulta la fecha exacta de tu sección antes de entregar. También menciona trabajo en parejas; si trabajan tres, confírmenlo con su docente.
-
-Para planificación y evaluación consulta `docs/ESTADO_RUBRICA.md`, `docs/PLAN_TRELLO.md` y `docs/REFERENCIAS_PDF.md`.
-
-## Responsables
-
-Completar antes de entregar: nombres del equipo, sección, docente, número de equipo, enlace de GitHub y enlace de Trello. No se colocan datos personales ficticios.
+Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
