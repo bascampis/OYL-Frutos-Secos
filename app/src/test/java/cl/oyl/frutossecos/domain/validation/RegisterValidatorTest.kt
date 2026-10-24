@@ -8,12 +8,15 @@ class RegisterValidatorTest {
   assertFalse(RegisterValidator.validate("", "", "", "").isValid)
  }
  @Test fun validDemoDataAccepted() {
-  assertTrue(RegisterValidator.validate("Ana Pérez", "ana_2026", "ana@example.com", "test12345").isValid)
+  assertTrue(RegisterValidator.validate("Ana Pérez", "ana@example.com", "+56 9 1234 5678", "test12345").isValid)
  }
- @Test fun shortAliasRejected() {
-  assertNotNull(RegisterValidator.validate("Ana Pérez", "xy", "ana@example.com", "test12345").alias)
+ @Test fun shortNameRejected() {
+  assertNotNull(RegisterValidator.validate("An", "ana@example.com", "+56 9 1234 5678", "test12345").name)
  }
  @Test fun malformedEmailRejected() {
-  assertNotNull(RegisterValidator.validate("Ana Pérez", "ana_2026", "incorrecto", "test12345").email)
+  assertNotNull(RegisterValidator.validate("Ana Pérez", "incorrecto", "+56 9 1234 5678", "test12345").email)
+ }
+ @Test fun invalidPhoneRejected() {
+  assertNotNull(RegisterValidator.validate("Ana Pérez", "ana@example.com", "abc", "test12345").phone)
  }
 }
