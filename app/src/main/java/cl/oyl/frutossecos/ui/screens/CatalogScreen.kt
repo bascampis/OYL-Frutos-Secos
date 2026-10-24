@@ -118,7 +118,7 @@ fun CatalogScreen(
                         contentDescription = null
                     )
                 },
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(16.dp),
                 singleLine = true
             )
 
@@ -158,7 +158,10 @@ fun CatalogScreen(
                             .clickable {
                                 onProductClick(product.id)
                             },
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFF5F1E8)
+                        )
                     ) {
                         Column(
                             modifier = Modifier
