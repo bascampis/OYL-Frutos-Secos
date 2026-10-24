@@ -1,5 +1,6 @@
 package cl.oyl.frutossecos.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -19,12 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cl.oyl.frutossecos.OylApplication
-import cl.oyl.frutossecos.data.local.ProductEntity
+import cl.oyl.frutossecos.R
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
@@ -41,10 +45,14 @@ fun CatalogScreen(
     onCart: () -> Unit,
     onProductClick: (String) -> Unit
 ) {
-    val repo = (androidx.compose.ui.platform.LocalContext.current.applicationContext as OylApplication).catalogRepository
+    val context = LocalContext.current
+    val repo = (context.applicationContext as OylApplication).catalogRepository
+
     val products by repo.products.collectAsState(initial = emptyList())
+
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Todos") }
+
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -52,16 +60,27 @@ fun CatalogScreen(
         repo.syncFromServer()
     }
 
-    val filteredProducts = products.filter { item ->
-        val matchesCategory = category == "Todos" || item.category.equals(category, ignoreCase = true)
-        val matchesQuery = item.name.contains(query, ignoreCase = true) || item.category.contains(query, ignoreCase = true)
+    val filteredProducts = products.filter { product ->
+        val matchesCategory =
+            category == "Todos" ||
+                    product.category.equals(category, ignoreCase = true)
+
+        val matchesQuery =
+            product.name.contains(query, ignoreCase = true) ||
+                    product.category.contains(query, ignoreCase = true)
+
         matchesCategory && matchesQuery
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Catálogo de Productos", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Catálogo de Productos",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
                     if (!isAdmin) {
                         IconButton(onClick = onCart) {
@@ -72,7 +91,11 @@ fun CatalogScreen(
             )
         },
         bottomBar = {
-            OylBottomBar(navController = navController, currentRoute = currentRoute, isAdmin = isAdmin)
+            OylBottomBar(
+                navController = navController,
+                currentRoute = currentRoute,
+                isAdmin = isAdmin
+            )
         }
     ) { padding ->
         Column(
@@ -82,25 +105,35 @@ fun CatalogScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Search Bar
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar productos...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = {
+                    Text("Buscar productos...")
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                },
                 shape = RoundedCornerShape(24.dp),
                 singleLine = true
             )
 
-            // Category Chips
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("Todos", "Frutos secos", "Semillas", "Deshidratados").forEach { value ->
+                listOf(
+                    "Todos",
+                    "Frutos secos",
+                    "Semillas",
+                    "Deshidratados"
+                ).forEach { value ->
                     FilterChip(
                         selected = category == value,
                         onClick = { category = value },
@@ -109,18 +142,22 @@ fun CatalogScreen(
                 }
             }
 
-            // Products Grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(filteredProducts, key = { it.id }) { product ->
+                items(
+                    items = filteredProducts,
+                    key = { it.id }
+                ) { product ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onProductClick(product.id) },
+                            .clickable {
+                                onProductClick(product.id)
+                            },
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(
@@ -137,11 +174,18 @@ fun CatalogScreen(
                                     .background(OylMint),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("🌰", fontSize = 38.sp)
+                                Image(
+                                    painter = painterResource(
+                                        id = productImage(product.id)
+                                    ),
+                                    contentDescription = product.name,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
                             }
 
                             Text(
-                                product.name,
+                                text = product.name,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1
@@ -154,13 +198,14 @@ fun CatalogScreen(
                             ) {
                                 Column {
                                     Text(
-                                        "$${product.price}",
+                                        text = "$${product.price}",
                                         color = OylGreen,
                                         fontWeight = FontWeight.ExtraBold,
                                         style = MaterialTheme.typography.bodyLarge
                                     )
+
                                     Text(
-                                        "Stock: ${product.stock} un",
+                                        text = "Stock: ${product.stock} un",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.secondary
                                     )
@@ -169,14 +214,24 @@ fun CatalogScreen(
                                 if (!isAdmin) {
                                     IconButton(
                                         onClick = {
-                                            scope.launch { repo.changeCart(ownerAlias, product.id, 1) }
+                                            scope.launch {
+                                                repo.changeCart(
+                                                    ownerAlias,
+                                                    product.id,
+                                                    1
+                                                )
+                                            }
                                         },
                                         modifier = Modifier
                                             .size(36.dp)
                                             .clip(CircleShape)
                                             .background(OylGreen)
                                     ) {
-                                        Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "Agregar",
+                                            tint = Color.White
+                                        )
                                     }
                                 }
                             }
@@ -186,4 +241,14 @@ fun CatalogScreen(
             }
         }
     }
+}
+
+fun productImage(productId: String): Int = when (productId) {
+    "OY001" -> R.drawable.almendras
+    "OY002" -> R.drawable.nueces
+    "OY003" -> R.drawable.mix_premium
+    "OY004" -> R.drawable.pasas_morenas
+    "OY005" -> R.drawable.chia
+    "OY006" -> R.drawable.cranberries
+    else -> R.drawable.frutos_imagen
 }
