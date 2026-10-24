@@ -69,8 +69,12 @@ fun WelcomeScreen(onBegin: () -> Unit, onLogin: () -> Unit, onAbout: () -> Unit)
                 horizontalAlignment = Alignment.CenterHorizontally
             )  {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("OYL", fontSize = 58.sp, fontWeight = FontWeight.ExtraBold, color = OylDarkGreen)
-                Text("FRUTOS SECOS", style = MaterialTheme.typography.titleLarge, color = OylDarkGreen, fontWeight = FontWeight.Bold)
+                Image(
+                    painter = painterResource(id = R.drawable.logo_oyl_frutos_secos),
+                    contentDescription = "Logo OYL Frutos Secos",
+                    modifier = Modifier.height(100.dp),
+                    contentScale = ContentScale.Fit
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     "Productos naturales más cerca de ti",
