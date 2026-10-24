@@ -5,30 +5,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -37,15 +20,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cl.oyl.frutossecos.ui.theme.OylCream
 import cl.oyl.frutossecos.ui.theme.OylDarkGreen
+import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
 
 @Composable
-fun WelcomeScreen(onBegin: () -> Unit, onAbout: () -> Unit) {
+fun WelcomeScreen(onBegin: () -> Unit, onLogin: () -> Unit, onAbout: () -> Unit) {
     var isVisible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { isVisible = true }
+
     Column(
-        modifier = Modifier.fillMaxSize().background(OylCream)
-            .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(OylCream)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -59,7 +47,9 @@ fun WelcomeScreen(onBegin: () -> Unit, onAbout: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
-                        modifier = Modifier.height(124.dp).fillMaxWidth(0.60f)
+                        modifier = Modifier
+                            .height(124.dp)
+                            .fillMaxWidth(0.60f)
                             .background(OylMint, RoundedCornerShape(42.dp)),
                         contentAlignment = Alignment.Center
                     ) {
@@ -68,14 +58,15 @@ fun WelcomeScreen(onBegin: () -> Unit, onAbout: () -> Unit) {
                 }
                 Spacer(modifier = Modifier.height(18.dp))
                 Text("OYL", fontSize = 58.sp, fontWeight = FontWeight.ExtraBold, color = OylDarkGreen)
-                Text("FRUTOS SECOS", style = MaterialTheme.typography.titleLarge, color = OylDarkGreen)
+                Text("FRUTOS SECOS", style = MaterialTheme.typography.titleLarge, color = OylDarkGreen, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    "Productos naturales, más cerca de ti",
+                    "Productos naturales más cerca de ti",
                     style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = OylDarkGreen
                 )
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(24.dp))
                 Surface(
                     shape = RoundedCornerShape(24.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -83,42 +74,53 @@ fun WelcomeScreen(onBegin: () -> Unit, onAbout: () -> Unit) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(22.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        BenefitRow("✓", "Frutos secos, semillas y deshidratados")
-                        BenefitRow("✓", "Catálogo y pedidos en una sola aplicación")
-                        BenefitRow("✓", "Gestión de inventario para el negocio")
+                        BenefitRow("🌰", "Catálogo actualizado")
+                        BenefitRow("📦", "Pedidos online")
+                        BenefitRow("📍", "Retiros y despachos")
+                        BenefitRow("🌿", "Productos saludables")
                     }
                 }
             }
         }
         Spacer(modifier = Modifier.height(28.dp))
-        Button(onClick = onBegin, modifier = Modifier.fillMaxWidth().height(54.dp)) {
-            Text("Comenzar", fontWeight = FontWeight.SemiBold)
+        Button(
+            onClick = onBegin,
+            modifier = Modifier.fillMaxWidth().height(54.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = OylGreen)
+        ) {
+            Text("Comenzar", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onLogin,
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
+            Text("Ya tengo una cuenta", fontWeight = FontWeight.SemiBold, color = OylDarkGreen)
         }
         Spacer(modifier = Modifier.height(10.dp))
-        OutlinedButton(onClick = onAbout, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            Text("Acerca de esta demostración")
+        TextButton(onClick = onAbout) {
+            Text("Acerca de esta demostración", color = OylDarkGreen)
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            "Proyecto académico · Versión base 01",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary
-        )
     }
 }
 
 @Composable
-private fun BenefitRow(mark: String, label: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun BenefitRow(icon: String, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
         Box(
-            modifier = Modifier.background(OylMint, CircleShape).padding(horizontal = 10.dp, vertical = 6.dp),
+            modifier = Modifier
+                .size(36.dp)
+                .background(OylMint, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Text(mark, fontWeight = FontWeight.Bold, color = OylDarkGreen)
+            Text(icon, fontSize = 16.sp)
         }
-        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = OylDarkGreen)
     }
 }
