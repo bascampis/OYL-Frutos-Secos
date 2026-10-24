@@ -32,6 +32,10 @@ import cl.oyl.frutossecos.ui.theme.OylDarkGreen
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
 import cl.oyl.frutossecos.viewmodel.LoginViewModel
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import cl.oyl.frutossecos.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,18 +72,13 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Logo
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .background(OylMint, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🌰", fontSize = 32.sp)
-            }
-            Text("OYL", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = OylDarkGreen)
-            Text("FRUTOS SECOS", style = MaterialTheme.typography.titleMedium, color = OylDarkGreen, fontWeight = FontWeight.Bold)
-
+        // Header Logo
+            Image(
+                painter = painterResource(id = R.drawable.logo_oyl_frutos_secos),
+                contentDescription = "Logo OYL Frutos Secos",
+                modifier = Modifier.height(120.dp),
+                contentScale = ContentScale.Fit
+            )
             Spacer(modifier = Modifier.height(4.dp))
 
             // Role selector tabs
