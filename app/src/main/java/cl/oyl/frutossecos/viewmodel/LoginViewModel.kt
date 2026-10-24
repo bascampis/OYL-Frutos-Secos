@@ -32,7 +32,7 @@ class LoginViewModel(application: Application): AndroidViewModel(application) {
    _uiState.update { it.copy(isLoading = true, generalError = null) }
    try {
     val u = repo.signIn(s.role, s.alias, s.password)
-    if (u != null) onSuccess(u) else _uiState.update { it.copy(generalError = "Credenciales o rol incorrectos.") }
+    if (u != null) onSuccess(u) else _uiState.update { it.copy(generalError = "Correo o contraseña incorrectos.") }
    } catch (_: Exception) { _uiState.update { it.copy(generalError = "Error al consultar datos locales.") } }
    finally { _uiState.update { it.copy(isLoading = false) } }
   }

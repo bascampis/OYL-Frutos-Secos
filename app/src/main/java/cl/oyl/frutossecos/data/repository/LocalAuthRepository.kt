@@ -11,7 +11,6 @@ class LocalAuthRepository(private val dao: ClientDao): AuthRepository {
  private val demo = DemoAuthRepository()
  override suspend fun signIn(role: UserRole, alias: String, password: String): DemoUser? {
   demo.signIn(role, alias, password)?.let { return it }
-  if (role != UserRole.CLIENTE) return null
   val key = alias.trim().lowercase()
   val client = dao.byAlias(key) ?: dao.byEmail(key) ?: return null
   if (!MessageDigest.isEqual(digest(client.salt, password).toByteArray(), client.hash.toByteArray())) return null
@@ -20,17 +19,13 @@ class LocalAuthRepository(private val dao: ClientDao): AuthRepository {
  suspend fun register(name: String, alias: String, email: String, phone: String, address: String, password: String): DemoUser {
   val key = alias.trim().lowercase()
   val mail = email.trim().lowercase()
-  require(key !in listOf("cliente", "admin", "admin@admin.cl")) { "Alias reservado." }
-  require(dao.byAlias(key) == null) { "El alias ya está ocupado." }
-  require(dao.byEmail(mail) == null) { "El correo ya está registrado." }
+  require(key !in listOf("cliente", "admin") && mail != "admin@admin.cl") { "Ese correo no está disponible." }
+  require(dao.byAlias(key) == null && dao.byEmail(mail) == null) { "Ese correo ya está registrado." }
   val salt = ByteArray(24).also { SecureRandom().nextBytes(it) }
   val encoded = Base64.encodeToString(salt, Base64.NO_WRAP)
   dao.add(ClientEntity(key, name.trim(), mail, phone.trim(), address.trim(), encoded, digest(encoded, password)))
   return DemoUser(key, name.trim(), UserRole.CLIENTE)
  }
- suspend fun getProfile(alias: String) = dao.byAlias(alias)
- suspend fun updateProfile(alias: String, name: String, phone: String, address: String) =
-  dao.updateProfile(alias, name.trim(), phone.trim(), address.trim())
  private fun digest(salt: String, password: String): String =
   Base64.encodeToString(MessageDigest.getInstance("SHA-256").digest((salt + ":" + password).toByteArray()), Base64.NO_WRAP)
 }

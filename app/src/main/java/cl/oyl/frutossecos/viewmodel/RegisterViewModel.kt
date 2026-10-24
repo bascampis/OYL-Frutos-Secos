@@ -30,13 +30,15 @@ class RegisterViewModel(application: Application): AndroidViewModel(application)
  fun submit(onSuccess: (DemoUser) -> Unit) {
   val s = _state.value
   if (s.busy) return
-  val e = RegisterValidator.validate(s.name, s.alias, s.email, s.password)
-  if (!e.isValid) {
-   _state.update { it.copy(error = listOfNotNull(e.name, e.alias, e.email, e.password).first()) }; return
+  val email = s.email.trim().lowercase()
+  val errors = RegisterValidator.validate(s.name, email, s.phone, s.password)
+  if (!errors.isValid) {
+   _state.update { it.copy(error = listOfNotNull(errors.name, errors.email, errors.phone, errors.password).first()) }
+   return
   }
   viewModelScope.launch {
    _state.update { it.copy(busy = true, error = null) }
-   try { onSuccess(repo.register(s.name, s.alias, s.email, s.phone, s.address, s.password)) }
+   try { onSuccess(repo.register(s.name, email, email, s.phone, s.address, s.password)) }
    catch (e: Exception) { _state.update { it.copy(error = e.message ?: "No se pudo registrar.") } }
    finally { _state.update { it.copy(busy = false) } }
   }

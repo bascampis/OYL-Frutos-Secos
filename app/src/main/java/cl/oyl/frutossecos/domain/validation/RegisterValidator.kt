@@ -1,14 +1,19 @@
 package cl.oyl.frutossecos.domain.validation
 
-data class RegisterErrors(val name: String? = null, val alias: String? = null,
- val email: String? = null, val password: String? = null) {
- val isValid get() = name == null && alias == null && email == null && password == null
+data class RegisterErrors(
+ val name: String? = null,
+ val email: String? = null,
+ val phone: String? = null,
+ val password: String? = null
+) {
+ val isValid get() = name == null && email == null && phone == null && password == null
 }
+
 object RegisterValidator {
- fun validate(name: String, alias: String, email: String, password: String): RegisterErrors = RegisterErrors(
+ fun validate(name: String, email: String, phone: String, password: String): RegisterErrors = RegisterErrors(
   name = if (name.trim().length < 3) "Nombre: mínimo 3 caracteres." else null,
-  alias = if (!alias.trim().matches(Regex("[A-Za-z0-9_]{3,24}"))) "Alias: 3-24 letras, números o _." else null,
   email = if (!email.trim().matches(Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))) "Correo no válido." else null,
+  phone = if (phone.count { it.isDigit() } < 8) "Teléfono: mínimo 8 dígitos." else null,
   password = if (password.length < 8) "Contraseña: mínimo 8 caracteres." else null
  )
 }
