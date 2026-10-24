@@ -48,179 +48,188 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsState()
     var showPassword by remember { mutableStateOf(false) }
     val submit = { viewModel.signIn(onAuthenticated) }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-        // Header Logo
-            Image(
-                painter = painterResource(id = R.drawable.logo_oyl_frutos_secos),
-                contentDescription = "Logo OYL Frutos Secos",
-                modifier = Modifier.height(120.dp),
-                contentScale = ContentScale.Fit
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Role selector tabs
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.fondo_inicio),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("") },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            },
+            containerColor = Color.Transparent
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Button(
-                    onClick = { viewModel.selectRole(UserRole.CLIENTE) },
-                    modifier = Modifier.weight(1f).height(46.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (state.role == UserRole.CLIENTE) OylGreen else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = if (state.role == UserRole.CLIENTE) Color.White else OylDarkGreen
+                // Header Logo
+                Image(
+                    painter = painterResource(id = R.drawable.logo_oyl_frutos_secos),
+                    contentDescription = "Logo OYL Frutos Secos",
+                    modifier = Modifier.height(120.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+
+                OutlinedTextField(
+                    value = state.alias,
+                    onValueChange = viewModel::updateAlias,
+                    label = { Text("Correo electrónico") },
+                    placeholder = { Text("ana@correo.cl") },
+                    leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null) },
+                    isError = state.aliasError != null,
+                    supportingText = { if (state.aliasError != null) Text(requireNotNull(state.aliasError)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        errorContainerColor = Color.White
                     ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Cliente", fontWeight = FontWeight.Bold)
-                }
-
-                Button(
-                    onClick = { viewModel.selectRole(UserRole.ADMINISTRADOR) },
-                    modifier = Modifier.weight(1f).height(46.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (state.role == UserRole.ADMINISTRADOR) OylGreen else MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = if (state.role == UserRole.ADMINISTRADOR) Color.White else OylDarkGreen
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = state.password,
+                    onValueChange = viewModel::updatePassword,
+                    label = { Text("Contraseña") },
+                    placeholder = { Text("••••••••••••") },
+                    leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
+                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { showPassword = !showPassword }) {
+                            Icon(
+                                imageVector = if (showPassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    isError = state.passwordError != null,
+                    supportingText = { if (state.passwordError != null) Text(requireNotNull(state.passwordError)) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        errorContainerColor = Color.White
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(onDone = { submit() }),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("Administrador", fontWeight = FontWeight.Bold)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = state.alias,
-                onValueChange = viewModel::updateAlias,
-                label = { Text("Correo electrónico") },
-                placeholder = { Text("ana@correo.cl") },
-                leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null) },
-                isError = state.aliasError != null,
-                supportingText = { if (state.aliasError != null) Text(requireNotNull(state.aliasError)) },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = state.password,
-                onValueChange = viewModel::updatePassword,
-                label = { Text("Contraseña") },
-                placeholder = { Text("••••••••••••") },
-                leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { showPassword = !showPassword }) {
-                        Icon(
-                            imageVector = if (showPassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                            contentDescription = null
+                    TextButton(onClick = { }) {
+                        Text(
+                            "¿Olvidaste tu contraseña?",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                },
-                isError = state.passwordError != null,
-                supportingText = { if (state.passwordError != null) Text(requireNotNull(state.passwordError)) },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { submit() }),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(onClick = { }) {
-                    Text("¿Olvidaste tu contraseña?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                 }
-            }
 
-            if (state.generalError != null) {
-                Text(
-                    text = state.generalError.orEmpty(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+                if (state.generalError != null) {
+                    Text(
+                        text = state.generalError.orEmpty(),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
-            Button(
-                onClick = submit,
-                enabled = !state.isLoading,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = OylGreen),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                if (state.isLoading) CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White)
-                else Text("Iniciar Sesión", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f))
-                Text(" o inicia con ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                HorizontalDivider(modifier = Modifier.weight(1f))
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { viewModel.useDemoCredentials(); submit() },
-                    modifier = Modifier.weight(1f).height(46.dp),
-                    shape = RoundedCornerShape(12.dp)
+                Button(
+                    onClick = submit,
+                    enabled = !state.isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = OylGreen),
+                    shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text("Google", fontWeight = FontWeight.SemiBold)
+                    if (state.isLoading) CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        color = Color.White
+                    )
+                    else Text("Iniciar Sesión", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
-                OutlinedButton(
-                    onClick = { viewModel.useDemoCredentials(); submit() },
-                    modifier = Modifier.weight(1f).height(46.dp),
-                    shape = RoundedCornerShape(12.dp)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("Cerrar / Demo", fontWeight = FontWeight.SemiBold)
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                    Text(
+                        " o inicia con ",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f))
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.useDemoCredentials(); submit() },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Google", fontWeight = FontWeight.SemiBold)
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.useDemoCredentials(); submit() },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Cerrar / Demo", fontWeight = FontWeight.SemiBold)
+                    }
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("¿No tienes cuenta? ", color = MaterialTheme.colorScheme.secondary)
-                TextButton(onClick = onRegister, contentPadding = PaddingValues(0.dp)) {
-                    Text("Regístrate", fontWeight = FontWeight.Bold, color = OylGreen)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("¿No tienes cuenta? ", color = MaterialTheme.colorScheme.secondary)
+                    TextButton(onClick = onRegister, contentPadding = PaddingValues(0.dp)) {
+                        Text("Regístrate", fontWeight = FontWeight.Bold, color = OylGreen)
+                    }
                 }
             }
         }
