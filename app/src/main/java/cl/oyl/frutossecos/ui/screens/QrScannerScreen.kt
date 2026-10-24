@@ -32,7 +32,8 @@ import kotlinx.coroutines.launch
 fun QrScannerScreen(
     navController: NavController,
     currentRoute: String,
-    onProductFound: (String) -> Unit
+    onProductFound: (String) -> Unit,
+    isAdmin: Boolean = false
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as OylApplication
@@ -76,7 +77,7 @@ fun QrScannerScreen(
             TopAppBar(title = { Text("Escanea el código QR del producto", fontWeight = FontWeight.Bold) })
         },
         bottomBar = {
-            OylBottomBar(navController = navController, currentRoute = currentRoute, isAdmin = false)
+            OylBottomBar(navController = navController, currentRoute = currentRoute, isAdmin = isAdmin)
         }
     ) { padding ->
         Box(

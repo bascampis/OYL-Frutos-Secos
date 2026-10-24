@@ -45,4 +45,6 @@ dependencies {
  androidTestImplementation("androidx.test.ext:junit:1.2.1")
  debugImplementation("androidx.compose.ui:ui-tooling")
  debugImplementation("androidx.compose.ui:ui-test-manifest")
+ implementation("org.osmdroid:osmdroid-android:6.1.20")
+ implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }

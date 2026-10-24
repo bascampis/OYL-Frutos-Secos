@@ -82,7 +82,11 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                         onCatalog = { nav.navigate(Routes.CATALOG) },
                         onCart = { nav.navigate(Routes.CART) },
                         onQr = { nav.navigate(Routes.QR) },
-                        onMap = { nav.navigate(Routes.MAP) },
+                        onMap = {
+                            if (active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+                                nav.navigate(Routes.MAP)
+                            }
+                        },
                         onOrders = { nav.navigate(Routes.ORDERS) },
                         onAdmin = { nav.navigate(Routes.PRODUCT_MANAGEMENT) },
                         onNotifications = { nav.navigate(Routes.NOTIFICATIONS) }
@@ -97,14 +101,19 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
             // 5. Map Screen
             composable(Routes.MAP) {
                 val active = user
-                if (active != null) {
+                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
                     MapScreen(
                         navController = nav,
                         currentRoute = currentRoute,
                         onBack = { nav.popBackStack() }
                     )
                 } else {
-                    LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) }
+                    LaunchedEffect(active?.alias, active?.role) {
+                        nav.navigate(if (active == null) Routes.LOGIN else Routes.DASHBOARD) {
+                            popUpTo(Routes.MAP) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
                 }
             }
 
@@ -146,6 +155,7 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                 val active = user
                 if (active != null) {
                     QrScannerScreen(
+                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
                         navController = nav,
                         currentRoute = currentRoute,
                         onProductFound = { productId -> nav.navigate(Routes.productDetail(productId)) }
