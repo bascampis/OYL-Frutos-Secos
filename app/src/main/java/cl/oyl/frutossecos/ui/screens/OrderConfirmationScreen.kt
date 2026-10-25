@@ -1,132 +1,85 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import cl.oyl.frutossecos.ui.theme.OylGreen
-import cl.oyl.frutossecos.ui.theme.OylMint
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.oyl.frutossecos.domain.checkout.formatClp
+import cl.oyl.frutossecos.domain.checkout.formatOrderDate
+import cl.oyl.frutossecos.viewmodel.OrderConfirmationViewModel
 
 @Composable
 fun OrderConfirmationScreen(
     orderId: String,
-    totalAmount: Int,
+    ownerAlias: String,
     onViewOrders: () -> Unit,
-    onContinueShopping: () -> Unit
+    onContinueShopping: () -> Unit,
+    vm: OrderConfirmationViewModel = viewModel()
 ) {
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Box with box icon and checkmark badge
-            Box(
-                modifier = Modifier.size(140.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(110.dp)
-                        .background(OylMint, RoundedCornerShape(28.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("📦", fontSize = 54.sp)
-                }
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .align(Alignment.BottomEnd)
-                        .clip(CircleShape)
-                        .background(OylGreen),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.White)
-                }
-            }
+    val state by vm.state.collectAsState()
+    LaunchedEffect(orderId, ownerAlias) { vm.load(ownerAlias, orderId) }
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                "¡Pedido confirmado!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = OylGreen
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                "Tu pedido ha sido recibido correctamente y está en proceso de validación.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.secondary
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    OrderInfoRow("N° de pedido", "#${orderId.take(8).uppercase()}")
-                    HorizontalDivider()
-                    OrderInfoRow("Fecha", "12/09/2026 - 14:30")
-                    HorizontalDivider()
-                    OrderInfoRow("Total", "$$totalAmount CLP")
-                    HorizontalDivider()
-                    OrderInfoRow("Método de entrega", "Retiro en tienda OYL")
+    Surface(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp).statusBarsPadding().navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            when {
+                state.loading -> CircularProgressIndicator()
+                state.order == null -> Text(state.error ?: "Pedido no disponible.", color = MaterialTheme.colorScheme.error)
+                else -> {
+                    val order = requireNotNull(state.order)
+                    AnimatedVisibility(visible, enter = fadeIn() + scaleIn()) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = "Solicitud recibida",
+                            tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(80.dp))
+                    }
+                    Text("¡Solicitud recibida!", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text("Estado al recibirla: ${order.status}")
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("N.º ${order.id}", style = MaterialTheme.typography.bodySmall)
+                            Text("Fecha: ${formatOrderDate(order.createdAt)}")
+                            Text("Modalidad: ${order.fulfillment}")
+                            Text("Cuenta: ${order.clientAlias}", style = MaterialTheme.typography.bodySmall)
+                            HorizontalDivider()
+                            order.lines.forEach { line ->
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Image(painterResource(productImage(line.productId)), contentDescription = line.productName,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.size(54.dp).clip(RoundedCornerShape(10.dp)))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(line.productName, fontWeight = FontWeight.SemiBold)
+                                        Text("${line.quantity} × ${formatClp(line.unitPrice.toLong())}")
+                                        Text(formatClp(line.quantity.toLong() * line.unitPrice))
+                                    }
+                                }
+                            }
+                            HorizontalDivider()
+                            Text("Total confirmado: ${formatClp(order.total.toLong())}", fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    Text("Puedes revisar el estado actualizado en Mis pedidos.", style = MaterialTheme.typography.bodySmall)
                 }
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onViewOrders,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = OylGreen)
-            ) {
-                Text("Ver mis pedidos", fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedButton(
-                onClick = onContinueShopping,
-                modifier = Modifier.fillMaxWidth().height(50.dp)
-            ) {
-                Text("Seguir comprando", fontWeight = FontWeight.Bold)
-            }
+            Button(onClick = onViewOrders, modifier = Modifier.fillMaxWidth()) { Text("Ver mis pedidos") }
+            OutlinedButton(onClick = onContinueShopping, modifier = Modifier.fillMaxWidth()) { Text("Seguir comprando") }
         }
-    }
-}
-
-@Composable
-private fun OrderInfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, color = MaterialTheme.colorScheme.secondary)
-        Text(value, fontWeight = FontWeight.SemiBold)
     }
 }

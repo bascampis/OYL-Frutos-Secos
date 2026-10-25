@@ -1,10 +1,12 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -13,180 +15,142 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import cl.oyl.frutossecos.OylApplication
-import cl.oyl.frutossecos.data.remote.*
-import cl.oyl.frutossecos.ui.theme.OylGreen
-import cl.oyl.frutossecos.ui.theme.OylMint
-import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.oyl.frutossecos.domain.checkout.formatClp
+import cl.oyl.frutossecos.viewmodel.CartViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
     ownerAlias: String,
     onBack: () -> Unit,
-    onCheckout: (String, Int) -> Unit
+    onCheckout: (String, Int) -> Unit,
+    vm: CartViewModel = viewModel()
 ) {
-    var submitting by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf("") }
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val repo = (context.applicationContext as OylApplication).catalogRepository
-    val cart by repo.cart(ownerAlias).collectAsState(initial = emptyList())
-    val products by repo.products.collectAsState(initial = emptyList())
-    val lookup = products.associateBy { it.id }
-    val scope = rememberCoroutineScope()
+    val state by vm.state.collectAsState()
+    LaunchedEffect(ownerAlias) { vm.start(ownerAlias) }
+    LaunchedEffect(state.completedOrder, state.busy) {
+        if (!state.busy) state.completedOrder?.let { onCheckout(it.id, it.total) }
+    }
+    val editable = !state.busy && state.completedOrder == null
 
-    val subtotal = cart.sumOf { (lookup[it.productId]?.price ?: 0) * it.quantity }
-    val despacho = if (cart.isNotEmpty()) 2000 else 0
-    val total = subtotal + despacho
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi Carrito (${cart.sumOf { it.quantity }})", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    }
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("Mi carrito", fontWeight = FontWeight.Bold) }, navigationIcon = {
+            IconButton(onClick = onBack, enabled = editable) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            }
+        })
+    }) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (state.loading) {
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            } else if (state.rows.isEmpty()) {
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text("Tu carrito está vacío. Agrega productos desde el catálogo.")
                 }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(cart, key = { it.productId }) { line ->
-                    val product = lookup[line.productId]
-                    if (product != null) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(14.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(60.dp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(OylMint),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("🌰", fontSize = 28.sp)
+            } else {
+                LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(state.rows, key = { it.item.productId }) { row ->
+                        val product = row.product
+                        Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+                            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Image(painterResource(productImage(row.item.productId)), contentDescription = row.name,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.size(70.dp).clip(RoundedCornerShape(12.dp)))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(row.name, fontWeight = FontWeight.Bold)
+                                        product?.let {
+                                            Text(it.presentation, style = MaterialTheme.typography.bodySmall)
+                                            Text("${formatClp(it.price.toLong())} por unidad")
+                                        }
+                                    }
                                 }
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(product.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                                    Text(product.presentation, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                                    Text("$${product.price}", color = OylGreen, fontWeight = FontWeight.Bold)
+                                if (product == null || !product.active || product.stock < row.item.quantity) {
+                                    Text(if (product == null || !product.active) "Producto no disponible. Retíralo del carrito."
+                                        else "Stock actual: ${product.stock}. Reduce la cantidad.", color = MaterialTheme.colorScheme.error)
                                 }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    OutlinedIconButton(
-                                        onClick = { scope.launch { repo.changeCart(ownerAlias, line.productId, -1) } },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Text("−", fontWeight = FontWeight.Bold)
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        OutlinedIconButton(onClick = { vm.change(row.item.productId, -1) }, enabled = editable) {
+                                            Text("−")
+                                        }
+                                        Text("${row.item.quantity}", Modifier.padding(horizontal = 8.dp), fontWeight = FontWeight.Bold)
+                                        OutlinedIconButton(onClick = { vm.change(row.item.productId, 1) },
+                                            enabled = editable && product != null && product.active && row.item.quantity < product.stock) {
+                                            Text("+")
+                                        }
+                                        IconButton(onClick = { vm.change(row.item.productId, -row.item.quantity) }, enabled = editable) {
+                                            Icon(Icons.Default.Delete, contentDescription = "Quitar ${row.name}", tint = MaterialTheme.colorScheme.error)
+                                        }
                                     }
-                                    Text("${line.quantity}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp))
-                                    OutlinedIconButton(
-                                        onClick = { scope.launch { repo.changeCart(ownerAlias, line.productId, 1) } },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Text("+", fontWeight = FontWeight.Bold)
-                                    }
-                                    IconButton(
-                                        onClick = { scope.launch { repo.changeCart(ownerAlias, line.productId, -line.quantity) } },
-                                        modifier = Modifier.size(36.dp)
-                                    ) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
-                                    }
+                                    Text(formatClp(row.subtotal), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 }
                             }
                         }
                     }
                 }
             }
-
-            // Summary Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("Resumen", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                    SummaryRow("Subtotal", "$$subtotal")
-                    SummaryRow("Despacho", "$$despacho")
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Resumen", fontWeight = FontWeight.Bold)
+                    CartSummaryRow("Productos", formatClp(state.subtotal))
+                    CartSummaryRow("Retiro", "Sin costo")
                     HorizontalDivider()
-                    SummaryRow("Total", "$$total", isBold = true)
+                    CartSummaryRow("Total", formatClp(state.subtotal))
+                    Text("Modalidad: retiro. El precio y la disponibilidad se revisan antes de confirmar.",
+                        style = MaterialTheme.typography.bodySmall)
                 }
             }
-
-            if (message.isNotBlank()) {
-                Text(message, color = MaterialTheme.colorScheme.error)
-            }
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        submitting = true
-                        try {
-                            val order = OylNetwork.api.order(
-                                RemoteOrderRequest(
-                                    ownerAlias,
-                                    "Retiro",
-                                    cart.map { RemoteOrderItem(it.productId, it.quantity) }
-                                )
-                            )
-                            repo.clearCart(ownerAlias)
-                            repo.syncFromServer()
-                            onCheckout(order.id, total)
-                        } catch (e: Exception) {
-                            message = "No se pudo confirmar: ${e.localizedMessage ?: "servidor desconectado"}"
-                        } finally {
-                            submitting = false
-                        }
-                    }
-                },
-                enabled = cart.isNotEmpty() && !submitting,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = OylGreen)
-            ) {
-                Text(if (submitting) "Validando compra..." else "Continuar compra", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            state.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            Button(onClick = vm::review, enabled = editable && !state.loading && state.rows.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 50.dp)) {
+                if (state.busy) {
+                    CircularProgressIndicator(Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(if (state.busy) "Procesando…" else "Revisar pedido")
             }
         }
+    }
+    if (state.reviewOpen) {
+        AlertDialog(onDismissRequest = vm::closeReview,
+            title = { Text("Revisar y confirmar pedido") },
+            text = {
+                Column(Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    state.rows.forEach { row ->
+                        Text("${row.name} × ${row.item.quantity}: ${formatClp(row.subtotal)}")
+                    }
+                    HorizontalDivider()
+                    Text("Retiro sin costo", fontWeight = FontWeight.SemiBold)
+                    Text("Total: ${formatClp(state.subtotal)}", fontWeight = FontWeight.Bold)
+                    state.contact?.let { contact ->
+                        Text("Contacto del perfil: ${contact.name}")
+                        Text(contact.email)
+                        if (contact.phone.isNotBlank()) Text(contact.phone)
+                    }
+                    Text("La solicitud quedará pendiente de validación. No se realiza un cobro en esta aplicación.",
+                        style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                Button(onClick = vm::confirm, enabled = !state.busy) { Text(if (state.busy) "Enviando…" else "Confirmar pedido") }
+            },
+            dismissButton = { TextButton(onClick = vm::closeReview, enabled = !state.busy) { Text("Volver") } }
+        )
     }
 }
 
 @Composable
-private fun SummaryRow(label: String, value: String, isBold: Boolean = false) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
-        Text(value, fontWeight = if (isBold) FontWeight.ExtraBold else FontWeight.SemiBold, color = if (isBold) OylGreen else MaterialTheme.colorScheme.onSurface)
+private fun CartSummaryRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label)
+        Text(value, fontWeight = FontWeight.SemiBold)
     }
 }

@@ -21,6 +21,7 @@ import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
 import kotlinx.coroutines.launch
+import cl.oyl.frutossecos.domain.checkout.formatOrderDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +129,7 @@ fun OrdersScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("12/09/2026 · ${order.fulfillment}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                                    Text("${formatOrderDate(order.createdAt)} · ${order.fulfillment}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
 
                                     // Status Badge Surface
                                     val (badgeBg, badgeText) = when (order.status) {

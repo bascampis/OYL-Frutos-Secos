@@ -32,6 +32,7 @@ data class CartLine(
 
 @Dao interface CatalogDao {
  @Query("SELECT * FROM products WHERE active = 1 ORDER BY name") fun products(): Flow<List<ProductEntity>>
+ @Query("SELECT * FROM products ORDER BY name") fun allProducts(): Flow<List<ProductEntity>>
  @Query("SELECT * FROM products WHERE id = :id LIMIT 1") suspend fun getProduct(id: String): ProductEntity?
  @Query("SELECT COUNT(*) FROM products") suspend fun productCount(): Int
  @Upsert suspend fun saveProducts(values: List<ProductEntity>)

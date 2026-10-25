@@ -170,8 +170,8 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                     CartScreen(
                         ownerAlias = active.alias,
                         onBack = { nav.popBackStack() },
-                        onCheckout = { orderId, total ->
-                            nav.navigate(Routes.orderConfirmation(orderId) + "?total=$total") {
+                        onCheckout = { orderId, _ ->
+                            nav.navigate(Routes.orderConfirmation(orderId)) {
                                 popUpTo(Routes.CART) { inclusive = true }
                             }
                         }
@@ -179,30 +179,32 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                 }
             }
 
-            // 10. Order Confirmation Screen
+            // 10. Comprobante del servidor: solo del cliente conectado.
             composable(
-                route = Routes.ORDER_CONFIRMATION + "?total={total}",
-                arguments = listOf(
-                    navArgument("orderId") { type = NavType.StringType },
-                    navArgument("total") { type = NavType.IntType; defaultValue = 12470 }
-                )
+                route = Routes.ORDER_CONFIRMATION,
+                arguments = listOf(navArgument("orderId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val orderId = backStackEntry.arguments?.getString("orderId") ?: "001245"
-                val total = backStackEntry.arguments?.getInt("total") ?: 12470
-                OrderConfirmationScreen(
-                    orderId = orderId,
-                    totalAmount = total,
-                    onViewOrders = {
-                        nav.navigate(Routes.ORDERS) {
-                            popUpTo(Routes.DASHBOARD)
+                val active = user
+                val orderId = backStackEntry.arguments?.getString("orderId").orEmpty()
+                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+                    OrderConfirmationScreen(
+                        orderId = orderId,
+                        ownerAlias = active.alias,
+                        onViewOrders = {
+                            nav.navigate(Routes.ORDERS) { popUpTo(Routes.DASHBOARD) }
+                        },
+                        onContinueShopping = {
+                            nav.navigate(Routes.CATALOG) { popUpTo(Routes.DASHBOARD) }
                         }
-                    },
-                    onContinueShopping = {
-                        nav.navigate(Routes.CATALOG) {
-                            popUpTo(Routes.DASHBOARD)
+                    )
+                } else {
+                    LaunchedEffect(active?.alias, active?.role) {
+                        nav.navigate(if (active == null) Routes.LOGIN else Routes.DASHBOARD) {
+                            popUpTo(Routes.ORDER_CONFIRMATION) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
-                )
+                }
             }
 
             // 11. Product Management (Admin)
