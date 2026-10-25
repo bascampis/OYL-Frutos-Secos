@@ -158,7 +158,8 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                         isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onProductFound = { productId -> nav.navigate(Routes.productDetail(productId)) }
+                        onProductFound = { productId -> nav.navigate(Routes.productDetail(productId)) },
+                        onAdminInventory = { productId -> nav.navigate("inventory_adjust/$productId") }
                     )
                 }
             }
@@ -225,6 +226,21 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                     InventoryScreen(
                         navController = nav,
                         currentRoute = currentRoute
+                    )
+                }
+            }
+            // 12b. Ajuste de inventario de un producto (desde el QR)
+            composable(
+                route = "inventory_adjust/{productId}",
+                arguments = listOf(navArgument("productId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val active = user
+                val productId = backStackEntry.arguments?.getString("productId").orEmpty()
+                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR) {
+                    InventoryScreen(
+                        navController = nav,
+                        currentRoute = currentRoute,
+                        initialQuery = productId
                     )
                 }
             }

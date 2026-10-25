@@ -59,6 +59,7 @@ fun QrScannerScreen(
     var success by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf(false) }
     var showPermissionError by remember { mutableStateOf(false) }
+    var adminChoiceId by remember { mutableStateOf<String?>(null) }
 
     val checkScale by animateFloatAsState(
         targetValue = if (success) 1f else 0f,
@@ -97,7 +98,7 @@ fun QrScannerScreen(
                                 success = true
                                 delay(900)
                                 success = false
-                                if (isAdmin && onAdminInventory != null) onAdminInventory(product.id)
+                                if (isAdmin && onAdminInventory != null) adminChoiceId = product.id
                                 else onProductFound(product.id)
                             } else {
                                 status = "Código $code incorrecto: no corresponde a un producto registrado."
@@ -260,6 +261,24 @@ fun QrScannerScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showPermissionError = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    adminChoiceId?.let { id ->
+        AlertDialog(
+            onDismissRequest = { adminChoiceId = null },
+            title = { Text("Producto $id") },
+            text = { Text("¿Qué quieres hacer con este producto?") },
+            confirmButton = {
+                TextButton(onClick = { adminChoiceId = null; onAdminInventory?.invoke(id) }) {
+                    Text("Ajustar inventario")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { adminChoiceId = null; onProductFound(id) }) {
+                    Text("Ver ficha")
+                }
             }
         )
     }

@@ -27,6 +27,15 @@ class CatalogRepository(private val dao: CatalogDao) {
   true
  } catch (_: Exception) { false }
  suspend fun clearCart(owner:String) = dao.clearCart(owner)
+ suspend fun adjustStock(productId: String, delta: Int): Boolean {
+  val p = dao.getProduct(productId) ?: return false
+  val target = (p.stock + delta).coerceAtLeast(0)
+  if (target == p.stock) return false
+  dao.saveProducts(listOf(
+   ProductEntity(p.id, p.name, p.category, p.description, p.presentation, p.price, target, p.active)
+  ))
+  return true
+ }
  suspend fun changeCart(owner: String, productId: String, delta: Int) {
   val product = dao.getProduct(productId) ?: return
   val current = dao.getCartItem(owner, productId)?.quantity ?: 0
