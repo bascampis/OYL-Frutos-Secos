@@ -21,7 +21,7 @@ class LoginViewModel(application: Application): AndroidViewModel(application) {
  fun selectRole(role: UserRole) = _uiState.update { it.copy(role = role, alias = "", password = "", aliasError = null, passwordError = null, generalError = null) }
  fun updateAlias(value: String) = _uiState.update { it.copy(alias = value, aliasError = null, generalError = null) }
  fun updatePassword(value: String) = _uiState.update { it.copy(password = value, passwordError = null, generalError = null) }
- fun useDemoCredentials() = _uiState.update { it.copy(alias = if (it.role == UserRole.CLIENTE) "cliente" else "admin@admin.cl",
+ fun useDemoCredentials() = _uiState.update { it.copy(alias = if (it.role == UserRole.CLIENTE) "cliente@cliente.cl" else "admin@admin.cl",
   password = DemoAuthRepository.DEMO_PASSWORD, aliasError = null, passwordError = null, generalError = null) }
  fun signIn(onSuccess: (DemoUser) -> Unit) {
   val s = _uiState.value

@@ -11,12 +11,12 @@ class CatalogRepository(private val dao: CatalogDao) {
  suspend fun seedDemoProducts() {
   if (dao.productCount() > 0) return
   dao.saveProducts(listOf(
-   ProductEntity("OY001", "Almendras naturales", "Frutos secos", "Almendras crujientes sin aditivos", "250 g", 2990, 25),
-   ProductEntity("OY002", "Nueces", "Frutos secos", "Nueces en mitades", "250 g", 3490, 18),
-   ProductEntity("OY003", "Mix premium", "Frutos secos", "Mezcla de nueces y almendras", "250 g", 3990, 40),
-   ProductEntity("OY004", "Pasas morenas", "Deshidratados", "Pasas de uva", "250 g", 2490, 36),
-   ProductEntity("OY005", "Semillas de chía", "Semillas", "Semillas naturales", "250 g", 2290, 12),
-   ProductEntity("OY006", "Cranberries", "Deshidratados", "Arándanos rojos deshidratados", "250 g", 2890, 16)
+   ProductEntity("OY001", "Almendras naturales", "Frutos secos", "Almendras naturales de alta calidad, ideales para una dieta saludable y equilibrada. Ricas en proteinas, fibras y grasas saludables.", "250 g", 2990, 25),
+   ProductEntity("OY002", "Nueces", "Frutos secos", "Nueces naturales seleccionadas, perfectas para acompañar desayunos, ensaladas y colaciones. Aportan omega-3, fibra y grasas saludables que contribuyen a una alimentación equilibrada." + "", "250 g", 3490, 18),
+   ProductEntity("OY003", "Mix premium", "Frutos secos", "Selección premium de nueces y almendras. Combina distintas texturas y sabores con grasas saludables y fibra." + "", "250 g", 3990, 40),
+   ProductEntity("OY004", "Pasas morenas", "Deshidratados", "Pasas morenas naturales, dulces y jugosas, ideales como fuente de energía para tus colaciones y preparaciones. Aportan fibra y minerales como el potasio." + "", "250 g", 2490, 36),
+   ProductEntity("OY005", "Semillas de chía", "Semillas", "Semillas de chía naturales, un alimento versátil para batidos, yogurt y postres. Ricas en fibra, omega-3 y proteínas de origen vegetal.", "250 g", 2290, 12),
+   ProductEntity("OY006", "Cranberries", "Deshidratados", "Cranberries deshidratados de sabor agridulce, ideales para ensaladas, yogurt, avena y repostería. Aportan fibra y antioxidantes naturales.", "250 g", 2890, 16)
   ))
  }
  suspend fun syncFromServer(): Boolean = try {

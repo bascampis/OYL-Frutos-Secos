@@ -92,7 +92,6 @@ fun LoginScreen(
                     value = state.alias,
                     onValueChange = viewModel::updateAlias,
                     label = { Text("Correo electrónico") },
-                    placeholder = { Text("ana@correo.cl") },
                     leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null) },
                     isError = state.aliasError != null,
                     supportingText = { if (state.aliasError != null) Text(requireNotNull(state.aliasError)) },
@@ -114,7 +113,6 @@ fun LoginScreen(
                     value = state.password,
                     onValueChange = viewModel::updatePassword,
                     label = { Text("Contraseña") },
-                    placeholder = { Text("••••••••••••") },
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
