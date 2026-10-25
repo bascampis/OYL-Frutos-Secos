@@ -217,6 +217,12 @@ class DemoNotificationStore(context: Context) {
  }
 
  private fun showSystemNotification(notice: LocalNotice) {
+  val activeAlias = session.getString("alias", null) ?: return
+
+  if (!prefs.getBoolean("enabled:$activeAlias", true)) {
+   return
+  }
+
   if (
    Build.VERSION.SDK_INT >= 33 &&
    ContextCompat.checkSelfPermission(
@@ -224,6 +230,8 @@ class DemoNotificationStore(context: Context) {
     Manifest.permission.POST_NOTIFICATIONS
    ) != PackageManager.PERMISSION_GRANTED
   ) return
+
+  // Aquí continúa el código que ya tienes.
 
   val manager =
    app.getSystemService(NotificationManager::class.java)
