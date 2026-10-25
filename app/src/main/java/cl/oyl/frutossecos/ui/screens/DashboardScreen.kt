@@ -269,34 +269,70 @@ private fun ActionGridCard(
     title: String,
     onClick: () -> Unit
 ) {
+    val cardColor = when (title) {
+        "Catálogo" -> Color(0xFFE4F1E3)
+        "Mapa de tiendas" -> Color(0xFFE5F0E9)
+        "Mis pedidos" -> Color(0xFFF5EBDC)
+        "Promociones" -> Color(0xFFF4E6D9)
+        else -> Color(0xFFE4F1E3)
+    }
+
     Card(
         modifier = modifier
-            .height(90.dp)
+            .height(140.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = cardColor
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
         )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = icon,
-                fontSize = 26.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = icon,
+                    fontSize = 30.sp
+                )
 
-            Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "↗",
+                    fontSize = 22.sp,
+                    color = OylGreen
+                )
+            }
 
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Column {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF253B2D)
+                )
+
+                Text(
+                    text = when (title) {
+                        "Catálogo" -> "Explora productos"
+                        "Mapa de tiendas" -> "Encuéntranos"
+                        "Mis pedidos" -> "Revisa tus compras"
+                        "Promociones" -> "Ofertas especiales"
+                        "Inventario" -> "Gestiona productos"
+                        else -> ""
+                    },
+                    fontSize = 12.sp,
+                    color = Color(0xFF637165)
+                )
+            }
         }
     }
 }
