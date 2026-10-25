@@ -110,54 +110,52 @@ fun DashboardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Banner principal.
+
+            // Banner principal con imagen y texto.
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(110.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = OylGreen
-                )
+                    .height(160.dp),
+                shape = RoundedCornerShape(20.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Box(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    // Imagen de fondo
+                    Image(
+                        painter = painterResource(
+                            id = R.drawable.banner
+                        ),
+                        contentDescription = "Frutos secos OYL",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // Capa oscura para destacar el texto
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.35f))
+                    )
+
+                    // Texto encima de la imagen
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(20.dp)
+                    ) {
                         Text(
                             text = "Compra saludable,",
                             color = Color.White,
-                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
+
                         Text(
                             text = "vida mejor",
                             color = Color.White,
-                            style = MaterialTheme.typography.headlineSmall,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(
-                                id = R.drawable.banner
-                            ),
-                            contentDescription = "Surtido de frutos secos",
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
                         )
                     }
                 }
