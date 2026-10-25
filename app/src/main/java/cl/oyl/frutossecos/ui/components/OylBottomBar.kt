@@ -45,11 +45,17 @@ fun OylBottomBar(navController: NavController, currentRoute: String, isAdmin: Bo
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    if (!selected) {
+                    if (selected) return@NavigationBarItem
+                    if (tab.route == Routes.DASHBOARD) {
+                        // Inicio: sacar de la pila todo lo que esté encima del dashboard.
+                        val volvio = navController.popBackStack(Routes.DASHBOARD, inclusive = false)
+                        if (!volvio) {
+                            navController.navigate(Routes.DASHBOARD) { launchSingleTop = true }
+                        }
+                    } else {
                         navController.navigate(tab.route) {
-                            popUpTo(Routes.DASHBOARD) { saveState = true }
+                            popUpTo(Routes.DASHBOARD)
                             launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 },
