@@ -13,18 +13,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cl.oyl.frutossecos.R
+import cl.oyl.frutossecos.data.local.DemoNotificationStore
 import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.domain.model.UserRole
 import cl.oyl.frutossecos.ui.components.OylBottomBar
@@ -49,6 +51,23 @@ fun DashboardScreen(
 ) {
     val admin = user.role == UserRole.ADMINISTRADOR
 
+    val context = LocalContext.current
+    val notificationStore = remember(context.applicationContext) {
+        DemoNotificationStore(context.applicationContext)
+    }
+
+    // Observa únicamente el historial del usuario actual.
+    val noticeFlow = remember(notificationStore, user.alias) {
+        notificationStore.observe(user.alias)
+    }
+
+    // Reinicia la observación cuando cambia el usuario.
+    val notices by key(user.alias) {
+        noticeFlow.collectAsState(initial = emptyList())
+    }
+
+    val unreadCount = notices.count { !it.read }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -59,6 +78,7 @@ fun DashboardScreen(
                             fontWeight = FontWeight.Bold,
                             fontSize = 22.sp
                         )
+
                         Text(
                             text = "Qué bueno verte de nuevo",
                             style = MaterialTheme.typography.bodySmall,
@@ -71,18 +91,24 @@ fun DashboardScreen(
                         IconButton(onClick = onNotifications) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
-                                contentDescription = "Notificaciones"
+                                contentDescription = if (unreadCount > 0) {
+                                    "Notificaciones: $unreadCount sin leer"
+                                } else {
+                                    "Notificaciones: ninguna sin leer"
+                                }
                             )
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .align(Alignment.TopEnd)
-                                .offset(x = (-8).dp, y = 8.dp)
-                                .clip(CircleShape)
-                                .background(Color.Red)
-                        )
+                        if (unreadCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-8).dp, y = 8.dp)
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Red)
+                            )
+                        }
                     }
 
                     IconButton(onClick = onLogout) {
@@ -110,8 +136,6 @@ fun DashboardScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // Banner principal con imagen y texto.
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -121,7 +145,6 @@ fun DashboardScreen(
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // Imagen de fondo
                     Image(
                         painter = painterResource(
                             id = R.drawable.banner
@@ -131,14 +154,12 @@ fun DashboardScreen(
                         contentScale = ContentScale.Crop
                     )
 
-                    // Capa oscura para destacar el texto
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = 0.35f))
                     )
 
-                    // Texto encima de la imagen
                     Column(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
@@ -161,7 +182,6 @@ fun DashboardScreen(
                 }
             }
 
-            // Accesos principales.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -200,7 +220,6 @@ fun DashboardScreen(
                 )
             }
 
-            // Productos destacados.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
