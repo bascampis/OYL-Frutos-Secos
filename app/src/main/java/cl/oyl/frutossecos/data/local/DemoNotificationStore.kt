@@ -14,13 +14,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import cl.oyl.frutossecos.MainActivity
-import cl.oyl.frutossecos.data.remote.OylNetwork
+import cl.oyl.frutossecos.data.repository.LocalStore
 import com.google.gson.Gson
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import java.time.Instant
 
@@ -50,6 +52,11 @@ class DemoNotificationStore(context: Context) {
 
  private val gson = Gson()
 
+ companion object {
+  // Evita actualizar al mismo tiempo desde la actividad y la pantalla.
+  private val refreshMutex = Mutex()
+ }
+
  fun list(alias: String): List<LocalNotice> {
   return runCatching {
    gson.fromJson(
@@ -77,11 +84,11 @@ class DemoNotificationStore(context: Context) {
  }.distinctUntilChanged()
 
  fun markRead(alias: String, id: String) {
-  val updated = list(alias).map { notice ->
-   if (notice.id == id) {
-    notice.copy(read = true)
+  val updated = list(alias).map {
+   if (it.id == id) {
+    it.copy(read = true)
    } else {
-    notice
+    it
    }
   }
 
@@ -110,9 +117,7 @@ class DemoNotificationStore(context: Context) {
  ) {
   val previous = list(alias)
 
-  if (previous.any { it.id == id }) {
-   return
-  }
+  if (previous.any { it.id == id }) return
 
   val notice = LocalNotice(
    id = id,
@@ -123,15 +128,18 @@ class DemoNotificationStore(context: Context) {
    createdAt = Instant.now().toString()
   )
 
-  // El historial se guarda aunque los avisos estén desactivados.
   save(alias, listOf(notice) + previous)
 
-  if (session.getString("alias", null) == alias) {
-   showSystemNotification(alias, notice)
-  }
+  showSystemNotification(alias, notice)
  }
 
  suspend fun refresh(): Boolean {
+  return refreshMutex.withLock {
+   refreshLocalData()
+  }
+ }
+
+ private suspend fun refreshLocalData(): Boolean {
   val alias = session.getString("alias", null) ?: return true
 
   val admin =
@@ -139,21 +147,22 @@ class DemoNotificationStore(context: Context) {
 
   return try {
    val orders = if (admin) {
-    OylNetwork.api.allOrders()
+    LocalStore.repository.allOrders()
    } else {
-    OylNetwork.api.orders(alias)
+    LocalStore.repository.orders(alias)
    }
 
    if (session.getString("alias", null) != alias) {
     return true
    }
 
-   val previousText = prefs.getString(
-    "orders:$alias",
-    null
-   )
+   // Usa claves distintas de las antiguas consultas al servidor.
+   val snapshotKey = "room-orders:$alias"
 
-   val previous = previousText?.let {
+   val previous = prefs.getString(
+    snapshotKey,
+    null
+   )?.let {
     JSONObject(it)
    }
 
@@ -163,15 +172,14 @@ class DemoNotificationStore(context: Context) {
     current.put(order.id, order.status)
 
     // La primera consulta establece el punto de partida.
-    // No genera avisos por pedidos antiguos.
     if (previous != null) {
-     val exists = previous.has(order.id)
+     val existed = previous.has(order.id)
      val oldStatus = previous.optString(order.id)
 
-     if (!exists) {
+     if (!existed) {
       add(
        alias = alias,
-       id = "order:${order.id}:new",
+       id = "room-order:${order.id}:new",
        title = if (admin) {
         "Nuevo pedido recibido"
        } else {
@@ -187,7 +195,7 @@ class DemoNotificationStore(context: Context) {
      ) {
       add(
        alias = alias,
-       id = "order:${order.id}:${order.status}",
+       id = "room-order:${order.id}:${order.status}",
        title = "Estado del pedido actualizado",
        message = "Pedido #${order.id.take(8)}: ${order.status}",
        category = "Pedidos",
@@ -199,7 +207,7 @@ class DemoNotificationStore(context: Context) {
 
    prefs.edit()
     .putString(
-     "orders:$alias",
+     snapshotKey,
      current.toString()
     )
     .apply()
@@ -217,18 +225,16 @@ class DemoNotificationStore(context: Context) {
  }
 
  private suspend fun checkStock(alias: String) {
-  val products = OylNetwork.api.products()
+  val products = LocalStore.repository.products()
 
-  if (session.getString("alias", null) != alias) {
-   return
-  }
+  if (session.getString("alias", null) != alias) return
 
-  val previousText = prefs.getString(
-   "stock:$alias",
+  val snapshotKey = "room-stock:$alias"
+
+  val previous = prefs.getString(
+   snapshotKey,
    null
-  )
-
-  val previous = previousText?.let {
+  )?.let {
    JSONObject(it)
   }
 
@@ -251,7 +257,7 @@ class DemoNotificationStore(context: Context) {
    ) {
     add(
      alias = alias,
-     id = "stock:${product.id}:${System.currentTimeMillis()}",
+     id = "room-stock:${product.id}:${System.currentTimeMillis()}",
      title = "Producto con stock bajo",
      message = "${product.name}: quedan ${product.stock} unidades.",
      category = "Inventario",
@@ -262,7 +268,7 @@ class DemoNotificationStore(context: Context) {
 
   prefs.edit()
    .putString(
-    "stock:$alias",
+    snapshotKey,
     current.toString()
    )
    .apply()
@@ -272,12 +278,10 @@ class DemoNotificationStore(context: Context) {
   alias: String,
   notice: LocalNotice
  ) {
-  // Solo muestra avisos del usuario conectado.
   if (session.getString("alias", null) != alias) {
    return
   }
 
-  // Respeta el interruptor guardado en Perfil.
   if (!prefs.getBoolean("enabled:$alias", true)) {
    return
   }
@@ -312,7 +316,6 @@ class DemoNotificationStore(context: Context) {
     Intent.FLAG_ACTIVITY_CLEAR_TOP or
             Intent.FLAG_ACTIVITY_SINGLE_TOP
 
-   // Identifica cada aviso para conservar su destino.
    data = Uri.Builder()
     .scheme("oyl")
     .authority("notification")
@@ -320,20 +323,9 @@ class DemoNotificationStore(context: Context) {
     .appendPath(notice.id)
     .build()
 
-   putExtra(
-    "notification_target",
-    notice.target
-   )
-
-   putExtra(
-    "notification_alias",
-    alias
-   )
-
-   putExtra(
-    "notification_id",
-    notice.id
-   )
+   putExtra("notification_target", notice.target)
+   putExtra("notification_alias", alias)
+   putExtra("notification_id", notice.id)
   }
 
   val notificationId = "$alias:${notice.id}".hashCode()

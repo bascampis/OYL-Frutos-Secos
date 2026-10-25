@@ -5,9 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cl.oyl.frutossecos.data.remote.OylNetwork
-import cl.oyl.frutossecos.data.remote.ProductInputDto
-import cl.oyl.frutossecos.data.remote.RemoteProduct
+import cl.oyl.frutossecos.data.model.LocalProduct
+import cl.oyl.frutossecos.data.model.ProductInputDto
+import cl.oyl.frutossecos.data.repository.LocalStore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -21,7 +21,6 @@ data class ProductForm(
     val stock: String = "0"
 )
 
-// Las reglas de validación están fuera de la pantalla.
 object ProductFormValidator {
 
     fun validate(
@@ -38,10 +37,13 @@ object ProductFormValidator {
         if (id.isBlank()) {
             errors["id"] = "Ingresa el identificador."
         } else if (!Regex("[A-Za-z0-9_-]+").matches(id)) {
-            errors["id"] = "Usa letras, números, guion o guion bajo."
+            errors["id"] =
+                "Usa letras, números, guion o guion bajo."
         } else if (
             !editing &&
-            existingIds.any { it.equals(id, ignoreCase = true) }
+            existingIds.any {
+                it.equals(id, ignoreCase = true)
+            }
         ) {
             errors["id"] = "Ese identificador ya existe."
         }
@@ -59,15 +61,18 @@ object ProductFormValidator {
         }
 
         if (form.presentation.isBlank()) {
-            errors["presentation"] = "Ingresa la presentación, por ejemplo 250 g."
+            errors["presentation"] =
+                "Ingresa la presentación, por ejemplo 250 g."
         }
 
         if (price == null || price <= 0) {
-            errors["price"] = "Ingresa un precio entero mayor que cero."
+            errors["price"] =
+                "Ingresa un precio entero mayor que cero."
         }
 
         if (!editing && (stock == null || stock < 0)) {
-            errors["stock"] = "Ingresa un stock entero igual o mayor que cero."
+            errors["stock"] =
+                "Ingresa un stock entero igual o mayor que cero."
         }
 
         return errors
@@ -76,7 +81,10 @@ object ProductFormValidator {
 
 class ProductManagementViewModel : ViewModel() {
 
-    var products by mutableStateOf<List<RemoteProduct>>(emptyList())
+    private val repository
+        get() = LocalStore.repository
+
+    var products by mutableStateOf<List<LocalProduct>>(emptyList())
         private set
 
     var loading by mutableStateOf(false)
@@ -115,11 +123,12 @@ class ProductManagementViewModel : ViewModel() {
             message = ""
 
             try {
-                products = OylNetwork.api.products()
+                products = repository.products()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                message = "No se pudieron cargar los productos. Comprueba el backend."
+                message =
+                    "No se pudieron cargar los productos locales."
             } finally {
                 loading = false
             }
@@ -136,10 +145,11 @@ class ProductManagementViewModel : ViewModel() {
         dialogOpen = true
     }
 
-    fun openEdit(product: RemoteProduct) {
+    fun openEdit(product: LocalProduct) {
         if (saving || loading) return
 
         editing = true
+
         form = ProductForm(
             id = product.id,
             name = product.name,
@@ -161,26 +171,35 @@ class ProductManagementViewModel : ViewModel() {
         }
     }
 
-    fun updateField(field: String, value: String) {
+    fun updateField(
+        field: String,
+        value: String
+    ) {
         if (saving) return
 
         form = when (field) {
-            "id" -> if (editing) form else form.copy(id = value)
+            "id" -> {
+                if (editing) form else form.copy(id = value)
+            }
+
             "name" -> form.copy(name = value)
             "category" -> form.copy(category = value)
             "description" -> form.copy(description = value)
             "presentation" -> form.copy(presentation = value)
             "price" -> form.copy(price = value)
-            "stock" -> if (editing) form else form.copy(stock = value)
+
+            "stock" -> {
+                if (editing) form else form.copy(stock = value)
+            }
+
             else -> form
         }
 
-        // Si ya se intentó guardar, actualiza los errores al escribir.
         if (errors.isNotEmpty()) {
             errors = ProductFormValidator.validate(
-                form,
-                products.map { it.id }.toSet(),
-                editing
+                form = form,
+                existingIds = products.map { it.id }.toSet(),
+                editing = editing
             )
         }
 
@@ -191,9 +210,9 @@ class ProductManagementViewModel : ViewModel() {
         if (saving || loading) return
 
         errors = ProductFormValidator.validate(
-            form,
-            products.map { it.id }.toSet(),
-            editing
+            form = form,
+            existingIds = products.map { it.id }.toSet(),
+            editing = editing
         )
 
         if (errors.isNotEmpty()) return
@@ -206,13 +225,12 @@ class ProductManagementViewModel : ViewModel() {
             formError = ""
 
             try {
-                // Revisa los datos actuales antes de guardar.
-                val latestProducts = OylNetwork.api.products()
+                val latestProducts = repository.products()
 
                 errors = ProductFormValidator.validate(
-                    submitted,
-                    latestProducts.map { it.id }.toSet(),
-                    wasEditing
+                    form = submitted,
+                    existingIds = latestProducts.map { it.id }.toSet(),
+                    editing = wasEditing
                 )
 
                 if (errors.isNotEmpty()) {
@@ -220,51 +238,48 @@ class ProductManagementViewModel : ViewModel() {
                 }
 
                 val latestProduct = if (wasEditing) {
-                    latestProducts.find { it.id == submitted.id }
-                        ?: error("El producto ya no existe.")
+                    latestProducts.find {
+                        it.id == submitted.id
+                    } ?: error("El producto ya no existe.")
                 } else {
                     null
                 }
 
-                OylNetwork.api.saveProduct(
+                repository.saveProduct(
                     ProductInputDto(
-                        submitted.id.trim(),
-                        submitted.name.trim(),
-                        submitted.category.trim(),
-                        submitted.description.trim(),
-                        submitted.presentation.trim(),
-                        submitted.price.trim().toInt(),
-                        latestProduct?.stock ?: submitted.stock.trim().toInt(),
-                        latestProduct?.active ?: true
+                        id = submitted.id.trim(),
+                        name = submitted.name.trim(),
+                        category = submitted.category.trim(),
+                        description = submitted.description.trim(),
+                        presentation = submitted.presentation.trim(),
+                        price = submitted.price.trim().toInt(),
+                        stock = latestProduct?.stock
+                            ?: submitted.stock.trim().toInt(),
+                        active = latestProduct?.active ?: true
                     )
                 )
 
                 dialogOpen = false
 
                 message = if (wasEditing) {
-                    "Producto actualizado correctamente."
+                    "Producto actualizado en el celular."
                 } else {
-                    "Producto creado correctamente."
+                    "Producto creado en el celular."
                 }
 
-                try {
-                    products = OylNetwork.api.products()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    message += " Pulsa actualizar para recargar la lista."
-                }
+                reloadAfterSave()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                formError = "No se pudo guardar. Comprueba la conexión con el backend."
+                formError =
+                    "No se pudo guardar el producto local."
             } finally {
                 saving = false
             }
         }
     }
 
-    fun toggleActive(product: RemoteProduct) {
+    fun toggleActive(product: LocalProduct) {
         if (saving || loading) return
 
         viewModelScope.launch {
@@ -272,20 +287,20 @@ class ProductManagementViewModel : ViewModel() {
             message = ""
 
             try {
-                val latest = OylNetwork.api.products()
-                    .find { it.id == product.id }
-                    ?: error("El producto ya no existe.")
+                val latest = repository.products().find {
+                    it.id == product.id
+                } ?: error("El producto ya no existe.")
 
-                OylNetwork.api.saveProduct(
+                repository.saveProduct(
                     ProductInputDto(
-                        latest.id,
-                        latest.name,
-                        latest.category,
-                        latest.description.orEmpty(),
-                        latest.presentation.orEmpty(),
-                        latest.price,
-                        latest.stock,
-                        !latest.active
+                        id = latest.id,
+                        name = latest.name,
+                        category = latest.category,
+                        description = latest.description.orEmpty(),
+                        presentation = latest.presentation.orEmpty(),
+                        price = latest.price,
+                        stock = latest.stock,
+                        active = !latest.active
                     )
                 )
 
@@ -295,20 +310,25 @@ class ProductManagementViewModel : ViewModel() {
                     "Producto activado."
                 }
 
-                try {
-                    products = OylNetwork.api.products()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    message += " Pulsa actualizar para recargar la lista."
-                }
+                reloadAfterSave()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                message = "No se pudo cambiar el estado del producto."
+                message =
+                    "No se pudo cambiar el estado del producto."
             } finally {
                 saving = false
             }
+        }
+    }
+
+    private suspend fun reloadAfterSave() {
+        try {
+            products = repository.products()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            message += " Pulsa actualizar para recargar la lista."
         }
     }
 }

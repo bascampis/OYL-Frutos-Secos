@@ -66,7 +66,7 @@ fun NotificationsScreen(
         scope.launch {
             try {
                 if (!store.refresh()) {
-                    error = "No se pudo actualizar. Comprueba que el backend esté encendido."
+                    error = "No se pudieron actualizar los avisos locales. Vuelve a intentarlo."
                 }
             } finally {
                 refreshing = false

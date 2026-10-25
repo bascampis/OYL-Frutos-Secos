@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import cl.oyl.frutossecos.data.remote.*
+import cl.oyl.frutossecos.data.model.LocalOrder
+import cl.oyl.frutossecos.data.model.OrderStatusDto
+import cl.oyl.frutossecos.data.repository.LocalStore
 import cl.oyl.frutossecos.domain.checkout.formatOrderDate
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
@@ -33,7 +35,7 @@ fun OrdersScreen(
     onBack: () -> Unit
 ) {
     var orders by remember(alias, isAdmin) {
-        mutableStateOf<List<RemoteOrder>>(emptyList())
+        mutableStateOf<List<LocalOrder>>(emptyList())
     }
 
     var error by remember(alias, isAdmin) {
@@ -65,14 +67,14 @@ fun OrdersScreen(
 
         try {
             orders = if (isAdmin) {
-                OylNetwork.api.allOrders()
+                LocalStore.repository.allOrders()
             } else {
-                OylNetwork.api.orders(alias)
+                LocalStore.repository.orders(alias)
             }
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
-            error = "No se pudieron consultar los pedidos. Comprueba el backend."
+            error = "No se pudieron consultar los pedidos locales."
         } finally {
             loading = false
         }
@@ -87,16 +89,19 @@ fun OrdersScreen(
     }
 
     val filteredOrders = orders.filter { order ->
-        val status = normalizedOrderStatus(order.status)
-
         when (filterTab) {
-            "En proceso" -> status in setOf(
-                "pendiente de validación",
-                "confirmado",
-                "preparado"
-            )
+            "En proceso" -> {
+                normalizedOrderStatus(order.status) in setOf(
+                    "pendiente de validación",
+                    "confirmado",
+                    "preparado"
+                )
+            }
 
-            "Completados" -> status == "entregado"
+            "Completados" -> {
+                normalizedOrderStatus(order.status) == "entregado"
+            }
+
             else -> true
         }
     }
@@ -147,7 +152,6 @@ fun OrdersScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 listOf(
@@ -157,12 +161,8 @@ fun OrdersScreen(
                 ).forEach { tab ->
                     FilterChip(
                         selected = filterTab == tab,
-                        onClick = {
-                            filterTab = tab
-                        },
-                        label = {
-                            Text(tab)
-                        }
+                        onClick = { filterTab = tab },
+                        label = { Text(tab) }
                     )
                 }
             }
@@ -213,7 +213,7 @@ fun OrdersScreen(
                                 "No hay pedidos en proceso."
 
                             else ->
-                                "Sin solicitudes registradas."
+                                "Sin solicitudes registradas en este dispositivo."
                         }
                     )
                 }
@@ -261,8 +261,8 @@ fun OrdersScreen(
 
                                     Text(
                                         text = "$${order.total} CLP",
-                                        fontWeight = FontWeight.ExtraBold,
                                         color = OylGreen,
+                                        fontWeight = FontWeight.ExtraBold,
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                 }
@@ -272,6 +272,13 @@ fun OrdersScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.secondary
                                 )
+
+                                if (isAdmin) {
+                                    Text(
+                                        text = "Cliente: ${order.clientAlias}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
 
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
@@ -293,8 +300,7 @@ fun OrdersScreen(
                                     text = order.lines.joinToString {
                                         "${it.productName} × ${it.quantity}"
                                     },
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
 
                                 if (isAdmin) {
@@ -316,13 +322,11 @@ fun OrdersScreen(
                                                     scope.launch {
                                                         try {
                                                             val updated =
-                                                                OylNetwork.api.setStatus(
+                                                                LocalStore.repository.setStatus(
                                                                     order.id,
                                                                     OrderStatusDto(next)
                                                                 )
 
-                                                            // Actualiza usando el pedido
-                                                            // confirmado por el backend.
                                                             orders = orders.map {
                                                                 if (it.id == updated.id) {
                                                                     updated
@@ -333,20 +337,11 @@ fun OrdersScreen(
 
                                                             message =
                                                                 "Pedido #${updated.id.take(8).uppercase()}: ${updated.status}."
-
-                                                            if (
-                                                                normalizedOrderStatus(
-                                                                    updated.status
-                                                                ) == "entregado"
-                                                            ) {
-                                                                message +=
-                                                                    " Disponible en Completados."
-                                                            }
                                                         } catch (e: CancellationException) {
                                                             throw e
                                                         } catch (_: Exception) {
                                                             error =
-                                                                "No se pudo confirmar el cambio. Pulsa actualizar para consultar el estado del servidor."
+                                                                "No se pudo cambiar el estado. Actualiza la lista y vuelve a intentarlo."
                                                         } finally {
                                                             updatingId = null
                                                         }
@@ -360,9 +355,7 @@ fun OrdersScreen(
                                             )
                                         ) {
                                             Text(
-                                                text = if (
-                                                    updatingId == order.id
-                                                ) {
+                                                if (updatingId == order.id) {
                                                     "Guardando..."
                                                 } else {
                                                     "Avanzar estado a $next"

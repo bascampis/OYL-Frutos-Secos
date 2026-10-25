@@ -1,69 +1,152 @@
 package cl.oyl.frutossecos.data.repository
 
-import cl.oyl.frutossecos.data.local.*
-import cl.oyl.frutossecos.data.remote.OylNetwork
+import cl.oyl.frutossecos.data.local.CartItemEntity
+import cl.oyl.frutossecos.data.local.CatalogDao
+import cl.oyl.frutossecos.data.local.ProductEntity
+import cl.oyl.frutossecos.data.model.StockDeltaDto
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
-/** Datos sintéticos: no existe todavía disponibilidad oficial de servidor. */
-class CatalogRepository(private val dao: CatalogDao) {
+class CatalogRepository(
+ private val dao: CatalogDao
+) {
  val products: Flow<List<ProductEntity>> = dao.products()
+
  fun cart(alias: String) = dao.cartRaw(alias)
+
  suspend fun seedDemoProducts() {
   if (dao.productCount() > 0) return
-  dao.saveProducts(listOf(
-   ProductEntity("OY001", "Almendras naturales", "Frutos secos", "Almendras naturales de alta calidad, ideales para una dieta saludable y equilibrada. Ricas en proteinas, fibras y grasas saludables.", "250 g", 2990, 25),
-   ProductEntity("OY002", "Nueces", "Frutos secos", "Nueces naturales seleccionadas, perfectas para acompañar desayunos, ensaladas y colaciones. Aportan omega-3, fibra y grasas saludables que contribuyen a una alimentación equilibrada." + "", "250 g", 3490, 18),
-   ProductEntity("OY003", "Mix premium", "Frutos secos", "Selección premium de nueces y almendras. Combina distintas texturas y sabores con grasas saludables y fibra." + "", "250 g", 3990, 40),
-   ProductEntity("OY004", "Pasas morenas", "Deshidratados", "Pasas morenas naturales, dulces y jugosas, ideales como fuente de energía para tus colaciones y preparaciones. Aportan fibra y minerales como el potasio." + "", "250 g", 2490, 36),
-   ProductEntity("OY005", "Semillas de chía", "Semillas", "Semillas de chía naturales, un alimento versátil para batidos, yogurt y postres. Ricas en fibra, omega-3 y proteínas de origen vegetal.", "250 g", 2290, 12),
-   ProductEntity("OY006", "Cranberries", "Deshidratados", "Cranberries deshidratados de sabor agridulce, ideales para ensaladas, yogurt, avena y repostería. Aportan fibra y antioxidantes naturales.", "250 g", 2890, 16)
-  ))
- }
- suspend fun syncFromServer(): Boolean = try {
-  val remote = OylNetwork.api.products()
-  dao.saveProducts(remote.map {
-   ProductEntity(it.id,it.name,it.category,it.description ?: "",it.presentation ?: "",it.price,it.stock,it.active)
-  })
-  true
- } catch (_: Exception) { false }
- suspend fun clearCart(owner:String) = dao.clearCart(owner)
- suspend fun adjustStock(
-  productId: String,
-  delta: Int
- ): Boolean {
-  return try {
-   val updated = OylNetwork.api.adjustStock(
-    productId,
-    cl.oyl.frutossecos.data.remote.StockDeltaDto(delta)
-   )
 
-   dao.saveProducts(
-    listOf(
-     ProductEntity(
-      updated.id,
-      updated.name,
-      updated.category,
-      updated.description.orEmpty(),
-      updated.presentation.orEmpty(),
-      updated.price,
-      updated.stock,
-      updated.active
-     )
+  dao.seedProducts(
+   listOf(
+    ProductEntity(
+     id = "OY001",
+     name = "Almendras naturales",
+     category = "Frutos secos",
+     description = "Almendras naturales seleccionadas, ideales para desayunos y colaciones.",
+     presentation = "250 g",
+     price = 2990,
+     stock = 25
+    ),
+    ProductEntity(
+     id = "OY002",
+     name = "Nueces",
+     category = "Frutos secos",
+     description = "Nueces seleccionadas para acompañar desayunos, ensaladas y colaciones.",
+     presentation = "250 g",
+     price = 3490,
+     stock = 18
+    ),
+    ProductEntity(
+     id = "OY003",
+     name = "Mix premium",
+     category = "Frutos secos",
+     description = "Selección de frutos secos con distintas texturas y sabores.",
+     presentation = "250 g",
+     price = 3990,
+     stock = 40
+    ),
+    ProductEntity(
+     id = "OY004",
+     name = "Pasas morenas",
+     category = "Deshidratados",
+     description = "Pasas morenas para colaciones, desayunos y preparaciones.",
+     presentation = "250 g",
+     price = 2490,
+     stock = 36
+    ),
+    ProductEntity(
+     id = "OY005",
+     name = "Semillas de chía",
+     category = "Semillas",
+     description = "Semillas de chía para incorporar a yogur, batidos y postres.",
+     presentation = "250 g",
+     price = 2290,
+     stock = 12
+    ),
+    ProductEntity(
+     id = "OY006",
+     name = "Cranberries",
+     category = "Deshidratados",
+     description = "Cranberries deshidratados de sabor agridulce para ensaladas y colaciones.",
+     presentation = "250 g",
+     price = 2890,
+     stock = 16
     )
    )
+  )
+ }
 
+ suspend fun refreshLocalCatalog(): Boolean {
+  return try {
+   seedDemoProducts()
    true
-  } catch (e: kotlinx.coroutines.CancellationException) {
+  } catch (e: CancellationException) {
    throw e
   } catch (_: Exception) {
    false
   }
  }
- suspend fun changeCart(owner: String, productId: String, delta: Int) {
+
+ // Compatibilidad temporal con las pantallas que aún usan este nombre.
+ // No realiza ninguna conexión ni consulta a un servidor.
+ suspend fun syncFromServer(): Boolean {
+  return refreshLocalCatalog()
+ }
+
+ suspend fun clearCart(owner: String) {
+  dao.clearCart(owner)
+ }
+
+ suspend fun adjustStock(
+  productId: String,
+  delta: Int
+ ): Boolean {
+  return try {
+   LocalStore.repository.adjustStock(
+    productId,
+    StockDeltaDto(delta)
+   )
+
+   true
+  } catch (e: CancellationException) {
+   throw e
+  } catch (_: Exception) {
+   false
+  }
+ }
+
+ suspend fun changeCart(
+  owner: String,
+  productId: String,
+  delta: Int
+ ) {
   val product = dao.getProduct(productId) ?: return
-  val current = dao.getCartItem(owner, productId)?.quantity ?: 0
-  val target = (current + delta).coerceIn(0, product.stock)
-  if (target == 0) dao.removeCart(owner, productId)
-  else dao.upsertCart(CartItemEntity(owner, productId, target))
+
+  if (!product.active && delta > 0) return
+
+  val current = dao.getCartItem(
+   owner,
+   productId
+  )?.quantity ?: 0
+
+  val target = (
+          current.toLong() + delta.toLong()
+          ).coerceIn(
+    0L,
+    product.stock.coerceAtLeast(0).toLong()
+   ).toInt()
+
+  if (target == 0) {
+   dao.removeCart(owner, productId)
+  } else {
+   dao.upsertCart(
+    CartItemEntity(
+     ownerAlias = owner,
+     productId = productId,
+     quantity = target
+    )
+   )
+  }
  }
 }
