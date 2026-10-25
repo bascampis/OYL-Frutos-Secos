@@ -1,219 +1,359 @@
 package cl.oyl.frutossecos.navigation
 
+import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import cl.oyl.frutossecos.data.local.DemoNotificationStore
 import cl.oyl.frutossecos.domain.model.DemoUser
+import cl.oyl.frutossecos.domain.model.UserRole
 import cl.oyl.frutossecos.ui.screens.*
 import cl.oyl.frutossecos.viewmodel.*
 
 @Composable
-fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
+fun OylNavGraph(
+    sessionViewModel: SessionViewModel = viewModel(),
+    notificationIntent: Intent? = null,
+    onNotificationConsumed: () -> Unit = {}
+) {
     val nav = rememberNavController()
     val navBackStackEntry by nav.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: Routes.WELCOME
+
+    val currentRoute =
+        navBackStackEntry?.destination?.route ?: Routes.WELCOME
 
     val user by sessionViewModel.user.collectAsState()
 
+    val context = LocalContext.current
+
+    val notificationStore = remember(context.applicationContext) {
+        DemoNotificationStore(context.applicationContext)
+    }
+
     fun loggedIn(value: DemoUser) {
         sessionViewModel.startSession(value)
+
         nav.navigate(Routes.DASHBOARD) {
-            popUpTo(Routes.WELCOME) { inclusive = true }
+            popUpTo(Routes.WELCOME) {
+                inclusive = true
+            }
             launchSingleTop = true
         }
     }
 
     fun logOut() {
         sessionViewModel.endSession()
+
         nav.navigate(Routes.LOGIN) {
-            popUpTo(Routes.DASHBOARD) { inclusive = true }
+            popUpTo(Routes.DASHBOARD) {
+                inclusive = true
+            }
             launchSingleTop = true
         }
     }
 
-    Surface(Modifier.fillMaxSize()) {
-        NavHost(nav, startDestination = if (user == null) Routes.WELCOME else Routes.DASHBOARD) {
-            // 1. Welcome Screen
+    Surface(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        NavHost(
+            navController = nav,
+            startDestination = if (user == null) {
+                Routes.WELCOME
+            } else {
+                Routes.DASHBOARD
+            }
+        ) {
+            // 1. Bienvenida
             composable(Routes.WELCOME) {
                 WelcomeScreen(
-                    onBegin = { nav.navigate(Routes.LOGIN) },
-                    onLogin = { nav.navigate(Routes.LOGIN) },
-                    onAbout = { nav.navigate(Routes.ABOUT) }
+                    onBegin = {
+                        nav.navigate(Routes.LOGIN)
+                    },
+                    onLogin = {
+                        nav.navigate(Routes.LOGIN)
+                    },
+                    onAbout = {
+                        nav.navigate(Routes.ABOUT)
+                    }
                 )
             }
 
-            // 2. Register Screen
+            // 2. Registro
             composable(Routes.REGISTER) {
                 val vm: RegisterViewModel = viewModel()
+
                 RegisterScreen(
                     vm,
-                    onBack = { nav.popBackStack() },
+                    onBack = {
+                        nav.popBackStack()
+                    },
                     onDone = ::loggedIn
                 )
             }
 
-            // 3. Login Screen
+            // 3. Inicio de sesión
             composable(Routes.LOGIN) {
                 val vm: LoginViewModel = viewModel()
+
                 LoginScreen(
                     vm,
-                    onBack = { nav.popBackStack() },
+                    onBack = {
+                        nav.popBackStack()
+                    },
                     onAuthenticated = ::loggedIn,
-                    onRegister = { nav.navigate(Routes.REGISTER) }
+                    onRegister = {
+                        nav.navigate(Routes.REGISTER)
+                    }
                 )
             }
 
-            // 4. Dashboard Screen
+            // 4. Inicio
             composable(Routes.DASHBOARD) {
                 val active = user
+
                 if (active != null) {
                     DashboardScreen(
                         user = active,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onAbout = { nav.navigate(Routes.ABOUT) },
+                        onAbout = {
+                            nav.navigate(Routes.ABOUT)
+                        },
                         onLogout = ::logOut,
-                        onProfile = { nav.navigate(Routes.PROFILE) },
-                        onCatalog = { nav.navigate(Routes.CATALOG) },
-                        onCart = { nav.navigate(Routes.CART) },
-                        onQr = { nav.navigate(Routes.QR) },
+                        onProfile = {
+                            nav.navigate(Routes.PROFILE)
+                        },
+                        onCatalog = {
+                            nav.navigate(Routes.CATALOG)
+                        },
+                        onCart = {
+                            nav.navigate(Routes.CART)
+                        },
+                        onQr = {
+                            nav.navigate(Routes.QR)
+                        },
                         onMap = {
-                            if (active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+                            if (active.role == UserRole.CLIENTE) {
                                 nav.navigate(Routes.MAP)
                             }
                         },
-                        onOrders = { nav.navigate(Routes.ORDERS) },
-                        onAdmin = { nav.navigate(Routes.PRODUCT_MANAGEMENT) },
-                        onNotifications = { nav.navigate(Routes.NOTIFICATIONS) }
+                        onOrders = {
+                            nav.navigate(Routes.ORDERS)
+                        },
+                        onAdmin = {
+                            nav.navigate(Routes.PRODUCT_MANAGEMENT)
+                        },
+                        onNotifications = {
+                            nav.navigate(Routes.NOTIFICATIONS)
+                        }
                     )
                 } else {
                     LaunchedEffect(Unit) {
-                        nav.navigate(Routes.LOGIN) { popUpTo(Routes.DASHBOARD) { inclusive = true } }
+                        nav.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.DASHBOARD) {
+                                inclusive = true
+                            }
+                        }
                     }
                 }
             }
 
-            // 5. Map Screen
+            // 5. Mapa: solo cliente
             composable(Routes.MAP) {
                 val active = user
-                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+
+                if (active?.role == UserRole.CLIENTE) {
                     MapScreen(
                         navController = nav,
                         currentRoute = currentRoute,
-                        onBack = { nav.popBackStack() }
+                        onBack = {
+                            nav.popBackStack()
+                        }
                     )
                 } else {
                     LaunchedEffect(active?.alias, active?.role) {
-                        nav.navigate(if (active == null) Routes.LOGIN else Routes.DASHBOARD) {
-                            popUpTo(Routes.MAP) { inclusive = true }
+                        nav.navigate(
+                            if (active == null) {
+                                Routes.LOGIN
+                            } else {
+                                Routes.DASHBOARD
+                            }
+                        ) {
+                            popUpTo(Routes.MAP) {
+                                inclusive = true
+                            }
                             launchSingleTop = true
                         }
                     }
                 }
             }
 
-            // 6. Catalog Screen
+            // 6. Catálogo
             composable(Routes.CATALOG) {
                 val active = user
+
                 if (active != null) {
                     CatalogScreen(
                         ownerAlias = active.alias,
-                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
+                        isAdmin = active.role == UserRole.ADMINISTRADOR,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onBack = { nav.popBackStack() },
-                        onCart = { nav.navigate(Routes.CART) },
-                        onProductClick = { productId -> nav.navigate(Routes.productDetail(productId)) }
+                        onBack = {
+                            nav.popBackStack()
+                        },
+                        onCart = {
+                            nav.navigate(Routes.CART)
+                        },
+                        onProductClick = { productId ->
+                            nav.navigate(
+                                Routes.productDetail(productId)
+                            )
+                        }
                     )
                 }
             }
 
-            // 7. Product Detail Screen
+            // 7. Detalle del producto
             composable(
                 route = Routes.PRODUCT_DETAIL,
-                arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("productId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
                 val active = user
-                val productId = backStackEntry.arguments?.getString("productId") ?: "OY001"
+
+                val productId =
+                    backStackEntry.arguments
+                        ?.getString("productId") ?: "OY001"
+
                 if (active != null) {
                     ProductDetailScreen(
                         productId = productId,
                         ownerAlias = active.alias,
-                        onBack = { nav.popBackStack() },
-                        onCart = { nav.navigate(Routes.CART) },
-                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
-                        onAdjustInventory = { nav.navigate("inventory_adjust/$productId") }
+                        onBack = {
+                            nav.popBackStack()
+                        },
+                        onCart = {
+                            nav.navigate(Routes.CART)
+                        },
+                        isAdmin = active.role == UserRole.ADMINISTRADOR,
+                        onAdjustInventory = {
+                            nav.navigate(
+                                "inventory_adjust/$productId"
+                            )
+                        }
                     )
                 }
             }
 
-            // 8. QR Scanner Screen
+            // 8. Escáner QR
             composable(Routes.QR) {
                 val active = user
+
                 if (active != null) {
                     QrScannerScreen(
-                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
+                        isAdmin = active.role == UserRole.ADMINISTRADOR,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onProductFound = { productId -> nav.navigate(Routes.productDetail(productId)) },
-                        onAdminInventory = { productId -> nav.navigate("inventory_adjust/$productId") }
+                        onProductFound = { productId ->
+                            nav.navigate(
+                                Routes.productDetail(productId)
+                            )
+                        },
+                        onAdminInventory = { productId ->
+                            nav.navigate(
+                                "inventory_adjust/$productId"
+                            )
+                        }
                     )
                 }
             }
 
-            // 9. Cart Screen
+            // 9. Carrito: solo cliente
             composable(Routes.CART) {
                 val active = user
-                if (active != null && active.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+
+                if (active?.role == UserRole.CLIENTE) {
                     CartScreen(
                         ownerAlias = active.alias,
-                        onBack = { nav.popBackStack() },
+                        onBack = {
+                            nav.popBackStack()
+                        },
                         onCheckout = { orderId, _ ->
-                            nav.navigate(Routes.orderConfirmation(orderId)) {
-                                popUpTo(Routes.CART) { inclusive = true }
+                            nav.navigate(
+                                Routes.orderConfirmation(orderId)
+                            ) {
+                                popUpTo(Routes.CART) {
+                                    inclusive = true
+                                }
                             }
                         }
                     )
                 }
             }
 
-            // 10. Comprobante del servidor: solo del cliente conectado.
+            // 10. Confirmación del pedido
             composable(
                 route = Routes.ORDER_CONFIRMATION,
-                arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("orderId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
                 val active = user
-                val orderId = backStackEntry.arguments?.getString("orderId").orEmpty()
-                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.CLIENTE) {
+
+                val orderId =
+                    backStackEntry.arguments
+                        ?.getString("orderId")
+                        .orEmpty()
+
+                if (active?.role == UserRole.CLIENTE) {
                     OrderConfirmationScreen(
                         orderId = orderId,
                         ownerAlias = active.alias,
                         onViewOrders = {
-                            nav.navigate(Routes.ORDERS) { popUpTo(Routes.DASHBOARD) }
+                            nav.navigate(Routes.ORDERS) {
+                                popUpTo(Routes.DASHBOARD)
+                            }
                         },
                         onContinueShopping = {
-                            nav.navigate(Routes.CATALOG) { popUpTo(Routes.DASHBOARD) }
+                            nav.navigate(Routes.CATALOG) {
+                                popUpTo(Routes.DASHBOARD)
+                            }
                         }
                     )
                 } else {
                     LaunchedEffect(active?.alias, active?.role) {
-                        nav.navigate(if (active == null) Routes.LOGIN else Routes.DASHBOARD) {
-                            popUpTo(Routes.ORDER_CONFIRMATION) { inclusive = true }
+                        nav.navigate(
+                            if (active == null) {
+                                Routes.LOGIN
+                            } else {
+                                Routes.DASHBOARD
+                            }
+                        ) {
+                            popUpTo(Routes.ORDER_CONFIRMATION) {
+                                inclusive = true
+                            }
                             launchSingleTop = true
                         }
                     }
                 }
             }
 
-            // 11. Product Management (Admin)
+            // 11. Gestión de productos: solo administrador
             composable(Routes.PRODUCT_MANAGEMENT) {
                 val active = user
-                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR) {
+
+                if (active?.role == UserRole.ADMINISTRADOR) {
                     ProductManagementScreen(
                         navController = nav,
                         currentRoute = currentRoute
@@ -221,24 +361,35 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                 }
             }
 
-            // 12. Inventory Management (Admin)
+            // 12. Gestión de inventario: solo administrador
             composable(Routes.INVENTORY_MANAGEMENT) {
                 val active = user
-                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR) {
+
+                if (active?.role == UserRole.ADMINISTRADOR) {
                     InventoryScreen(
                         navController = nav,
                         currentRoute = currentRoute
                     )
                 }
             }
-            // 12b. Ajuste de inventario de un producto (desde el QR)
+
+            // 12b. Ajuste de inventario desde el QR
             composable(
                 route = "inventory_adjust/{productId}",
-                arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("productId") {
+                        type = NavType.StringType
+                    }
+                )
             ) { backStackEntry ->
                 val active = user
-                val productId = backStackEntry.arguments?.getString("productId").orEmpty()
-                if (active?.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR) {
+
+                val productId =
+                    backStackEntry.arguments
+                        ?.getString("productId")
+                        .orEmpty()
+
+                if (active?.role == UserRole.ADMINISTRADOR) {
                     InventoryScreen(
                         navController = nav,
                         currentRoute = currentRoute,
@@ -247,42 +398,51 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                 }
             }
 
-            // 13. Orders History Screen
+            // 13. Historial de pedidos
             composable(Routes.ORDERS) {
                 val active = user
+
                 if (active != null) {
                     OrdersScreen(
                         alias = active.alias,
-                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
+                        isAdmin = active.role == UserRole.ADMINISTRADOR,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onBack = { nav.popBackStack() }
+                        onBack = {
+                            nav.popBackStack()
+                        }
                     )
                 }
             }
 
-            // 14. Notifications Screen
+            // 14. Historial de notificaciones
             composable(Routes.NOTIFICATIONS) {
                 val active = user
 
                 if (active != null) {
                     NotificationsScreen(
                         alias = active.alias,
-                        onBack = { nav.popBackStack() },
+                        onBack = {
+                            nav.popBackStack()
+                        },
                         onOpen = { target ->
                             when (target) {
                                 "orders" -> {
-                                    nav.navigate(Routes.ORDERS)
+                                    nav.navigate(Routes.ORDERS) {
+                                        launchSingleTop = true
+                                    }
                                 }
 
                                 "inventory" -> {
                                     if (
                                         active.role ==
-                                        cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR
+                                        UserRole.ADMINISTRADOR
                                     ) {
                                         nav.navigate(
                                             Routes.INVENTORY_MANAGEMENT
-                                        )
+                                        ) {
+                                            launchSingleTop = true
+                                        }
                                     }
                                 }
                             }
@@ -291,26 +451,95 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                 }
             }
 
-            // 15. Profile Screen
+            // 15. Perfil
             composable(Routes.PROFILE) {
                 val active = user
+
                 if (active != null) {
                     ProfileScreen(
                         user = active,
                         navController = nav,
                         currentRoute = currentRoute,
-                        onBack = { nav.popBackStack() },
+                        onBack = {
+                            nav.popBackStack()
+                        },
                         onLogout = ::logOut
                     )
                 } else {
-                    LaunchedEffect(Unit) { nav.navigate(Routes.LOGIN) }
+                    LaunchedEffect(Unit) {
+                        nav.navigate(Routes.LOGIN)
+                    }
                 }
             }
 
-            // About Screen
+            // 16. Acerca de
             composable(Routes.ABOUT) {
-                AboutScreen(onBack = { nav.popBackStack() })
+                AboutScreen(
+                    onBack = {
+                        nav.popBackStack()
+                    }
+                )
             }
+        }
+    }
+
+    // Apertura desde una notificación del celular.
+    LaunchedEffect(
+        notificationIntent,
+        user?.alias,
+        currentRoute
+    ) {
+        val pending = notificationIntent
+        val active = user
+
+        if (
+            pending != null &&
+            active != null &&
+            navBackStackEntry != null
+        ) {
+            val ownerAlias = pending.getStringExtra(
+                "notification_alias"
+            )
+
+            val target = pending.getStringExtra(
+                "notification_target"
+            )
+
+            val noticeId = pending.getStringExtra(
+                "notification_id"
+            )
+
+            // Evita abrir avisos de otro usuario.
+            if (ownerAlias == active.alias) {
+                val destination = when (target) {
+                    "orders" -> Routes.ORDERS
+
+                    "inventory" -> {
+                        if (active.role == UserRole.ADMINISTRADOR) {
+                            Routes.INVENTORY_MANAGEMENT
+                        } else {
+                            null
+                        }
+                    }
+
+                    else -> null
+                }
+
+                if (destination != null) {
+                    nav.navigate(destination) {
+                        launchSingleTop = true
+                    }
+
+                    if (noticeId != null) {
+                        notificationStore.markRead(
+                            active.alias,
+                            noticeId
+                        )
+                    }
+                }
+            }
+
+            onNotificationConsumed()
         }
     }
 }

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -36,14 +37,17 @@ data class LocalNotice(
 class DemoNotificationStore(context: Context) {
 
  private val app = context.applicationContext
+
  private val prefs = app.getSharedPreferences(
   "oyl_local_notices",
   Context.MODE_PRIVATE
  )
+
  private val session = app.getSharedPreferences(
   "oyl_session",
   Context.MODE_PRIVATE
  )
+
  private val gson = Gson()
 
  fun list(alias: String): List<LocalNotice> {
@@ -64,6 +68,7 @@ class DemoNotificationStore(context: Context) {
    }
 
   prefs.registerOnSharedPreferenceChangeListener(listener)
+
   trySend(list(alias))
 
   awaitClose {
@@ -72,15 +77,26 @@ class DemoNotificationStore(context: Context) {
  }.distinctUntilChanged()
 
  fun markRead(alias: String, id: String) {
-  val updated = list(alias).map {
-   if (it.id == id) it.copy(read = true) else it
+  val updated = list(alias).map { notice ->
+   if (notice.id == id) {
+    notice.copy(read = true)
+   } else {
+    notice
+   }
   }
+
   save(alias, updated)
  }
 
- private fun save(alias: String, notices: List<LocalNotice>) {
+ private fun save(
+  alias: String,
+  notices: List<LocalNotice>
+ ) {
   prefs.edit()
-   .putString("list:$alias", gson.toJson(notices.take(100)))
+   .putString(
+    "list:$alias",
+    gson.toJson(notices.take(100))
+   )
    .apply()
  }
 
@@ -94,7 +110,9 @@ class DemoNotificationStore(context: Context) {
  ) {
   val previous = list(alias)
 
-  if (previous.any { it.id == id }) return
+  if (previous.any { it.id == id }) {
+   return
+  }
 
   val notice = LocalNotice(
    id = id,
@@ -105,15 +123,17 @@ class DemoNotificationStore(context: Context) {
    createdAt = Instant.now().toString()
   )
 
+  // El historial se guarda aunque los avisos estén desactivados.
   save(alias, listOf(notice) + previous)
 
   if (session.getString("alias", null) == alias) {
-   showSystemNotification(notice)
+   showSystemNotification(alias, notice)
   }
  }
 
  suspend fun refresh(): Boolean {
   val alias = session.getString("alias", null) ?: return true
+
   val admin =
    session.getString("role", "") == "ADMINISTRADOR"
 
@@ -124,18 +144,26 @@ class DemoNotificationStore(context: Context) {
     OylNetwork.api.orders(alias)
    }
 
-   if (session.getString("alias", null) != alias) return true
+   if (session.getString("alias", null) != alias) {
+    return true
+   }
 
-   val previousText =
-    prefs.getString("orders:$alias", null)
+   val previousText = prefs.getString(
+    "orders:$alias",
+    null
+   )
 
-   val previous = previousText?.let { JSONObject(it) }
+   val previous = previousText?.let {
+    JSONObject(it)
+   }
+
    val current = JSONObject()
 
    orders.forEach { order ->
     current.put(order.id, order.status)
 
     // La primera consulta establece el punto de partida.
+    // No genera avisos por pedidos antiguos.
     if (previous != null) {
      val exists = previous.has(order.id)
      val oldStatus = previous.optString(order.id)
@@ -153,7 +181,10 @@ class DemoNotificationStore(context: Context) {
        category = "Pedidos",
        target = "orders"
       )
-     } else if (!admin && oldStatus != order.status) {
+     } else if (
+      !admin &&
+      oldStatus != order.status
+     ) {
       add(
        alias = alias,
        id = "order:${order.id}:${order.status}",
@@ -167,7 +198,10 @@ class DemoNotificationStore(context: Context) {
    }
 
    prefs.edit()
-    .putString("orders:$alias", current.toString())
+    .putString(
+     "orders:$alias",
+     current.toString()
+    )
     .apply()
 
    if (admin) {
@@ -185,21 +219,36 @@ class DemoNotificationStore(context: Context) {
  private suspend fun checkStock(alias: String) {
   val products = OylNetwork.api.products()
 
-  if (session.getString("alias", null) != alias) return
+  if (session.getString("alias", null) != alias) {
+   return
+  }
 
-  val previousText = prefs.getString("stock:$alias", null)
-  val previous = previousText?.let { JSONObject(it) }
+  val previousText = prefs.getString(
+   "stock:$alias",
+   null
+  )
+
+  val previous = previousText?.let {
+   JSONObject(it)
+  }
+
   val current = JSONObject()
 
   products.filter { it.active }.forEach { product ->
    current.put(product.id, product.stock)
 
    val wasAboveMinimum =
-    previous?.optInt(product.id, Int.MAX_VALUE)?.let {
+    previous?.optInt(
+     product.id,
+     Int.MAX_VALUE
+    )?.let {
      it > 5
     } ?: true
 
-   if (product.stock <= 5 && wasAboveMinimum) {
+   if (
+    product.stock <= 5 &&
+    wasAboveMinimum
+   ) {
     add(
      alias = alias,
      id = "stock:${product.id}:${System.currentTimeMillis()}",
@@ -212,14 +261,24 @@ class DemoNotificationStore(context: Context) {
   }
 
   prefs.edit()
-   .putString("stock:$alias", current.toString())
+   .putString(
+    "stock:$alias",
+    current.toString()
+   )
    .apply()
  }
 
- private fun showSystemNotification(notice: LocalNotice) {
-  val activeAlias = session.getString("alias", null) ?: return
+ private fun showSystemNotification(
+  alias: String,
+  notice: LocalNotice
+ ) {
+  // Solo muestra avisos del usuario conectado.
+  if (session.getString("alias", null) != alias) {
+   return
+  }
 
-  if (!prefs.getBoolean("enabled:$activeAlias", true)) {
+  // Respeta el interruptor guardado en Perfil.
+  if (!prefs.getBoolean("enabled:$alias", true)) {
    return
   }
 
@@ -229,12 +288,13 @@ class DemoNotificationStore(context: Context) {
     app,
     Manifest.permission.POST_NOTIFICATIONS
    ) != PackageManager.PERMISSION_GRANTED
-  ) return
+  ) {
+   return
+  }
 
-  // Aquí continúa el código que ya tienes.
-
-  val manager =
-   app.getSystemService(NotificationManager::class.java)
+  val manager = app.getSystemService(
+   NotificationManager::class.java
+  )
 
   manager.createNotificationChannel(
    NotificationChannel(
@@ -244,15 +304,43 @@ class DemoNotificationStore(context: Context) {
    )
   )
 
-  val intent = Intent(app, MainActivity::class.java).apply {
+  val intent = Intent(
+   app,
+   MainActivity::class.java
+  ).apply {
    flags =
     Intent.FLAG_ACTIVITY_CLEAR_TOP or
             Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+   // Identifica cada aviso para conservar su destino.
+   data = Uri.Builder()
+    .scheme("oyl")
+    .authority("notification")
+    .appendPath(alias)
+    .appendPath(notice.id)
+    .build()
+
+   putExtra(
+    "notification_target",
+    notice.target
+   )
+
+   putExtra(
+    "notification_alias",
+    alias
+   )
+
+   putExtra(
+    "notification_id",
+    notice.id
+   )
   }
+
+  val notificationId = "$alias:${notice.id}".hashCode()
 
   val pendingIntent = PendingIntent.getActivity(
    app,
-   notice.id.hashCode(),
+   notificationId,
    intent,
    PendingIntent.FLAG_UPDATE_CURRENT or
            PendingIntent.FLAG_IMMUTABLE
@@ -275,7 +363,10 @@ class DemoNotificationStore(context: Context) {
 
   runCatching {
    NotificationManagerCompat.from(app)
-    .notify(notice.id.hashCode(), notification)
+    .notify(
+     notificationId,
+     notification
+    )
   }
  }
 }
