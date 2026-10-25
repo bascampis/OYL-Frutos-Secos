@@ -145,7 +145,9 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
                         productId = productId,
                         ownerAlias = active.alias,
                         onBack = { nav.popBackStack() },
-                        onCart = { nav.navigate(Routes.CART) }
+                        onCart = { nav.navigate(Routes.CART) },
+                        isAdmin = active.role == cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR,
+                        onAdjustInventory = { nav.navigate("inventory_adjust/$productId") }
                     )
                 }
             }

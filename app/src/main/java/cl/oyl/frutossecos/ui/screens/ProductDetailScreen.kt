@@ -35,7 +35,9 @@ fun ProductDetailScreen(
     productId: String,
     ownerAlias: String,
     onBack: () -> Unit,
-    onCart: () -> Unit
+    onCart: () -> Unit,
+    isAdmin: Boolean = false,
+    onAdjustInventory: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as OylApplication
@@ -215,102 +217,120 @@ fun ProductDetailScreen(
                     }
                 }
 
-                // Cantidad y agregado al carrito.
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        tonalElevation = 2.dp
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(
-                                horizontal = 8.dp,
-                                vertical = 4.dp
-                            )
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    quantity--
-                                    addedMessage = false
-                                },
-                                enabled = quantity > 1
-                            ) {
-                                Text(
-                                    text = "−",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-
-                            Text(
-                                text = "$quantity",
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    quantity++
-                                    addedMessage = false
-                                },
-                                enabled = quantity < product.stock
-                            ) {
-                                Text(
-                                    text = "+",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-
+                if (isAdmin) {
+                    // Administrador: ajuste de inventario en vez del carrito.
                     Button(
-                        onClick = {
-                            scope.launch {
-                                app.catalogRepository.changeCart(
-                                    ownerAlias,
-                                    product.id,
-                                    quantity
-                                )
-                                addedMessage = true
-                            }
-                        },
-                        enabled = product.stock > 0 &&
-                                quantity <= product.stock,
+                        onClick = { onAdjustInventory?.invoke() },
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 12.dp)
+                            .fillMaxWidth()
                             .heightIn(min = 50.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = OylGreen
                         )
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-
-                        Spacer(Modifier.width(8.dp))
-
                         Text(
-                            text = "Agregar al carrito",
-                            fontWeight = FontWeight.SemiBold
+                            text = "Ajustar inventario",
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                }
+                } else {
+                    // Cliente: cantidad y agregado al carrito.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            tonalElevation = 2.dp
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(
+                                    horizontal = 8.dp,
+                                    vertical = 4.dp
+                                )
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        quantity--
+                                        addedMessage = false
+                                    },
+                                    enabled = quantity > 1
+                                ) {
+                                    Text(
+                                        text = "−",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
 
-                if (addedMessage) {
-                    Text(
-                        text = "¡Producto agregado al carrito!",
-                        color = OylGreen,
-                        fontWeight = FontWeight.Bold
-                    )
+                                Text(
+                                    text = "$quantity",
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        quantity++
+                                        addedMessage = false
+                                    },
+                                    enabled = quantity < product.stock
+                                ) {
+                                    Text(
+                                        text = "+",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    app.catalogRepository.changeCart(
+                                        ownerAlias,
+                                        product.id,
+                                        quantity
+                                    )
+                                    addedMessage = true
+                                }
+                            },
+                            enabled = product.stock > 0 &&
+                                    quantity <= product.stock,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 12.dp)
+                                .heightIn(min = 50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = OylGreen
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+
+                            Spacer(Modifier.width(8.dp))
+
+                            Text(
+                                text = "Agregar al carrito",
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    if (addedMessage) {
+                        Text(
+                            text = "¡Producto agregado al carrito!",
+                            color = OylGreen,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 // Atributos del producto.
@@ -335,11 +355,13 @@ fun ProductDetailScreen(
                     }
                 }
 
-                OutlinedButton(
-                    onClick = onCart,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Ver Carrito de Compras")
+                if (!isAdmin) {
+                    OutlinedButton(
+                        onClick = onCart,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Ver Carrito de Compras")
+                    }
                 }
             }
         }
