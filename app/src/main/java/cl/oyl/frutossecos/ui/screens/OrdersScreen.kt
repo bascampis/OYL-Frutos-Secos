@@ -1,6 +1,5 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,14 +13,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import cl.oyl.frutossecos.data.remote.*
+import cl.oyl.frutossecos.domain.checkout.formatOrderDate
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import cl.oyl.frutossecos.domain.checkout.formatOrderDate
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,25 +32,71 @@ fun OrdersScreen(
     currentRoute: String,
     onBack: () -> Unit
 ) {
-    var orders by remember { mutableStateOf<List<RemoteOrder>>(emptyList()) }
-    var error by remember { mutableStateOf("") }
-    var filterTab by remember { mutableStateOf("Todos") }
-    var refreshTrigger by remember { mutableIntStateOf(0) }
-    val scope = rememberCoroutineScope()
+    var orders by remember(alias, isAdmin) {
+        mutableStateOf<List<RemoteOrder>>(emptyList())
+    }
 
-    LaunchedEffect(alias, refreshTrigger) {
+    var error by remember(alias, isAdmin) {
+        mutableStateOf("")
+    }
+
+    var message by remember(alias, isAdmin) {
+        mutableStateOf("")
+    }
+
+    var filterTab by remember(alias, isAdmin) {
+        mutableStateOf("Todos")
+    }
+
+    var loading by remember(alias, isAdmin) {
+        mutableStateOf(false)
+    }
+
+    var updatingId by remember(alias, isAdmin) {
+        mutableStateOf<String?>(null)
+    }
+
+    val scope = rememberCoroutineScope()
+    val busy = loading || updatingId != null
+
+    suspend fun refresh() {
+        loading = true
+        error = ""
+
         try {
-            orders = if (isAdmin) OylNetwork.api.allOrders() else OylNetwork.api.orders(alias)
-            error = ""
+            orders = if (isAdmin) {
+                OylNetwork.api.allOrders()
+            } else {
+                OylNetwork.api.orders(alias)
+            }
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Exception) {
-            error = "No es posible consultar pedidos: servidor desconectado."
+            error = "No se pudieron consultar los pedidos. Comprueba el backend."
+        } finally {
+            loading = false
         }
     }
 
+    LaunchedEffect(alias, isAdmin) {
+        refresh()
+    }
+
+    val completedCount = orders.count {
+        normalizedOrderStatus(it.status) == "entregado"
+    }
+
     val filteredOrders = orders.filter { order ->
+        val status = normalizedOrderStatus(order.status)
+
         when (filterTab) {
-            "En proceso" -> order.status == "Pendiente de Validación" || order.status == "Confirmado" || order.status == "Preparado"
-            "Completados" -> order.status == "Entregado"
+            "En proceso" -> status in setOf(
+                "pendiente de validación",
+                "confirmado",
+                "preparado"
+            )
+
+            "Completados" -> status == "entregado"
             else -> true
         }
     }
@@ -58,53 +104,140 @@ fun OrdersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isAdmin) "Gestión de Pedidos" else "Mis Pedidos", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = if (isAdmin) {
+                            "Gestión de Pedidos"
+                        } else {
+                            "Mis Pedidos"
+                        },
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
-                    IconButton(onClick = { refreshTrigger += 1 }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                refresh()
+                            }
+                        },
+                        enabled = !busy
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Actualizar"
+                        )
                     }
                 }
             )
         },
         bottomBar = {
-            OylBottomBar(navController = navController, currentRoute = currentRoute, isAdmin = isAdmin)
+            OylBottomBar(
+                navController = navController,
+                currentRoute = currentRoute,
+                isAdmin = isAdmin
+            )
         }
-    ) { pad ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(pad)
+                .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Filter Chips
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("Todos", "En proceso", "Completados").forEach { tab ->
+                listOf(
+                    "Todos",
+                    "En proceso",
+                    "Completados"
+                ).forEach { tab ->
                     FilterChip(
                         selected = filterTab == tab,
-                        onClick = { filterTab = tab },
-                        label = { Text(tab) }
+                        onClick = {
+                            filterTab = tab
+                        },
+                        label = {
+                            Text(tab)
+                        }
                     )
                 }
             }
 
-            if (error.isNotBlank()) {
-                Text(error, color = MaterialTheme.colorScheme.error)
+            Text(
+                text = "${orders.size} pedidos · $completedCount completados",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            if (loading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
-            if (orders.isEmpty() && error.isBlank()) {
-                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                    Text("Sin solicitudes registradas.")
+            if (error.isNotBlank()) {
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            if (message.isNotBlank()) {
+                Text(
+                    text = message,
+                    color = OylGreen,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            if (filteredOrders.isEmpty() && !loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = when {
+                            error.isNotBlank() ->
+                                "Pulsa actualizar para volver a intentarlo."
+
+                            filterTab == "Completados" ->
+                                "Todavía no hay pedidos entregados."
+
+                            filterTab == "En proceso" ->
+                                "No hay pedidos en proceso."
+
+                            else ->
+                                "Sin solicitudes registradas."
+                        }
+                    )
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(filteredOrders, key = { it.id }) { order ->
+                    items(
+                        items = filteredOrders,
+                        key = { it.id }
+                    ) { order ->
+                        val status = normalizedOrderStatus(order.status)
+
+                        val badgeColors = when (status) {
+                            "entregado" -> OylMint to OylGreen
+
+                            "cancelado" ->
+                                Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+
+                            else ->
+                                Color(0xFFFFF8E1) to Color(0xFFF57C00)
+                        }
+
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp)
@@ -120,65 +253,121 @@ fun OrdersScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("#${order.id.take(8).uppercase()}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                                    Text("$${order.total} CLP", fontWeight = FontWeight.ExtraBold, color = OylGreen, style = MaterialTheme.typography.titleMedium)
-                                }
+                                    Text(
+                                        text = "#${order.id.take(8).uppercase()}",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("${formatOrderDate(order.createdAt)} · ${order.fulfillment}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-
-                                    // Status Badge Surface
-                                    val (badgeBg, badgeText) = when (order.status) {
-                                        "Entregado" -> OylMint to OylGreen
-                                        "Cancelado" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
-                                        else -> Color(0xFFFFF8E1) to Color(0xFFF57C00)
-                                    }
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = badgeBg
-                                    ) {
-                                        Text(
-                                            text = order.status,
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                            color = badgeText,
-                                            fontWeight = FontWeight.Bold,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
+                                    Text(
+                                        text = "$${order.total} CLP",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = OylGreen,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
                                 }
 
                                 Text(
-                                    text = order.lines.joinToString { "${it.productName} × ${it.quantity}" },
+                                    text = "${formatOrderDate(order.createdAt)} · ${order.fulfillment}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = badgeColors.first
+                                ) {
+                                    Text(
+                                        text = order.status,
+                                        modifier = Modifier.padding(
+                                            horizontal = 10.dp,
+                                            vertical = 4.dp
+                                        ),
+                                        color = badgeColors.second,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+
+                                Text(
+                                    text = order.lines.joinToString {
+                                        "${it.productName} × ${it.quantity}"
+                                    },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 if (isAdmin) {
-                                    val next = when (order.status) {
-                                        "Pendiente de Validación" -> "Confirmado"
-                                        "Confirmado" -> "Preparado"
-                                        "Preparado" -> "Entregado"
+                                    val next = when (status) {
+                                        "pendiente de validación" -> "Confirmado"
+                                        "confirmado" -> "Preparado"
+                                        "preparado" -> "Entregado"
                                         else -> null
                                     }
+
                                     if (next != null) {
-                                        Spacer(modifier = Modifier.height(4.dp))
                                         Button(
                                             onClick = {
-                                                scope.launch {
-                                                    try {
-                                                        OylNetwork.api.setStatus(order.id, OrderStatusDto(next))
-                                                        refreshTrigger += 1
-                                                    } catch (_: Exception) {}
+                                                if (!busy) {
+                                                    updatingId = order.id
+                                                    error = ""
+                                                    message = ""
+
+                                                    scope.launch {
+                                                        try {
+                                                            val updated =
+                                                                OylNetwork.api.setStatus(
+                                                                    order.id,
+                                                                    OrderStatusDto(next)
+                                                                )
+
+                                                            // Actualiza usando el pedido
+                                                            // confirmado por el backend.
+                                                            orders = orders.map {
+                                                                if (it.id == updated.id) {
+                                                                    updated
+                                                                } else {
+                                                                    it
+                                                                }
+                                                            }
+
+                                                            message =
+                                                                "Pedido #${updated.id.take(8).uppercase()}: ${updated.status}."
+
+                                                            if (
+                                                                normalizedOrderStatus(
+                                                                    updated.status
+                                                                ) == "entregado"
+                                                            ) {
+                                                                message +=
+                                                                    " Disponible en Completados."
+                                                            }
+                                                        } catch (e: CancellationException) {
+                                                            throw e
+                                                        } catch (_: Exception) {
+                                                            error =
+                                                                "No se pudo confirmar el cambio. Pulsa actualizar para consultar el estado del servidor."
+                                                        } finally {
+                                                            updatingId = null
+                                                        }
+                                                    }
                                                 }
                                             },
+                                            enabled = !busy,
                                             modifier = Modifier.fillMaxWidth(),
-                                            colors = ButtonDefaults.buttonColors(containerColor = OylGreen)
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = OylGreen
+                                            )
                                         ) {
-                                            Text("Avanzar estado a $next")
+                                            Text(
+                                                text = if (
+                                                    updatingId == order.id
+                                                ) {
+                                                    "Guardando..."
+                                                } else {
+                                                    "Avanzar estado a $next"
+                                                }
+                                            )
                                         }
                                     }
                                 }
@@ -189,4 +378,8 @@ fun OrdersScreen(
             }
         }
     }
+}
+
+private fun normalizedOrderStatus(status: String): String {
+    return status.trim().lowercase(Locale.ROOT)
 }
