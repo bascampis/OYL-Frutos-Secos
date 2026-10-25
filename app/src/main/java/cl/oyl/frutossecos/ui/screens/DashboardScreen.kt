@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import cl.oyl.frutossecos.R
 import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.domain.model.UserRole
 import cl.oyl.frutossecos.ui.components.OylBottomBar
@@ -148,7 +149,16 @@ fun DashboardScreen(
                             .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("🥜", fontSize = 36.sp)
+                        Image(
+                            painter = painterResource(
+                                id = R.drawable.banner
+                            ),
+                            contentDescription = "Surtido de frutos secos",
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(16.dp)),
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
             }
