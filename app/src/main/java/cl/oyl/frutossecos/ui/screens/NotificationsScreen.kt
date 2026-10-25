@@ -1,50 +1,108 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.background
+import android.Manifest
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import cl.oyl.frutossecos.ui.theme.OylGreen
-import cl.oyl.frutossecos.ui.theme.OylMint
-
-data class NotificationItem(val id: Int, val title: String, val message: String, val type: String)
+import cl.oyl.frutossecos.data.local.DemoNotificationStore
+import cl.oyl.frutossecos.domain.checkout.formatOrderDate
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotificationsScreen(alias: String, onBack: () -> Unit) {
-    var filterTab by remember { mutableStateOf("Todas") }
-
-    val notifications = listOf(
-        NotificationItem(1, "Nuevo pedido recibido", "Pedido #001245", "Pedidos"),
-        NotificationItem(2, "Producto con stock bajo", "Nueces (stock: 3)", "Pedidos"),
-        NotificationItem(3, "Promoción especial", "20% en mix premium", "Promociones"),
-        NotificationItem(4, "Pedido completado", "Pedido #001244", "Pedidos"),
-        NotificationItem(5, "Nueva sucursal", "Ya puedes retirar en Plaza Oeste", "Promociones")
+fun NotificationsScreen(
+    alias: String,
+    onBack: () -> Unit,
+    onOpen: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val store = remember {
+        DemoNotificationStore(context.applicationContext)
+    }
+    val noticeFlow = remember(alias) {
+        store.observe(alias)
+    }
+    val notices by noticeFlow.collectAsState(
+        initial = emptyList()
     )
 
-    val filtered = notifications.filter {
-        if (filterTab == "Todas") true else it.type.equals(filterTab, ignoreCase = true)
+    val scope = rememberCoroutineScope()
+
+    var filter by remember { mutableStateOf("Todas") }
+    var refreshing by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    val permission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            error = "Puedes consultar el historial aunque no permitas avisos del sistema."
+        }
+    }
+
+    fun refresh() {
+        if (refreshing) return
+
+        refreshing = true
+        error = null
+
+        scope.launch {
+            try {
+                if (!store.refresh()) {
+                    error = "No se pudo actualizar. Comprueba que el backend esté encendido."
+                }
+            } finally {
+                refreshing = false
+            }
+        }
+    }
+
+    LaunchedEffect(alias) {
+        refresh()
+    }
+
+    val filtered = notices.filter {
+        filter == "Todas" || it.category == filter
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notificaciones", fontWeight = FontWeight.Bold) },
+                title = { Text("Notificaciones") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { refresh() },
+                        enabled = !refreshing
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = "Actualizar"
+                        )
                     }
                 }
             )
@@ -55,52 +113,130 @@ fun NotificationsScreen(alias: String, onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Filter Chips
+            OutlinedButton(
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        permission.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                            ).putExtra(
+                                Settings.EXTRA_APP_PACKAGE,
+                                context.packageName
+                            )
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Permitir avisos en el celular")
+            }
+
+            TextButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                        ).putExtra(
+                            Settings.EXTRA_APP_PACKAGE,
+                            context.packageName
+                        )
+                    )
+                }
+            ) {
+                Text("Abrir ajustes de notificaciones")
+            }
+
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.horizontalScroll(
+                    rememberScrollState()
+                ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("Todas", "Pedidos", "Promociones").forEach { tab ->
+                listOf(
+                    "Todas",
+                    "Pedidos",
+                    "Inventario"
+                ).forEach { tab ->
                     FilterChip(
-                        selected = filterTab == tab,
-                        onClick = { filterTab = tab },
+                        selected = filter == tab,
+                        onClick = { filter = tab },
                         label = { Text(tab) }
                     )
                 }
+            }
+
+            if (refreshing) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            error?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            if (filtered.isEmpty() && !refreshing) {
+                Text(
+                    "Todavía no tienes avisos. Los cambios nuevos aparecerán aquí."
+                )
             }
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(filtered, key = { it.id }) { item ->
+                items(
+                    items = filtered,
+                    key = { it.id }
+                ) { notice ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                store.markRead(alias, notice.id)
+                                onOpen(notice.target)
+                            }
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(OylMint),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(if (item.type == "Pedidos") "📦" else "🏷️", fontSize = 22.sp)
-                            }
+                            Text(
+                                text = if (notice.read) {
+                                    notice.title
+                                } else {
+                                    "● ${notice.title}"
+                                },
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
 
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(item.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = OylGreen)
-                                Text(item.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
+                            Text(notice.message)
+
+                            Text(
+                                text = formatOrderDate(
+                                    notice.createdAt
+                                ),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            Text(
+                                text = if (notice.read) {
+                                    "Leída"
+                                } else {
+                                    "Sin leer"
+                                },
+                                style = MaterialTheme.typography.labelSmall
+                            )
                         }
                     }
                 }

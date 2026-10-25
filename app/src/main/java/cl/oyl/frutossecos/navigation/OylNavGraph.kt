@@ -264,10 +264,29 @@ fun OylNavGraph(sessionViewModel: SessionViewModel = viewModel()) {
             // 14. Notifications Screen
             composable(Routes.NOTIFICATIONS) {
                 val active = user
+
                 if (active != null) {
                     NotificationsScreen(
                         alias = active.alias,
-                        onBack = { nav.popBackStack() }
+                        onBack = { nav.popBackStack() },
+                        onOpen = { target ->
+                            when (target) {
+                                "orders" -> {
+                                    nav.navigate(Routes.ORDERS)
+                                }
+
+                                "inventory" -> {
+                                    if (
+                                        active.role ==
+                                        cl.oyl.frutossecos.domain.model.UserRole.ADMINISTRADOR
+                                    ) {
+                                        nav.navigate(
+                                            Routes.INVENTORY_MANAGEMENT
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     )
                 }
             }

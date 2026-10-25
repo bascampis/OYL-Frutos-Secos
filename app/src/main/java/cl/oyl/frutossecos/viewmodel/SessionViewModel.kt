@@ -18,5 +18,14 @@ class SessionViewModel(application: Application): AndroidViewModel(application) 
   prefs.edit().putString("alias", user.alias).putString("name", user.displayName).putString("role", user.role.name).apply()
   _user.value = user
  }
- fun endSession() { prefs.edit().clear().apply(); _user.value = null }
+ fun endSession() {
+  getApplication<Application>()
+   .getSystemService(
+    android.app.NotificationManager::class.java
+   )
+   .cancelAll()
+
+  prefs.edit().clear().apply()
+  _user.value = null
+ }
 }
