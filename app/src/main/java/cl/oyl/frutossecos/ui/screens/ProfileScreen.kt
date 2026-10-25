@@ -28,6 +28,10 @@ import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +43,7 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     var notificationsEnabled by remember { mutableStateOf(true) }
-
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -128,7 +132,13 @@ fun ProfileScreen(
                     }
 
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                    ProfileMenuRow(icon = Icons.Default.Security, title = "Permisos", subtitle = "Cámara, Ubicación") {}
+                    ProfileMenuRow(icon = Icons.Default.Security, title = "Permisos", subtitle = "Cámara, Ubicación") {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", context.packageName, null)
+                            }
+                        )
+                    }
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     ProfileMenuRow(icon = Icons.AutoMirrored.Filled.Help, title = "Ayuda y soporte") {}
                 }
