@@ -224,7 +224,11 @@ fun DashboardScreen(
                 ActionGridCard(
                     modifier = Modifier.weight(1f),
                     icon = "📋",
-                    title = "Mis pedidos",
+                    title = if (admin) {
+                        "Gestión de pedidos"
+                    } else {
+                        "Mis pedidos"
+                    },
                     onClick = onOrders
                 )
 
@@ -304,7 +308,7 @@ private fun ActionGridCard(
     val cardColor = when (title) {
         "Catálogo" -> Color(0xFFE4F1E3)
         "Mapa de tiendas" -> Color(0xFFE5F0E9)
-        "Mis pedidos" -> Color(0xFFF5EBDC)
+        "Mis pedidos", "Gestión de pedidos" -> Color(0xFFF5EBDC)
         "Promociones" -> Color(0xFFF4E6D9)
         else -> Color(0xFFE4F1E3)
     }
@@ -357,6 +361,7 @@ private fun ActionGridCard(
                         "Catálogo" -> "Explora productos"
                         "Mapa de tiendas" -> "Encuéntranos"
                         "Mis pedidos" -> "Revisa tus compras"
+                        "Gestión de pedidos" -> "Gestiona pedidos"
                         "Promociones" -> "Consulta promociones"
                         "Inventario" -> "Gestiona productos"
                         else -> ""
