@@ -19,4 +19,6 @@ object Routes {
     const val NOTIFICATIONS = "notifications"
     const val PROFILE = "profile"
     const val ABOUT = "about"
+
+    const val PROMOTIONS = "promotions"
 }

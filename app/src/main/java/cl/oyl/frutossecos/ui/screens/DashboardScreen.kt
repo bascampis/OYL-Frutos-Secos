@@ -47,26 +47,28 @@ fun DashboardScreen(
     onMap: () -> Unit,
     onOrders: () -> Unit,
     onAdmin: () -> Unit,
-    onNotifications: () -> Unit
+    onNotifications: () -> Unit,
+    onPromotions: () -> Unit
 ) {
     val admin = user.role == UserRole.ADMINISTRADOR
 
     val context = LocalContext.current
+
     val notificationStore = remember(context.applicationContext) {
         DemoNotificationStore(context.applicationContext)
     }
 
-    // Observa únicamente el historial del usuario actual.
     val noticeFlow = remember(notificationStore, user.alias) {
         notificationStore.observe(user.alias)
     }
 
-    // Reinicia la observación cuando cambia el usuario.
     val notices by key(user.alias) {
         noticeFlow.collectAsState(initial = emptyList())
     }
 
-    val unreadCount = notices.count { !it.read }
+    val unreadCount = notices.count {
+        !it.read
+    }
 
     Scaffold(
         topBar = {
@@ -88,7 +90,9 @@ fun DashboardScreen(
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = onNotifications) {
+                        IconButton(
+                            onClick = onNotifications
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = if (unreadCount > 0) {
@@ -111,7 +115,9 @@ fun DashboardScreen(
                         }
                     }
 
-                    IconButton(onClick = onLogout) {
+                    IconButton(
+                        onClick = onLogout
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Logout,
                             contentDescription = "Cerrar sesión"
@@ -157,7 +163,9 @@ fun DashboardScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.35f))
+                            .background(
+                                Color.Black.copy(alpha = 0.35f)
+                            )
                     )
 
                     Column(
@@ -196,8 +204,16 @@ fun DashboardScreen(
                 ActionGridCard(
                     modifier = Modifier.weight(1f),
                     icon = if (admin) "📊" else "📍",
-                    title = if (admin) "Inventario" else "Mapa de tiendas",
-                    onClick = if (admin) onAdmin else onMap
+                    title = if (admin) {
+                        "Inventario"
+                    } else {
+                        "Mapa de tiendas"
+                    },
+                    onClick = if (admin) {
+                        onAdmin
+                    } else {
+                        onMap
+                    }
                 )
             }
 
@@ -216,7 +232,7 @@ fun DashboardScreen(
                     modifier = Modifier.weight(1f),
                     icon = "🏷️",
                     title = "Promociones",
-                    onClick = onCatalog
+                    onClick = onPromotions
                 )
             }
 
@@ -232,7 +248,9 @@ fun DashboardScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                TextButton(onClick = onCatalog) {
+                TextButton(
+                    onClick = onCatalog
+                ) {
                     Text(
                         text = "Ver todos",
                         color = OylGreen,
@@ -269,7 +287,9 @@ fun DashboardScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
         }
     }
 }
@@ -337,9 +357,8 @@ private fun ActionGridCard(
                         "Catálogo" -> "Explora productos"
                         "Mapa de tiendas" -> "Encuéntranos"
                         "Mis pedidos" -> "Revisa tus compras"
-                        "Promociones" -> "Ofertas especiales"
+                        "Promociones" -> "Consulta promociones"
                         "Inventario" -> "Gestiona productos"
-
                         else -> ""
                     },
                     fontSize = 12.sp,

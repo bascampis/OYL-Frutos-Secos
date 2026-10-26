@@ -151,6 +151,9 @@ fun OylNavGraph(
                         },
                         onNotifications = {
                             nav.navigate(Routes.NOTIFICATIONS)
+                        },
+                        onPromotions = {
+                            nav.navigate(Routes.PROMOTIONS)
                         }
                     )
                 } else {
@@ -159,6 +162,7 @@ fun OylNavGraph(
                             popUpTo(Routes.DASHBOARD) {
                                 inclusive = true
                             }
+                            launchSingleTop = true
                         }
                     }
                 }
@@ -323,11 +327,13 @@ fun OylNavGraph(
                         onViewOrders = {
                             nav.navigate(Routes.ORDERS) {
                                 popUpTo(Routes.DASHBOARD)
+                                launchSingleTop = true
                             }
                         },
                         onContinueShopping = {
                             nav.navigate(Routes.CATALOG) {
                                 popUpTo(Routes.DASHBOARD)
+                                launchSingleTop = true
                             }
                         }
                     )
@@ -451,6 +457,25 @@ fun OylNavGraph(
                 }
             }
 
+            // Promociones: cliente y administrador
+            composable(Routes.PROMOTIONS) {
+                val active = user
+
+                if (active != null) {
+                    PromotionsScreen(
+                        isAdmin = active.role == UserRole.ADMINISTRADOR,
+                        onBack = {
+                            nav.popBackStack()
+                        },
+                        onProductClick = { productId ->
+                            nav.navigate(
+                                Routes.productDetail(productId)
+                            )
+                        }
+                    )
+                }
+            }
+
             // 15. Perfil
             composable(Routes.PROFILE) {
                 val active = user
@@ -467,7 +492,9 @@ fun OylNavGraph(
                     )
                 } else {
                     LaunchedEffect(Unit) {
-                        nav.navigate(Routes.LOGIN)
+                        nav.navigate(Routes.LOGIN) {
+                            launchSingleTop = true
+                        }
                     }
                 }
             }
@@ -509,7 +536,7 @@ fun OylNavGraph(
                 "notification_id"
             )
 
-            // Evita abrir avisos de otro usuario.
+            // Solo abre avisos del usuario conectado.
             if (ownerAlias == active.alias) {
                 val destination = when (target) {
                     "orders" -> Routes.ORDERS
