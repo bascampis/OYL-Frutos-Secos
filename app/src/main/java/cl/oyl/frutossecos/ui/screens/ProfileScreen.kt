@@ -44,6 +44,7 @@ import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.components.saveAvatarPhoto
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import kotlinx.coroutines.launch
+import cl.oyl.frutossecos.ui.components.SupportSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +64,7 @@ fun ProfileScreen(
     val avatarFlow = remember(user.alias) { avatarDao.observe(user.alias) }
     val avatar by avatarFlow.collectAsState(initial = null)
     var showAvatarPicker by remember { mutableStateOf(false) }
+    var showSupport by remember { mutableStateOf(false) }
 
     val preferences = remember(context.applicationContext) {
         context.applicationContext.getSharedPreferences(
@@ -356,7 +358,7 @@ fun ProfileScreen(
                     ProfileMenuRow(
                         icon = Icons.AutoMirrored.Filled.Help,
                         title = "Ayuda y soporte"
-                    ) {}
+                    ) {showSupport = true}
                 }
             }
 
@@ -412,7 +414,12 @@ fun ProfileScreen(
             }
         )
     }
-}
+
+    if (showSupport) {
+        SupportSheet(onDismiss = { showSupport = false })
+    }
+}   // <- esta llave cierra la función ProfileScreen
+
 
 @Composable
 private fun ProfileMenuRow(
