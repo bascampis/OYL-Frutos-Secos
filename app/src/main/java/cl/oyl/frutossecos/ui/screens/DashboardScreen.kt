@@ -270,13 +270,6 @@ fun DashboardScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = onAbout,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Acerca de esta demostración")
-            }
         }
     }
 }
@@ -346,6 +339,7 @@ private fun ActionGridCard(
                         "Mis pedidos" -> "Revisa tus compras"
                         "Promociones" -> "Ofertas especiales"
                         "Inventario" -> "Gestiona productos"
+
                         else -> ""
                     },
                     fontSize = 12.sp,
