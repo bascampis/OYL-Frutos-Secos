@@ -38,14 +38,15 @@ import cl.oyl.frutossecos.OylApplication
 import cl.oyl.frutossecos.data.local.UserAvatarEntity
 import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.domain.model.UserRole
+import cl.oyl.frutossecos.ui.components.AddressSheet
 import cl.oyl.frutossecos.ui.components.AvatarPickerDialog
 import cl.oyl.frutossecos.ui.components.AvatarView
+import cl.oyl.frutossecos.ui.components.OperationalPreferencesSheet
 import cl.oyl.frutossecos.ui.components.OylBottomBar
+import cl.oyl.frutossecos.ui.components.SupportSheet
 import cl.oyl.frutossecos.ui.components.saveAvatarPhoto
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import kotlinx.coroutines.launch
-import cl.oyl.frutossecos.ui.components.SupportSheet
-import cl.oyl.frutossecos.ui.components.AddressSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,19 +61,43 @@ fun ProfileScreen(
     val app = context.applicationContext as OylApplication
     val scope = rememberCoroutineScope()
 
-    // Avatar del usuario, guardado en SQLite (uno por usuario).
-    val avatarDao = remember { app.database.avatarDao() }
-    val avatarFlow = remember(user.alias) { avatarDao.observe(user.alias) }
+    val avatarDao = remember {
+        app.database.avatarDao()
+    }
+
+    val avatarFlow = remember(user.alias) {
+        avatarDao.observe(user.alias)
+    }
+
     val avatar by avatarFlow.collectAsState(initial = null)
-    var showAvatarPicker by remember { mutableStateOf(false) }
-    var showSupport by remember { mutableStateOf(false) }
-    var showAddress by remember { mutableStateOf(false) }
-    var savedAddress by remember(user.alias) { mutableStateOf("") }
+
+    var showAvatarPicker by remember(user.alias) {
+        mutableStateOf(false)
+    }
+
+    var showSupport by remember(user.alias) {
+        mutableStateOf(false)
+    }
+
+    var showAddress by remember(user.alias) {
+        mutableStateOf(false)
+    }
+
+    var showOperationalPreferences by remember(user.alias) {
+        mutableStateOf(false)
+    }
+
+    var savedAddress by remember(user.alias) {
+        mutableStateOf("")
+    }
 
     LaunchedEffect(user.alias, showAddress) {
         if (user.role == UserRole.CLIENTE) {
             savedAddress = try {
-                app.authRepository.getProfile(user.alias)?.address.orEmpty()
+                app.authRepository
+                    .getProfile(user.alias)
+                    ?.address
+                    .orEmpty()
             } catch (_: Exception) {
                 ""
             }
@@ -180,7 +205,9 @@ fun ProfileScreen(
                         .align(Alignment.BottomEnd)
                         .clip(CircleShape)
                         .background(OylGreen)
-                        .clickable { showAvatarPicker = true },
+                        .clickable {
+                            showAvatarPicker = true
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -221,22 +248,42 @@ fun ProfileScreen(
                         ProfileMenuRow(
                             icon = Icons.Default.Place,
                             title = "Mis direcciones",
-                            subtitle = savedAddress.ifBlank { "Agrega tu dirección de retiro o entrega" }
-                        ) { showAddress = true }
+                            subtitle = savedAddress.ifBlank {
+                                "Agrega tu dirección de retiro o entrega"
+                            }
+                        ) {
+                            showAddress = true
+                        }
 
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
 
-                    ProfileMenuRow(
-                        icon = Icons.Default.Payment,
-                        title = "Métodos de pago"
-                    ) {}
+                    if (user.role == UserRole.ADMINISTRADOR) {
+                        ProfileMenuRow(
+                            icon = Icons.Default.Settings,
+                            title = "Preferencias operativas",
+                            subtitle = "Alertas de pedidos e inventario"
+                        ) {
+                            showOperationalPreferences = true
+                        }
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    if (user.role == UserRole.CLIENTE) {
+                        ProfileMenuRow(
+                            icon = Icons.Default.Payment,
+                            title = "Métodos de pago"
+                        ) {}
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
 
                     Row(
                         modifier = Modifier
@@ -374,7 +421,9 @@ fun ProfileScreen(
                     ProfileMenuRow(
                         icon = Icons.AutoMirrored.Filled.Help,
                         title = "Ayuda y soporte"
-                    ) {showSupport = true}
+                    ) {
+                        showSupport = true
+                    }
                 }
             }
 
@@ -415,34 +464,77 @@ fun ProfileScreen(
     if (showAvatarPicker) {
         AvatarPickerDialog(
             selectedAvatarId = avatar?.avatarId ?: 2,
-            onDismiss = { showAvatarPicker = false },
+            onDismiss = {
+                showAvatarPicker = false
+            },
             onSelectEmoji = { id ->
-                // Elegir un avatar reemplaza la foto.
-                scope.launch { avatarDao.save(UserAvatarEntity(user.alias, id, null)) }
+                scope.launch {
+                    avatarDao.save(
+                        UserAvatarEntity(
+                            alias = user.alias,
+                            avatarId = id,
+                            photoPath = null
+                        )
+                    )
+                }
+
                 showAvatarPicker = false
             },
             onPhotoTaken = { bitmap ->
-                val path = saveAvatarPhoto(context, user.alias, bitmap)
+                val path = saveAvatarPhoto(
+                    context,
+                    user.alias,
+                    bitmap
+                )
+
                 scope.launch {
-                    avatarDao.save(UserAvatarEntity(user.alias, avatar?.avatarId ?: 2, path))
+                    avatarDao.save(
+                        UserAvatarEntity(
+                            alias = user.alias,
+                            avatarId = avatar?.avatarId ?: 2,
+                            photoPath = path
+                        )
+                    )
                 }
+
                 showAvatarPicker = false
             }
         )
     }
 
-    if (showSupport) {
-        SupportSheet(onDismiss = { showSupport = false })
+    if (
+        showOperationalPreferences &&
+        user.role == UserRole.ADMINISTRADOR
+    ) {
+        OperationalPreferencesSheet(
+            alias = user.alias,
+            onDismiss = {
+                showOperationalPreferences = false
+            }
+        )
     }
-    if (showAddress) {
+
+    if (showSupport) {
+        SupportSheet(
+            onDismiss = {
+                showSupport = false
+            }
+        )
+    }
+
+    if (
+        showAddress &&
+        user.role == UserRole.CLIENTE
+    ) {
         AddressSheet(
             alias = user.alias,
             displayName = user.displayName,
-            onDismiss = { showAddress = false }
+            onDismiss = {
+                showAddress = false
+            }
         )
     }
-}   // <- esta llave cierra la función ProfileScreen
-
+}
 
 @Composable
 private fun ProfileMenuRow(
