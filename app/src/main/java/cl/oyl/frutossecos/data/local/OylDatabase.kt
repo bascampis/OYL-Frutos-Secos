@@ -193,18 +193,21 @@ interface LocalOrderDao {
   ClientEntity::class,
   ProductEntity::class,
   CartItemEntity::class,
-  LocalOrderEntity::class
+  LocalOrderEntity::class,
+  UserAvatarEntity::class
  ],
- version = 2,
+ version = 3,
  exportSchema = false
 )
-abstract class OylDatabase : RoomDatabase() {
+ abstract class OylDatabase : RoomDatabase() {
 
  abstract fun clientDao(): ClientDao
 
  abstract fun catalogDao(): CatalogDao
 
  abstract fun orderDao(): LocalOrderDao
+
+ abstract fun avatarDao(): AvatarDao
 }
 
 // Añade la tabla de pedidos sin borrar las tablas anteriores.

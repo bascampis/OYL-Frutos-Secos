@@ -1,5 +1,5 @@
 package cl.oyl.frutossecos.ui.screens
-
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,6 +30,9 @@ import cl.oyl.frutossecos.viewmodel.RegisterViewModel
 @Composable
 fun RegisterScreen(vm: RegisterViewModel, onBack: () -> Unit, onDone: (DemoUser) -> Unit) {
     val s by vm.state.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = context.applicationContext as cl.oyl.frutossecos.OylApplication
+    val scope = rememberCoroutineScope()
     var selectedAvatar by remember { mutableIntStateOf(1) }
 
     Scaffold(
@@ -172,7 +175,16 @@ fun RegisterScreen(vm: RegisterViewModel, onBack: () -> Unit, onDone: (DemoUser)
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { vm.submit(onDone) },
+                onClick = {
+                    vm.submit { newUser ->
+                        scope.launch {
+                            app.database.avatarDao().save(
+                                cl.oyl.frutossecos.data.local.UserAvatarEntity(newUser.alias, selectedAvatar, null)
+                            )
+                            onDone(newUser)
+                        }
+                    }
+                },
                 enabled = !s.busy,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = OylGreen),

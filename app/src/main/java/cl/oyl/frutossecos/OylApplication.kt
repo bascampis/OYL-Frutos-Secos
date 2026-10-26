@@ -3,6 +3,7 @@ package cl.oyl.frutossecos
 import android.app.Application
 import androidx.room.Room
 import cl.oyl.frutossecos.data.local.OYL_MIGRATION_1_2
+import cl.oyl.frutossecos.data.local.OYL_MIGRATION_2_3
 import cl.oyl.frutossecos.data.local.OylDatabase
 import cl.oyl.frutossecos.data.repository.CatalogRepository
 import cl.oyl.frutossecos.data.repository.LocalAuthRepository
@@ -16,7 +17,7 @@ class OylApplication : Application() {
    OylDatabase::class.java,
    "oyl_demo.db"
   )
-   .addMigrations(OYL_MIGRATION_1_2)
+   .addMigrations(OYL_MIGRATION_1_2, OYL_MIGRATION_2_3)
    .build()
  }
 

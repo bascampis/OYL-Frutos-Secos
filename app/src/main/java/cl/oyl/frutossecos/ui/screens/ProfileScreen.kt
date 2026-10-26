@@ -34,11 +34,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavController
+import cl.oyl.frutossecos.OylApplication
+import cl.oyl.frutossecos.data.local.UserAvatarEntity
 import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.domain.model.UserRole
+import cl.oyl.frutossecos.ui.components.AvatarPickerDialog
+import cl.oyl.frutossecos.ui.components.AvatarView
 import cl.oyl.frutossecos.ui.components.OylBottomBar
+import cl.oyl.frutossecos.ui.components.saveAvatarPhoto
 import cl.oyl.frutossecos.ui.theme.OylGreen
-import cl.oyl.frutossecos.ui.theme.OylMint
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +55,14 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    val app = context.applicationContext as OylApplication
+    val scope = rememberCoroutineScope()
+
+    // Avatar del usuario, guardado en SQLite (uno por usuario).
+    val avatarDao = remember { app.database.avatarDao() }
+    val avatarFlow = remember(user.alias) { avatarDao.observe(user.alias) }
+    val avatar by avatarFlow.collectAsState(initial = null)
+    var showAvatarPicker by remember { mutableStateOf(false) }
 
     val preferences = remember(context.applicationContext) {
         context.applicationContext.getSharedPreferences(
@@ -139,30 +152,25 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier.size(90.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(OylMint),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "👩",
-                        fontSize = 42.sp
-                    )
-                }
+                AvatarView(
+                    avatarId = avatar?.avatarId ?: 2,
+                    photoPath = avatar?.photoPath,
+                    size = 90.dp,
+                    emojiSize = 42.sp
+                )
 
                 Box(
                     modifier = Modifier
                         .size(32.dp)
                         .align(Alignment.BottomEnd)
                         .clip(CircleShape)
-                        .background(OylGreen),
+                        .background(OylGreen)
+                        .clickable { showAvatarPicker = true },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = null,
+                        contentDescription = "Cambiar avatar",
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)
                     )
@@ -384,6 +392,25 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+
+    if (showAvatarPicker) {
+        AvatarPickerDialog(
+            selectedAvatarId = avatar?.avatarId ?: 2,
+            onDismiss = { showAvatarPicker = false },
+            onSelectEmoji = { id ->
+                // Elegir un avatar reemplaza la foto.
+                scope.launch { avatarDao.save(UserAvatarEntity(user.alias, id, null)) }
+                showAvatarPicker = false
+            },
+            onPhotoTaken = { bitmap ->
+                val path = saveAvatarPhoto(context, user.alias, bitmap)
+                scope.launch {
+                    avatarDao.save(UserAvatarEntity(user.alias, avatar?.avatarId ?: 2, path))
+                }
+                showAvatarPicker = false
+            }
+        )
     }
 }
 
