@@ -82,9 +82,10 @@ fun CatalogScreen(
         )
     }
 
-    val cartCount = cartItems.sumOf {
-        it.quantity.toLong()
-    }
+    val cartCount = cartItems
+        .filter { it.quantity > 0 }
+        .distinctBy { it.productId }
+        .size
 
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Todos") }
@@ -167,7 +168,7 @@ fun CatalogScreen(
                                 Icon(
                                     imageVector = Icons.Default.ShoppingCart,
                                     contentDescription =
-                                        "Carrito: $cartCount unidades"
+                                        "Carrito: $cartCount productos"
                                 )
                             }
                         }
