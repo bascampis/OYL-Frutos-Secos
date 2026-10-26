@@ -45,6 +45,7 @@ import cl.oyl.frutossecos.ui.components.saveAvatarPhoto
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import kotlinx.coroutines.launch
 import cl.oyl.frutossecos.ui.components.SupportSheet
+import cl.oyl.frutossecos.ui.components.AddressSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +66,18 @@ fun ProfileScreen(
     val avatar by avatarFlow.collectAsState(initial = null)
     var showAvatarPicker by remember { mutableStateOf(false) }
     var showSupport by remember { mutableStateOf(false) }
+    var showAddress by remember { mutableStateOf(false) }
+    var savedAddress by remember(user.alias) { mutableStateOf("") }
+
+    LaunchedEffect(user.alias, showAddress) {
+        if (user.role == UserRole.CLIENTE) {
+            savedAddress = try {
+                app.authRepository.getProfile(user.alias)?.address.orEmpty()
+            } catch (_: Exception) {
+                ""
+            }
+        }
+    }
 
     val preferences = remember(context.applicationContext) {
         context.applicationContext.getSharedPreferences(
@@ -204,14 +217,17 @@ fun ProfileScreen(
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    ProfileMenuRow(
-                        icon = Icons.Default.Place,
-                        title = "Mis direcciones"
-                    ) {}
+                    if (user.role == UserRole.CLIENTE) {
+                        ProfileMenuRow(
+                            icon = Icons.Default.Place,
+                            title = "Mis direcciones",
+                            subtitle = savedAddress.ifBlank { "Agrega tu dirección de retiro o entrega" }
+                        ) { showAddress = true }
 
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
 
                     ProfileMenuRow(
                         icon = Icons.Default.Payment,
@@ -417,6 +433,13 @@ fun ProfileScreen(
 
     if (showSupport) {
         SupportSheet(onDismiss = { showSupport = false })
+    }
+    if (showAddress) {
+        AddressSheet(
+            alias = user.alias,
+            displayName = user.displayName,
+            onDismiss = { showAddress = false }
+        )
     }
 }   // <- esta llave cierra la función ProfileScreen
 
