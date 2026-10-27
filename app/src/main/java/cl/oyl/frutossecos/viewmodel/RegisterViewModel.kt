@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class RegisterState(val name: String = "", val alias: String = "", val email: String = "",
- val phone: String = "", val address: String = "", val password: String = "", val error: String? = null,
- val busy: Boolean = false)
+                         val phone: String = "", val address: String = "", val password: String = "", val confirm: String = "",
+                         val error: String? = null, val busy: Boolean = false)
 
 class RegisterViewModel(application: Application): AndroidViewModel(application) {
  private val repo = (application as OylApplication).authRepository
@@ -24,6 +24,7 @@ class RegisterViewModel(application: Application): AndroidViewModel(application)
    "email" -> it.copy(email = v, error = null)
    "phone" -> it.copy(phone = v, error = null)
    "address" -> it.copy(address = v, error = null)
+   "confirm" -> it.copy(confirm = v, error = null)
    else -> it.copy(password = v, error = null)
   }
  }
@@ -31,9 +32,9 @@ class RegisterViewModel(application: Application): AndroidViewModel(application)
   val s = _state.value
   if (s.busy) return
   val email = s.email.trim().lowercase()
-  val errors = RegisterValidator.validate(s.name, email, s.phone, s.password)
+  val errors = RegisterValidator.validate(s.name, email, s.phone, s.address, s.password, s.confirm)
   if (!errors.isValid) {
-   _state.update { it.copy(error = listOfNotNull(errors.name, errors.email, errors.phone, errors.password).first()) }
+   _state.update { it.copy(error = "Revisa los campos marcados en rojo.") }
    return
   }
   viewModelScope.launch {
