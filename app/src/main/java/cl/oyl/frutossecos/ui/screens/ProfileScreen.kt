@@ -47,6 +47,8 @@ import cl.oyl.frutossecos.ui.components.SupportSheet
 import cl.oyl.frutossecos.ui.components.saveAvatarPhoto
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import kotlinx.coroutines.launch
+import cl.oyl.frutossecos.data.local.ClientEntity
+import cl.oyl.frutossecos.ui.components.EditProfileSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,22 +89,12 @@ fun ProfileScreen(
         mutableStateOf(false)
     }
 
-    var savedAddress by remember(user.alias) {
-        mutableStateOf("")
+    var showEdit by remember { mutableStateOf(false) }
+    var profile by remember(user.alias) { mutableStateOf<ClientEntity?>(null) }
+    LaunchedEffect(user.alias, showAddress, showEdit) {
+        profile = try { app.authRepository.getProfile(user.alias) } catch (_: Exception) { null }
     }
-
-    LaunchedEffect(user.alias, showAddress) {
-        if (user.role == UserRole.CLIENTE) {
-            savedAddress = try {
-                app.authRepository
-                    .getProfile(user.alias)
-                    ?.address
-                    .orEmpty()
-            } catch (_: Exception) {
-                ""
-            }
-        }
-    }
+    val savedAddress = profile?.address.orEmpty()
 
     val preferences = remember(context.applicationContext) {
         context.applicationContext.getSharedPreferences(
@@ -223,13 +215,13 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = user.displayName,
+                    text = profile?.name ?: user.displayName,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge
                 )
 
                 Text(
-                    text = user.alias,
+                    text = profile?.email ?: user.alias,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -244,6 +236,13 @@ fun ProfileScreen(
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
+                    ProfileMenuRow(
+                        icon = Icons.Default.Person,
+                        title = "Editar perfil",
+                        subtitle = "Nombre, teléfono y correo"
+                    ) { showEdit = true }
+
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     if (user.role == UserRole.CLIENTE) {
                         ProfileMenuRow(
                             icon = Icons.Default.Place,
@@ -532,6 +531,13 @@ fun ProfileScreen(
             onDismiss = {
                 showAddress = false
             }
+        )
+    }
+    if (showEdit) {
+        EditProfileSheet(
+            alias = user.alias,
+            displayName = user.displayName,
+            onDismiss = { showEdit = false }
         )
     }
 }

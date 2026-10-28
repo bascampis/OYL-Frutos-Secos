@@ -37,7 +37,17 @@ class LocalAuthRepository(private val dao: ClientDao): AuthRepository {
  suspend fun ensureProfile(alias: String, displayName: String) {
   val key = alias.trim().lowercase()
   if (dao.byAlias(key) != null) return
-  dao.add(ClientEntity(key, displayName, key, "", "", "", ""))
+  val admin = key == "admin@admin.cl"
+  dao.add(ClientEntity(key, displayName, key, if (admin) "+56912341234" else "", if (admin) "Santiago" else "", "", ""))
+ }
+
+ suspend fun updateContact(alias: String, name: String, email: String, phone: String) {
+  val key = alias.trim().lowercase()
+  val mail = email.trim().lowercase()
+  require(mail == key || mail !in listOf("admin@admin.cl", "cliente@cliente.cl")) { "Ese correo no está disponible." }
+  val other = dao.byEmail(mail)
+  require(other == null || other.alias == key) { "Ese correo ya está registrado." }
+  dao.updateContact(key, name.trim(), mail, phone.trim())
  }
 
  private fun digest(salt: String, password: String): String =

@@ -48,7 +48,10 @@ interface ClientDao {
   phone: String,
   address: String
  )
+ @Query("UPDATE clients SET name = :name, email = :email, phone = :phone WHERE alias = :alias")
+ suspend fun updateContact(alias: String, name: String, email: String, phone: String)
 }
+
 
 @Entity(tableName = "products")
 data class ProductEntity(
