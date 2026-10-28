@@ -14,14 +14,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -31,15 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.barcode.common.Barcode
 import cl.oyl.frutossecos.OylApplication
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.filled.Cancel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,80 +52,164 @@ fun QrScannerScreen(
     val context = LocalContext.current
     val app = context.applicationContext as OylApplication
     val scope = rememberCoroutineScope()
-    var status by remember { mutableStateOf("Apunta la cámara al código QR para obtener información del producto") }
+
+    var status by remember {
+        mutableStateOf(
+            "Apunta la cámara al código QR de un producto."
+        )
+    }
+
     var isError by remember { mutableStateOf(false) }
     var scanning by remember { mutableStateOf(false) }
     var success by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf(false) }
     var showPermissionError by remember { mutableStateOf(false) }
-    var adminChoiceId by remember { mutableStateOf<String?>(null) }
+
+    var adminChoiceId by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var automaticScanStarted by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     val checkScale by animateFloatAsState(
         targetValue = if (success) 1f else 0f,
         animationSpec = tween(350),
-        label = "checkScale"
+        label = "Lectura exitosa"
     )
+
     val crossScale by animateFloatAsState(
         targetValue = if (failure) 1f else 0f,
         animationSpec = tween(350),
-        label = "crossScale"
+        label = "Lectura incorrecta"
     )
 
     fun startScan() {
+        if (scanning || adminChoiceId != null) return
+
         scanning = true
         isError = false
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .enableAutoZoom()
-            .build()
-        val scanner = GmsBarcodeScanning.getClient(context, options)
-        scanner.startScan()
-            .addOnSuccessListener { barcode ->
-                val code = barcode.rawValue?.trim()?.uppercase().orEmpty()
-                scope.launch {
-                    try {
-                        if (code.isEmpty()) {
-                            status = "El código QR está vacío o no se pudo leer."
-                            isError = true
-                            failure = true
-                            delay(1500)
-                            failure = false
-                        } else {
-                            val product = app.database.catalogDao().getProduct(code)
-                            if (product != null) {
-                                status = "Producto ${product.id} reconocido"
-                                success = true
-                                delay(900)
-                                success = false
-                                if (isAdmin && onAdminInventory != null) adminChoiceId = product.id
-                                else onProductFound(product.id)
+        success = false
+        failure = false
+        status = "Apunta la cámara al código QR de un producto."
+
+        try {
+            val options = GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .enableAutoZoom()
+                .build()
+
+            val scanner = GmsBarcodeScanning.getClient(
+                context,
+                options
+            )
+
+            scanner.startScan()
+                .addOnSuccessListener { barcode ->
+                    val code = barcode.rawValue
+                        ?.trim()
+                        .orEmpty()
+
+                    scope.launch {
+                        try {
+                            app.catalogRepository.seedDemoProducts()
+
+                            val product = if (code.isBlank()) {
+                                null
                             } else {
-                                status = "Código $code incorrecto: no corresponde a un producto registrado."
-                                isError = true
-                                failure = true
-                                delay(1500)
-                                failure = false
+                                app.database.catalogDao()
+                                    .productList()
+                                    .firstOrNull {
+                                        it.id.equals(
+                                            code,
+                                            ignoreCase = true
+                                        )
+                                    }
                             }
+
+                            when {
+                                code.isBlank() -> {
+                                    status = "El código QR está vacío."
+                                    isError = true
+                                    failure = true
+
+                                    delay(1500)
+                                    failure = false
+                                }
+
+                                product == null -> {
+                                    status =
+                                        "El código no corresponde a un producto registrado."
+
+                                    isError = true
+                                    failure = true
+
+                                    delay(1500)
+                                    failure = false
+                                }
+
+                                else -> {
+                                    status =
+                                        "Producto reconocido: ${product.name}"
+
+                                    success = true
+
+                                    delay(900)
+                                    success = false
+
+                                    if (
+                                        isAdmin &&
+                                        onAdminInventory != null
+                                    ) {
+                                        adminChoiceId = product.id
+                                    } else {
+                                        onProductFound(product.id)
+                                    }
+                                }
+                            }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (_: Exception) {
+                            status =
+                                "No se pudo consultar el catálogo local."
+
+                            isError = true
+                        } finally {
+                            scanning = false
                         }
-                    } catch (_: Exception) {
-                        status = "No se pudo consultar el catálogo local."
-                        isError = true
                     }
+                }
+                .addOnCanceledListener {
+                    status =
+                        "Escaneo cancelado. Puedes volver a abrir la cámara."
+
                     scanning = false
                 }
-            }
-            .addOnCanceledListener { status = "Escaneo cancelado."; scanning = false }
-            .addOnFailureListener { error ->
-                status = "Escáner no disponible: ${error.localizedMessage ?: "Google Play Services requerido"}"
-                isError = true
-                scanning = false
-            }
+                .addOnFailureListener { error ->
+                    status =
+                        "Escáner no disponible: ${
+                            error.localizedMessage
+                                ?: "Comprueba Google Play Services."
+                        }"
+
+                    isError = true
+                    scanning = false
+                }
+        } catch (_: Exception) {
+            status =
+                "No se pudo abrir el escáner. Comprueba Google Play Services."
+
+            isError = true
+            scanning = false
+        }
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
+            showPermissionError = false
             startScan()
         } else {
             status = "Permiso de cámara denegado."
@@ -135,19 +218,48 @@ fun QrScannerScreen(
         }
     }
 
-    fun onScanClick() {
+    fun openCamera() {
+        if (scanning || adminChoiceId != null) return
+
         val hasPermission = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.CAMERA
+            context,
+            Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
-        if (hasPermission) startScan() else permissionLauncher.launch(Manifest.permission.CAMERA)
+
+        if (hasPermission) {
+            startScan()
+        } else {
+            permissionLauncher.launch(
+                Manifest.permission.CAMERA
+            )
+        }
+    }
+
+    // Abre la cámara una vez al entrar a esta pantalla.
+    LaunchedEffect(Unit) {
+        if (!automaticScanStarted) {
+            automaticScanStarted = true
+            openCamera()
+        }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Escanea el código QR del producto", fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Escanea el código QR del producto",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            )
         },
         bottomBar = {
-            OylBottomBar(navController = navController, currentRoute = currentRoute, isAdmin = isAdmin)
+            OylBottomBar(
+                navController = navController,
+                currentRoute = currentRoute,
+                isAdmin = isAdmin
+            )
         }
     ) { padding ->
         Box(
@@ -157,68 +269,68 @@ fun QrScannerScreen(
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            // Marco del visor: muestra la cámara o la animación de lectura exitosa
             Box(
                 modifier = Modifier
                     .size(260.dp)
                     .border(
-                        4.dp,
-                        when {
+                        width = 4.dp,
+                        color = when {
                             success -> OylGreen
                             failure -> Color(0xFFD32F2F)
                             else -> Color.White
                         },
-                        RoundedCornerShape(20.dp)
+                        shape = RoundedCornerShape(20.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 when {
-                    success -> Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "Lectura exitosa",
-                        tint = OylGreen,
-                        modifier = Modifier.size(110.dp).scale(checkScale)
-                    )
-                    failure -> Icon(
-                        Icons.Default.Cancel,
-                        contentDescription = "Código incorrecto",
-                        tint = Color(0xFFD32F2F),
-                        modifier = Modifier.size(110.dp).scale(crossScale)
-                    )
-                    else -> Text("📷", fontSize = 48.sp)
+                    success -> {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Lectura exitosa",
+                            tint = OylGreen,
+                            modifier = Modifier
+                                .size(110.dp)
+                                .scale(checkScale)
+                        )
+                    }
+
+                    failure -> {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = "Código incorrecto",
+                            tint = Color(0xFFD32F2F),
+                            modifier = Modifier
+                                .size(110.dp)
+                                .scale(crossScale)
+                        )
+                    }
+
+                    scanning -> {
+                        CircularProgressIndicator(
+                            color = Color.White
+                        )
+                    }
+
+                    else -> {
+                        Text(
+                            text = "📷",
+                            fontSize = 48.sp
+                        )
+                    }
                 }
             }
 
-            // Botones superiores de flash y galería
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                IconButton(
-                    onClick = { onScanClick() },
-                    modifier = Modifier.size(50.dp).clip(RoundedCornerShape(25.dp)).background(Color.DarkGray)
-                ) {
-                    Icon(Icons.Default.FlashOn, contentDescription = "Flash", tint = Color.White)
-                }
-                IconButton(
-                    onClick = { onScanClick() },
-                    modifier = Modifier.size(50.dp).clip(RoundedCornerShape(25.dp)).background(Color.DarkGray)
-                ) {
-                    Icon(Icons.Default.Image, contentDescription = "Galería", tint = Color.White)
-                }
-            }
-
-            // Tarjeta inferior con instrucciones o errores
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .padding(20.dp),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(
+                    containerColor =
+                        MaterialTheme.colorScheme.surface
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -226,18 +338,35 @@ fun QrScannerScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        status,
+                        text = status,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                        color = if (isError) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
                     )
+
                     Button(
-                        onClick = { onScanClick() },
-                        enabled = !scanning,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = OylGreen)
+                        onClick = { openCamera() },
+                        enabled = !scanning &&
+                                adminChoiceId == null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = OylGreen
+                        )
                     ) {
-                        Text(if (scanning) "Escaneando..." else "Escanear QR ahora", fontWeight = FontWeight.Bold)
+                        Text(
+                            text = if (scanning) {
+                                "Escaneando..."
+                            } else {
+                                "Volver a escanear"
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
@@ -246,37 +375,78 @@ fun QrScannerScreen(
 
     if (showPermissionError) {
         AlertDialog(
-            onDismissRequest = { showPermissionError = false },
-            title = { Text("Permiso de cámara requerido") },
-            text = { Text("Necesitas permitir el acceso a la cámara para escanear códigos QR.") },
+            onDismissRequest = {
+                showPermissionError = false
+            },
+            title = {
+                Text("Permiso de cámara requerido")
+            },
+            text = {
+                Text(
+                    "Permite el acceso a la cámara para escanear códigos QR. Después de habilitarlo, vuelve y toca Volver a escanear."
+                )
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    showPermissionError = false
-                    context.startActivity(
-                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.fromParts("package", context.packageName, null)
-                        }
-                    )
-                }) { Text("Abrir ajustes") }
+                TextButton(
+                    onClick = {
+                        showPermissionError = false
+
+                        context.startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            ).apply {
+                                data = Uri.fromParts(
+                                    "package",
+                                    context.packageName,
+                                    null
+                                )
+                            }
+                        )
+                    }
+                ) {
+                    Text("Abrir ajustes")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showPermissionError = false }) { Text("Cancelar") }
+                TextButton(
+                    onClick = {
+                        showPermissionError = false
+                    }
+                ) {
+                    Text("Cancelar")
+                }
             }
         )
     }
 
     adminChoiceId?.let { id ->
         AlertDialog(
-            onDismissRequest = { adminChoiceId = null },
-            title = { Text("Producto $id") },
-            text = { Text("¿Qué quieres hacer con este producto?") },
+            onDismissRequest = {
+                adminChoiceId = null
+            },
+            title = {
+                Text("Producto $id")
+            },
+            text = {
+                Text("¿Qué quieres hacer con este producto?")
+            },
             confirmButton = {
-                TextButton(onClick = { adminChoiceId = null; onAdminInventory?.invoke(id) }) {
+                TextButton(
+                    onClick = {
+                        adminChoiceId = null
+                        onAdminInventory?.invoke(id)
+                    }
+                ) {
                     Text("Ajustar inventario")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { adminChoiceId = null; onProductFound(id) }) {
+                TextButton(
+                    onClick = {
+                        adminChoiceId = null
+                        onProductFound(id)
+                    }
+                ) {
                     Text("Ver ficha")
                 }
             }
