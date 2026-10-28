@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -49,6 +48,7 @@ import cl.oyl.frutossecos.R
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.ui.theme.OylMint
+import coil.compose.AsyncImage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,18 +68,14 @@ fun CatalogScreen(
     val app = context.applicationContext as OylApplication
     val repo = app.catalogRepository
 
-    val products by repo.products.collectAsState(
-        initial = emptyList()
-    )
+    val products by repo.products.collectAsState(initial = emptyList())
 
     val cartFlow = remember(repo, ownerAlias) {
         repo.cart(ownerAlias)
     }
 
     val cartItems by key(ownerAlias) {
-        cartFlow.collectAsState(
-            initial = emptyList()
-        )
+        cartFlow.collectAsState(initial = emptyList())
     }
 
     val cartCount = cartItems
@@ -95,15 +91,12 @@ fun CatalogScreen(
     var cartMessage by remember(ownerAlias) {
         mutableStateOf<String?>(null)
     }
-
     var messageIsError by remember(ownerAlias) {
         mutableStateOf(false)
     }
-
     var messageVersion by remember(ownerAlias) {
         mutableIntStateOf(0)
     }
-
     var addingToCart by remember(ownerAlias) {
         mutableStateOf(false)
     }
@@ -122,10 +115,7 @@ fun CatalogScreen(
     val filteredProducts = products.filter { product ->
         val matchesCategory =
             category == "Todos" ||
-                    product.category.equals(
-                        category,
-                        ignoreCase = true
-                    )
+                    product.category.equals(category, ignoreCase = true)
 
         val matchesQuery =
             product.name.contains(query, ignoreCase = true) ||
@@ -167,8 +157,7 @@ fun CatalogScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ShoppingCart,
-                                    contentDescription =
-                                        "Carrito: $cartCount productos"
+                                    contentDescription = "Carrito: $cartCount productos"
                                 )
                             }
                         }
@@ -199,16 +188,12 @@ fun CatalogScreen(
                             slideInVertically(
                                 animationSpec = tween(250),
                                 initialOffsetY = { -it / 2 }
-                            ) + fadeIn(
-                                animationSpec = tween(250)
-                            )
+                            ) + fadeIn(tween(250))
                             ) togetherWith (
                             slideOutVertically(
                                 animationSpec = tween(180),
                                 targetOffsetY = { -it / 2 }
-                            ) + fadeOut(
-                                animationSpec = tween(180)
-                            )
+                            ) + fadeOut(tween(180))
                             )
                 },
                 label = "Aviso animado del carrito"
@@ -249,9 +234,7 @@ fun CatalogScreen(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text("Buscar productos...")
-                },
+                placeholder = { Text("Buscar productos...") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -310,23 +293,25 @@ fun CatalogScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Box(
+                            val fallback = painterResource(
+                                id = productImage(product.id)
+                            )
+
+                            AsyncImage(
+                                model = product.imageUrl
+                                    ?.trim()
+                                    ?.takeIf { it.isNotEmpty() },
+                                contentDescription = product.name,
+                                placeholder = fallback,
+                                error = fallback,
+                                fallback = fallback,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(100.dp)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(OylMint),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(
-                                        id = productImage(product.id)
-                                    ),
-                                    contentDescription = product.name,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
+                                contentScale = ContentScale.Crop
+                            )
 
                             Text(
                                 text = product.name,
@@ -363,15 +348,12 @@ fun CatalogScreen(
                                         mutableStateOf(false)
                                     }
 
-                                    val buttonInteraction = remember(product.id) {
+                                    val interaction = remember(product.id) {
                                         MutableInteractionSource()
                                     }
 
-                                    val hovered by buttonInteraction
-                                        .collectIsHoveredAsState()
-
-                                    val pressed by buttonInteraction
-                                        .collectIsPressedAsState()
+                                    val hovered by interaction.collectIsHoveredAsState()
+                                    val pressed by interaction.collectIsPressedAsState()
 
                                     val buttonEnabled =
                                         !addingToCart && product.stock > 0
@@ -391,7 +373,7 @@ fun CatalogScreen(
                                     )
 
                                     IconButton(
-                                        interactionSource = buttonInteraction,
+                                        interactionSource = interaction,
                                         enabled = buttonEnabled,
                                         onClick = {
                                             if (!addingToCart) {
@@ -405,14 +387,12 @@ fun CatalogScreen(
 
                                                 scope.launch {
                                                     try {
-                                                        val dao =
-                                                            app.database.catalogDao()
+                                                        val dao = app.database.catalogDao()
 
-                                                        val before =
-                                                            dao.getCartItem(
-                                                                ownerAlias,
-                                                                product.id
-                                                            )?.quantity ?: 0
+                                                        val before = dao.getCartItem(
+                                                            ownerAlias,
+                                                            product.id
+                                                        )?.quantity ?: 0
 
                                                         repo.changeCart(
                                                             ownerAlias,
@@ -420,20 +400,17 @@ fun CatalogScreen(
                                                             1
                                                         )
 
-                                                        val after =
-                                                            dao.getCartItem(
-                                                                ownerAlias,
-                                                                product.id
-                                                            )?.quantity ?: 0
+                                                        val after = dao.getCartItem(
+                                                            ownerAlias,
+                                                            product.id
+                                                        )?.quantity ?: 0
 
-                                                        if (after > before) {
-                                                            messageIsError = false
-                                                            cartMessage =
-                                                                "Añadido: ${product.name}"
+                                                        messageIsError = after <= before
+
+                                                        cartMessage = if (after > before) {
+                                                            "Añadido: ${product.name}"
                                                         } else {
-                                                            messageIsError = true
-                                                            cartMessage =
-                                                                "No puedes agregar más unidades de ${product.name}."
+                                                            "No puedes agregar más unidades de ${product.name}."
                                                         }
 
                                                         messageVersion++
@@ -443,7 +420,6 @@ fun CatalogScreen(
                                                         messageIsError = true
                                                         cartMessage =
                                                             "No se pudo añadir ${product.name}."
-
                                                         messageVersion++
                                                     } finally {
                                                         addingToCart = false
@@ -454,7 +430,7 @@ fun CatalogScreen(
                                         modifier = Modifier
                                             .size(36.dp)
                                             .hoverable(
-                                                interactionSource = buttonInteraction,
+                                                interactionSource = interaction,
                                                 enabled = buttonEnabled
                                             )
                                             .graphicsLayer {
@@ -472,8 +448,7 @@ fun CatalogScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
-                                            contentDescription =
-                                                "Agregar ${product.name}",
+                                            contentDescription = "Agregar ${product.name}",
                                             tint = Color.White
                                         )
                                     }

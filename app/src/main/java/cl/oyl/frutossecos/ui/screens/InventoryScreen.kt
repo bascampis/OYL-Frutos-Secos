@@ -1,6 +1,5 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import cl.oyl.frutossecos.OylApplication
 import cl.oyl.frutossecos.R
-import cl.oyl.frutossecos.data.repository.CatalogRepository
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,11 +36,7 @@ fun InventoryScreen(
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as OylApplication
-
-    val repo = remember {
-        CatalogRepository(app.database.catalogDao())
-    }
-
+    val repo = app.catalogRepository
     val scope = rememberCoroutineScope()
 
     var searchQuery by remember {
@@ -101,13 +96,9 @@ fun InventoryScreen(
         ) {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                },
+                onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text("Buscar producto...")
-                },
+                placeholder = { Text("Buscar producto...") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -158,11 +149,18 @@ fun InventoryScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Image(
-                                    painter = painterResource(
-                                        id = inventoryProductImage(product.id)
-                                    ),
+                                val fallback = painterResource(
+                                    id = inventoryProductImage(product.id)
+                                )
+
+                                AsyncImage(
+                                    model = product.imageUrl
+                                        ?.trim()
+                                        ?.takeIf { it.isNotEmpty() },
                                     contentDescription = product.name,
+                                    placeholder = fallback,
+                                    error = fallback,
+                                    fallback = fallback,
                                     modifier = Modifier
                                         .size(56.dp)
                                         .clip(RoundedCornerShape(10.dp)),

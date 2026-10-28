@@ -75,9 +75,15 @@ object ProductFormValidator {
             errors["stock"] =
                 "Ingresa un stock entero igual o mayor que cero."
         }
+
         val url = form.imageUrl.trim()
-        if (url.isNotEmpty() && !Regex("^https://\\S+\\.\\S+$").matches(url)) {
-            errors["imageUrl"] = "La URL debe comenzar con https:// y ser válida."
+
+        if (
+            url.isNotEmpty() &&
+            !Regex("^https://\\S+\\.\\S+$").matches(url)
+        ) {
+            errors["imageUrl"] =
+                "La URL debe comenzar con https:// y ser válida."
         }
 
         return errors
@@ -180,24 +186,42 @@ class ProductManagementViewModel : ViewModel() {
     fun updateField(
         field: String,
         value: String
-
     ) {
         if (saving) return
 
         form = when (field) {
             "id" -> {
-                if (editing) form else form.copy(id = value)
+                if (editing) {
+                    form
+                } else {
+                    form.copy(id = value)
+                }
             }
 
             "name" -> form.copy(name = value)
+
             "category" -> form.copy(category = value)
+
             "description" -> form.copy(description = value)
+
             "presentation" -> form.copy(presentation = value)
+
             "price" -> form.copy(price = value)
-            "imageUrl" -> form.copy(imageUrl = value.filter { !it.isWhitespace() })
+
+            "imageUrl" -> {
+                form.copy(
+                    imageUrl = value.filter {
+                        !it.isWhitespace()
+                    }
+                )
+            }
 
             "stock" -> {
-                if (editing) form else form.copy(stock = value)
+                if (editing) {
+                    form
+                } else {
+                    form.copy(stock = value)
+                }
             }
 
             else -> form
@@ -263,7 +287,10 @@ class ProductManagementViewModel : ViewModel() {
                         price = submitted.price.trim().toInt(),
                         stock = latestProduct?.stock
                             ?: submitted.stock.trim().toInt(),
-                        active = latestProduct?.active ?: true
+                        active = latestProduct?.active ?: true,
+                        imageUrl = submitted.imageUrl.trim().ifBlank {
+                            null
+                        }
                     )
                 )
 

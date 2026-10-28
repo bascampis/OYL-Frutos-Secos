@@ -1,6 +1,6 @@
 package cl.oyl.frutossecos.ui.screens
 
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,6 +30,7 @@ import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.viewmodel.ProductManagementViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +69,7 @@ fun ProductManagementScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { vm.refresh() },
+                        onClick = vm::refresh,
                         enabled = !busy
                     ) {
                         Icon(
@@ -111,7 +113,9 @@ fun ProductManagementScreen(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar producto...") },
+                placeholder = {
+                    Text("Buscar producto...")
+                },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -172,28 +176,23 @@ fun ProductManagementScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val fallback = painterResource(managementProductImage(product.id))
-                            if (product.imageUrl.isNullOrBlank()) {
-                                Image(
-                                    painter = fallback,
-                                    contentDescription = product.name,
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                AsyncImage(
-                                    model = product.imageUrl,
-                                    contentDescription = product.name,
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(10.dp)),
-                                    contentScale = ContentScale.Crop,
-                                    placeholder = fallback,
-                                    error = fallback
-                                )
-                            }
+                            val fallback = painterResource(
+                                managementProductImage(product.id)
+                            )
+
+                            AsyncImage(
+                                model = product.imageUrl
+                                    ?.trim()
+                                    ?.takeIf { it.isNotEmpty() },
+                                contentDescription = product.name,
+                                placeholder = fallback,
+                                error = fallback,
+                                fallback = fallback,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(10.dp)),
+                                contentScale = ContentScale.Crop
+                            )
 
                             Column(
                                 modifier = Modifier.weight(1f)
@@ -268,7 +267,7 @@ fun ProductManagementScreen(
 
     if (vm.dialogOpen) {
         AlertDialog(
-            onDismissRequest = { vm.closeDialog() },
+            onDismissRequest = vm::closeDialog,
             title = {
                 Text(
                     if (vm.editing) {
@@ -342,43 +341,42 @@ fun ProductManagementScreen(
                         numeric = true,
                         onChange = { vm.updateField("price", it) }
                     )
+
+                    ProductEditorField(
+                        value = vm.form.stock,
+                        label = if (vm.editing) {
+                            "Stock actual"
+                        } else {
+                            "Stock inicial"
+                        },
+                        icon = Icons.Default.Numbers,
+                        error = vm.errors["stock"],
+                        enabled = !vm.saving,
+                        readOnly = vm.editing,
+                        numeric = true,
+                        onChange = { vm.updateField("stock", it) }
+                    )
+
+                    if (vm.editing) {
+                        Text(
+                            text = "Para cambiar las existencias, usa Gestión de Inventario.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
                     ProductEditorField(
                         value = vm.form.imageUrl,
                         label = "URL de la imagen (opcional)",
                         icon = Icons.Default.Link,
                         error = vm.errors["imageUrl"],
                         enabled = !vm.saving,
+                        keyboardType = KeyboardType.Uri,
                         onChange = { vm.updateField("imageUrl", it) }
                     )
 
-                    if (vm.form.imageUrl.trim().startsWith("https://") && vm.errors["imageUrl"] == null) {
-                        AsyncImage(
-                            model = vm.form.imageUrl.trim(),
-                            contentDescription = "Vista previa de la imagen",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(140.dp)
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-
-                    if (!vm.editing) {
-                        ProductEditorField(
-                            value = vm.form.stock,
-                            label = "Stock inicial",
-                            icon = Icons.Default.Numbers,
-                            error = vm.errors["stock"],
-                            enabled = !vm.saving,
-                            numeric = true,
-                            onChange = { vm.updateField("stock", it) }
-                        )
-                    } else {
-                        Text(
-                            text = "Las entradas y salidas de stock se registran en Gestión de Inventario.",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
+                    ProductImagePreview(
+                        url = vm.form.imageUrl.trim()
+                    )
 
                     if (vm.formError.isNotBlank()) {
                         Text(
@@ -397,7 +395,7 @@ fun ProductManagementScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { vm.save() },
+                    onClick = vm::save,
                     enabled = !vm.saving
                 ) {
                     Text(
@@ -411,13 +409,115 @@ fun ProductManagementScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { vm.closeDialog() },
+                    onClick = vm::closeDialog,
                     enabled = !vm.saving
                 ) {
                     Text("Cancelar")
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun ProductImagePreview(url: String) {
+    if (url.isBlank()) {
+        Text(
+            text = "Sin URL: se usará la imagen de respaldo.",
+            style = MaterialTheme.typography.bodySmall
+        )
+        return
+    }
+
+    if (!url.startsWith("https://")) {
+        Text(
+            text = "La dirección debe comenzar con https://.",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
+        return
+    }
+
+    val context = LocalContext.current
+
+    var retryVersion by remember(url) {
+        mutableIntStateOf(0)
+    }
+
+    var status by remember(url, retryVersion) {
+        mutableStateOf("Cargando imagen...")
+    }
+
+    var failed by remember(url, retryVersion) {
+        mutableStateOf(false)
+    }
+
+    val request = remember(url, retryVersion, context) {
+        ImageRequest.Builder(context)
+            .data(url)
+            .size(800, 800)
+            .crossfade(true)
+            .build()
+    }
+
+    Text(
+        text = "Vista previa",
+        fontWeight = FontWeight.SemiBold
+    )
+
+    // El estado aparece antes de la imagen para que no quede oculto debajo.
+    Text(
+        text = status,
+        color = if (failed) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.primary
+        },
+        style = MaterialTheme.typography.bodySmall
+    )
+
+    key(url, retryVersion) {
+        AsyncImage(
+            model = request,
+            contentDescription = "Vista previa de la imagen del producto",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
+            onLoading = {
+                failed = false
+                status = "Cargando imagen..."
+            },
+            onSuccess = {
+                failed = false
+                status = "Imagen cargada correctamente."
+            },
+            onError = { result ->
+                val cause = result.result.throwable
+
+                failed = true
+                status =
+                    "No se pudo cargar: ${cause.javaClass.simpleName}: ${cause.message.orEmpty()}"
+
+                Log.e(
+                    "OylProductImage",
+                    "Error al cargar la imagen del producto",
+                    cause
+                )
+            }
+        )
+    }
+
+    if (failed) {
+        OutlinedButton(
+            onClick = {
+                retryVersion++
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Reintentar carga")
+        }
     }
 }
 
@@ -431,7 +531,8 @@ private fun ProductEditorField(
     onChange: (String) -> Unit,
     readOnly: Boolean = false,
     numeric: Boolean = false,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     OutlinedTextField(
         value = value,
@@ -458,7 +559,7 @@ private fun ProductEditorField(
             keyboardType = if (numeric) {
                 KeyboardType.Number
             } else {
-                KeyboardType.Text
+                keyboardType
             }
         )
     )
