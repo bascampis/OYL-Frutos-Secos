@@ -62,7 +62,8 @@ data class ProductEntity(
  val presentation: String,
  val price: Int,
  val stock: Int,
- val active: Boolean = true
+ val active: Boolean = true,
+ val imageUrl: String? = null
 )
 
 @Entity(
@@ -199,7 +200,7 @@ interface LocalOrderDao {
   LocalOrderEntity::class,
   UserAvatarEntity::class
  ],
- version = 3,
+ version = 4,
  exportSchema = false
 )
  abstract class OylDatabase : RoomDatabase() {

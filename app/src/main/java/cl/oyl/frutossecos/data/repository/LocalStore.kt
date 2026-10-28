@@ -66,6 +66,12 @@ class LocalStoreRepository(
             require(value.stock >= 0) {
                 "El stock no puede ser negativo."
             }
+            value.imageUrl?.trim()?.takeIf { it.isNotEmpty() }?.let {
+                require(it.startsWith("https://")) {
+                    "La URL de la imagen debe comenzar con https://."
+                }
+            }
+
 
             val existing = catalog.getProduct(value.id)
 
@@ -78,7 +84,8 @@ class LocalStoreRepository(
                 price = value.price,
                 // Editar los datos no reemplaza el stock actual.
                 stock = existing?.stock ?: value.stock,
-                active = value.active
+                active = value.active,
+                imageUrl = value.imageUrl?.trim()?.takeIf { it.isNotEmpty() }
             )
 
             catalog.saveProducts(listOf(saved))
@@ -253,7 +260,8 @@ class LocalStoreRepository(
             presentation = presentation,
             price = price,
             stock = stock,
-            active = active
+            active = active,
+            imageUrl = imageUrl
         )
     }
 

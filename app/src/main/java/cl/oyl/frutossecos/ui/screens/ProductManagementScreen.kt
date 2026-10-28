@@ -28,6 +28,7 @@ import cl.oyl.frutossecos.R
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 import cl.oyl.frutossecos.viewmodel.ProductManagementViewModel
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,16 +172,28 @@ fun ProductManagementScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Image(
-                                painter = painterResource(
-                                    managementProductImage(product.id)
-                                ),
-                                contentDescription = product.name,
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                contentScale = ContentScale.Crop
-                            )
+                            val fallback = painterResource(managementProductImage(product.id))
+                            if (product.imageUrl.isNullOrBlank()) {
+                                Image(
+                                    painter = fallback,
+                                    contentDescription = product.name,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                AsyncImage(
+                                    model = product.imageUrl,
+                                    contentDescription = product.name,
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentScale = ContentScale.Crop,
+                                    placeholder = fallback,
+                                    error = fallback
+                                )
+                            }
 
                             Column(
                                 modifier = Modifier.weight(1f)
@@ -329,6 +342,26 @@ fun ProductManagementScreen(
                         numeric = true,
                         onChange = { vm.updateField("price", it) }
                     )
+                    ProductEditorField(
+                        value = vm.form.imageUrl,
+                        label = "URL de la imagen (opcional)",
+                        icon = Icons.Default.Link,
+                        error = vm.errors["imageUrl"],
+                        enabled = !vm.saving,
+                        onChange = { vm.updateField("imageUrl", it) }
+                    )
+
+                    if (vm.form.imageUrl.trim().startsWith("https://") && vm.errors["imageUrl"] == null) {
+                        AsyncImage(
+                            model = vm.form.imageUrl.trim(),
+                            contentDescription = "Vista previa de la imagen",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
 
                     if (!vm.editing) {
                         ProductEditorField(

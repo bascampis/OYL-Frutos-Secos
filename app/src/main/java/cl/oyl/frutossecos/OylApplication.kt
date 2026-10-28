@@ -8,6 +8,7 @@ import cl.oyl.frutossecos.data.local.OylDatabase
 import cl.oyl.frutossecos.data.repository.CatalogRepository
 import cl.oyl.frutossecos.data.repository.LocalAuthRepository
 import cl.oyl.frutossecos.data.repository.LocalStore
+import cl.oyl.frutossecos.data.local.OYL_MIGRATION_3_4
 
 class OylApplication : Application() {
 
@@ -17,7 +18,7 @@ class OylApplication : Application() {
    OylDatabase::class.java,
    "oyl_demo.db"
   )
-   .addMigrations(OYL_MIGRATION_1_2, OYL_MIGRATION_2_3)
+   .addMigrations(OYL_MIGRATION_1_2, OYL_MIGRATION_2_3, OYL_MIGRATION_3_4)
    .build()
  }
 

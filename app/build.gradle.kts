@@ -46,4 +46,5 @@ dependencies {
  debugImplementation("androidx.compose.ui:ui-test-manifest")
  implementation("org.osmdroid:osmdroid-android:6.1.20")
  implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+ implementation("io.coil-kt:coil-compose:2.7.0")
 }

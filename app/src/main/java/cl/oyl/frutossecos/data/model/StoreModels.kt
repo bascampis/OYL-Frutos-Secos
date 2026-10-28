@@ -8,7 +8,8 @@ data class LocalProduct(
     val presentation: String?,
     val price: Int,
     val stock: Int,
-    val active: Boolean
+    val active: Boolean,
+    val imageUrl: String? = null
 )
 
 data class LocalOrderItem(
@@ -48,7 +49,8 @@ data class ProductInputDto(
     val presentation: String,
     val price: Int,
     val stock: Int,
-    val active: Boolean
+    val active: Boolean,
+    val imageUrl: String? = null
 )
 
 data class StockDeltaDto(

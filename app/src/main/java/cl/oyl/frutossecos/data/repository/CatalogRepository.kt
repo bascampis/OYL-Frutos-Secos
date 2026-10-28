@@ -98,23 +98,15 @@ class CatalogRepository(
   dao.clearCart(owner)
  }
 
- suspend fun adjustStock(
-  productId: String,
-  delta: Int
- ): Boolean {
-  return try {
-   LocalStore.repository.adjustStock(
-    productId,
-    StockDeltaDto(delta)
-   )
-
-   true
-  } catch (e: CancellationException) {
-   throw e
-  } catch (_: Exception) {
-   false
-  }
+ suspend fun adjustStock(productId: String, delta: Int): Boolean {
+  val p = dao.getProduct(productId) ?: return false
+  val target = (p.stock + delta).coerceAtLeast(0)
+  if (target == p.stock) return false
+  dao.saveProducts(listOf(p.copy(stock = target)))
+  return true
  }
+
+ suspend fun upsertProduct(product: ProductEntity) = dao.saveProducts(listOf(product))
 
  suspend fun changeCart(
   owner: String,

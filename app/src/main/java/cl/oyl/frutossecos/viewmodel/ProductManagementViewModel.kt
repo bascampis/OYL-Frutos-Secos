@@ -18,7 +18,8 @@ data class ProductForm(
     val description: String = "",
     val presentation: String = "",
     val price: String = "",
-    val stock: String = "0"
+    val stock: String = "0",
+    val imageUrl: String = ""
 )
 
 object ProductFormValidator {
@@ -73,6 +74,10 @@ object ProductFormValidator {
         if (!editing && (stock == null || stock < 0)) {
             errors["stock"] =
                 "Ingresa un stock entero igual o mayor que cero."
+        }
+        val url = form.imageUrl.trim()
+        if (url.isNotEmpty() && !Regex("^https://\\S+\\.\\S+$").matches(url)) {
+            errors["imageUrl"] = "La URL debe comenzar con https:// y ser válida."
         }
 
         return errors
@@ -157,7 +162,8 @@ class ProductManagementViewModel : ViewModel() {
             description = product.description.orEmpty(),
             presentation = product.presentation.orEmpty(),
             price = product.price.toString(),
-            stock = product.stock.toString()
+            stock = product.stock.toString(),
+            imageUrl = product.imageUrl.orEmpty()
         )
 
         errors = emptyMap()
@@ -174,6 +180,7 @@ class ProductManagementViewModel : ViewModel() {
     fun updateField(
         field: String,
         value: String
+
     ) {
         if (saving) return
 
@@ -187,6 +194,7 @@ class ProductManagementViewModel : ViewModel() {
             "description" -> form.copy(description = value)
             "presentation" -> form.copy(presentation = value)
             "price" -> form.copy(price = value)
+            "imageUrl" -> form.copy(imageUrl = value.filter { !it.isWhitespace() })
 
             "stock" -> {
                 if (editing) form else form.copy(stock = value)
@@ -300,7 +308,8 @@ class ProductManagementViewModel : ViewModel() {
                         presentation = latest.presentation.orEmpty(),
                         price = latest.price,
                         stock = latest.stock,
-                        active = !latest.active
+                        active = !latest.active,
+                        imageUrl = latest.imageUrl
                     )
                 )
 
