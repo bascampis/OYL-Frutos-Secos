@@ -47,4 +47,8 @@ dependencies {
  implementation("org.osmdroid:osmdroid-android:6.1.20")
  implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
  implementation("io.coil-kt:coil-compose:2.7.0")
+ implementation("com.squareup.retrofit2:retrofit:2.11.0")
+ implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+ testImplementation("io.mockk:mockk:1.13.12")
+ testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
