@@ -23,3 +23,4 @@ google-services.json
 # Embedded backend demo database
 backend/data/
 backend/target/
+target/
