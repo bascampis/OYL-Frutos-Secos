@@ -8,7 +8,8 @@
 
 ## Integrantes
 - Catalina Aguirre
-- *(nombre del compañero/a)*
+- Bastian Campos
+- Suimey Flores
 
 ## Funcionalidades
 **Cliente**
