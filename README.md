@@ -1,81 +1,110 @@
-# OYL Frutos Secos — Proyecto Android de DSY1105
+# OYL Frutos Secos
 
-Aplicación **académica y de demostración** (Duoc UC). Kotlin, Jetpack Compose, Material 3, MVVM, Room, Retrofit y backend Spring Boot + H2. Este proyecto **no está preparado para uso comercial**.
+**Asignatura:** Desarrollo de Aplicaciones Móviles (DSY1105) — Duoc UC
+**Evaluación:** Parcial 4 (continuación de la Evaluación 2)
+**Caso de estudio:** OYL Frutos Secos, tienda de frutos secos, deshidratados y semillas.
 
-## Estado de desarrollo
-**Código implementado en GitHub, no compilado ni validado en Android Studio después de la versión ZIP 01.**
+> Proyecto académico y de demostración. Usa datos ficticios; no está preparado para uso comercial.
 
-- Bienvenida, login local, registro, validaciones desacopladas, roles, sesión persistente y perfil.
-- Room para clientes registrados, catálogo en caché y carrito independiente por alias.
-- Catálogo sintético con búsqueda, categorías, ficha simple y carrito editable.
-- Confirmación de solicitudes desde el cliente mediante API REST; sin servidor, el pedido **no se confirma**.
-- Historial de pedidos del backend para el cliente.
-- Administración académica: edición/alta de productos, movimientos de stock y cambio de estados.
-- QR con Google Code Scanner (Google Play Services y dispositivo compatible).
-- Ubicación aproximada nativa (permiso) y enlace a aplicación de mapas externa; **sin puntos OYL confirmados**.
-- Notificaciones **locales de prueba**, no push FCM; separadas por usuario.
-- Tema verde, navegación Compose y animación de bienvenida.
+## Integrantes
+- Catalina Aguirre
+- *(nombre del compañero/a)*
 
-### Sin terminar / pendiente de validar
-- **Compilar y ejecutar todos los cambios en Android Studio**, pruebas de dispositivo, accesibilidad y pruebas de integración.
-- Seguridad/autorización en API de administración, autenticación backend, endurecimiento de passwords y HTTPS.
-- Notificaciones push reales desde servidor, puntos de retiro verificados y mapa integrado.
-- Fotografías de productos mediante cámara y subida a backend.
-- Flujos de pago (no exigidos para MVP), APK release y pruebas de concurrencia automatizadas.
-- Formularios con iconos y errores visuales por cada campo en todas las pantallas.
-- Trello compartido, evidencias de evaluación y nombre de integrantes (se debe completar).
+## Funcionalidades
+**Cliente**
+- Pantalla de bienvenida, inicio de sesión y registro con validaciones (correo, teléfono `+569`, contraseña con mayúscula y número).
+- Catálogo con búsqueda y categorías, detalle de producto y carrito.
+- Confirmación de pedidos e historial.
+- Escáner QR de productos (Google Code Scanner) con permiso de cámara.
+- Perfil con foto, edición de datos, direcciones y soporte.
+- Tarjeta con el valor del dólar, obtenida de una API externa con Retrofit.
 
-## Requisitos
-- Android Studio compatible con Android Gradle Plugin 8.9.2 y Kotlin 2.1.20.
-- JDK 17 y Android SDK 35. Emulador Pixel con Google Play recomendado.
-- Para pedidos/stock reales de **demostración**, Java 17 y Maven 3.9+ para el proyecto `backend/`.
+**Administrador** (`admin@admin.cl`)
+- Gestión de productos: crear, editar, activar/desactivar y agregar foto por URL.
+- Inventario con ajuste de stock y confirmación.
+- Gestión de pedidos y cambio de estado.
+- Preferencias operativas.
 
-## Ejecutar Android
-1. Clona `https://github.com/bascampis/OYL-Frutos-Secos.git` o actualiza tu copia con `git pull origin main`.
-2. Abre en Android Studio la **carpeta raíz** que contiene `settings.gradle.kts` (no solo `app`).
-3. Sincroniza Gradle y ejecuta **Build > Make Project**. La primera vez requiere internet.
-4. Selecciona emulador con Android 8+ y presiona Run.
-5. Si falla la compilación, conserva la salida de **Build Output** para depurar antes de entregar.
+## Arquitectura
+| Capa | Tecnología |
+|---|---|
+| App móvil | Kotlin, Jetpack Compose (Material 3), MVVM, Navigation Compose, Room, Retrofit, Coil |
+| Microservicios | Java 17, Spring Boot 3.4.5, Spring Data JPA, base H2 por servicio |
+| API externa | open.er-api.com (tipo de cambio USD → CLP) |
 
-Las credenciales académicas de demostración siguen siendo cliente `cliente` o administrador `admin@admin.cl`, contraseña ficticia `DemoOYL2026!`. No las utilices para sistemas reales. Puedes registrar cuentas inventadas con alias y correo de prueba. Nunca ingreses datos personales reales.
+```
+OYL-Frutos-Secos/
+  app/             aplicación Android
+  microservicios/  catalog-service, order-service, user-service
+  docs/            documentación y guías
+```
 
-## Iniciar backend Spring Boot
-1. Abre otra terminal en `backend/` y ejecuta `mvn spring-boot:run` (Java 17).
-2. Comprueba `http://localhost:8080/api/health`, debe mostrar `ACADEMIC_DEMO`.
-3. En el emulador, Android utiliza `http://10.0.2.2:8080/` para conectar con tu PC.
-4. Entra al catálogo y verifica que diga **sincronizado con Spring Boot** antes de confirmar pedidos.
-5. Si el backend está apagado, el catálogo muestra copia local ficticia y el botón de confirmar **debe fallar sin generar pedido**.
+## Microservicios y endpoints
+Cada servicio tiene su propia base de datos H2 en memoria, que se **crea y se puebla con `data.sql` al iniciar Spring Boot**.
 
-El cleartext HTTP se permite solo hacia `10.0.2.2` para laboratorio. Teléfono físico requiere adaptar IP/red y configuración de seguridad. **No expongas el backend a internet:** los endpoints administrativos no tienen autenticación ni control de roles en el servidor y el endpoint de historial usa alias suministrado por cliente.
+**catalog-service — puerto 8081**
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | /api/products | Lista productos |
+| GET | /api/products/{id} | Detalle |
+| POST | /api/products | Crea producto |
+| PUT | /api/products/{id} | Edita producto |
+| DELETE | /api/products/{id} | Elimina producto |
+| PATCH | /api/products/{id}/stock | Ajusta stock |
 
-## Pruebas manuales mínimas
-1. Cliente y administrador ficticios: login, logout, persistencia de sesión.
-2. Registro de dos perfiles ficticios, guardado/edición, comprobación de independencia.
-3. Catálogo, filtros, detalle, carrito con cantidades independientes y persistencia al reiniciar.
-4. Con backend: nuevo pedido, descuento stock y lectura de historial; sin backend: rechazo visible.
-5. Administrador: cambiar precio, ajustar stock, cambiar estado de pedido y comprobar desde cliente.
-6. QR: escanear código `OY001`, verificar ficha local; código inválido y cancelación.
-7. Ubicación: aceptar/denegar permiso; notificación local y permiso Android 13+.
-8. Ejecutar pruebas unitarias (validadores) y comprobar funcionamiento en emulador.
+**order-service — puerto 8082** (descuenta stock llamando a catalog-service)
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | /api/orders | Crea pedido |
+| GET | /api/orders | Todos los pedidos (administrador) |
+| GET | /api/orders?clientAlias= | Pedidos de un cliente |
+| GET | /api/orders/{id} | Detalle |
+| PATCH | /api/orders/{id}/status | Cambia el estado |
+| DELETE | /api/orders/{id} | Cancela un pedido pendiente y repone stock |
 
-## GitHub, rúbrica y entrega
-Mantener commits **reales** en `main`, documentar actividad del equipo y tareas en Trello. Revisar `docs/ESTADO_IMPLEMENTACION.md` y los PDF del caso. Antes de fecha límite guardar evidencias, APK release, ZIP de GitHub, README con integrantes y entrega AVA. **No realizar commits después de la fecha oficial de entrega**, ya que la pauta académica los penaliza.
+**user-service — puerto 8083**
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | /api/users/register | Registra usuario |
+| POST | /api/users/login | Inicia sesión |
+| GET | /api/users | Lista usuarios |
+| GET | /api/users/{id} | Detalle |
+| PUT | /api/users/{id} | Edita datos |
+| DELETE | /api/users/{id} | Elimina usuario |
 
-## Aviso sobre Gradle Wrapper
-El ZIP 01 incluyó un mecanismo de arranque compilado localmente en lugar del `gradle-wrapper.jar` oficial. Conviene regenerar y verificar el Wrapper oficial desde una instalación legítima de Gradle antes de la entrega, sin cambiar arbitrariamente la versión.
+Todos los servicios exponen además `GET /api/health`.
 
-Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
+**API externa (Retrofit):** `GET https://open.er-api.com/v6/latest/USD`, que entrega el valor del dólar en pesos chilenos y se muestra en la app.
+
+Más detalle en [`microservicios/README.md`](microservicios/README.md).
+
+## Pasos para ejecutar
+
+### 1. Backend
+Requisitos: Java 17 o superior y Maven 3.9 o superior. Desde la carpeta `microservicios/`, en tres terminales:
+```bash
+mvn -pl catalog-service spring-boot:run
+mvn -pl order-service spring-boot:run
+mvn -pl user-service spring-boot:run
+```
+Comprobar: `http://localhost:8081/api/products`, `http://localhost:8082/api/orders` y `http://localhost:8083/api/users`.
+Pruebas unitarias del backend: `mvn test` (37 pruebas).
+
+### 2. App Android
+1. Abrir en Android Studio la **carpeta raíz** (donde está `settings.gradle.kts`) y sincronizar Gradle.
+2. En `app/src/main/java/cl/oyl/frutossecos/data/remote/ApiConfig.kt`, usar `HOST = "10.0.2.2"` en el emulador, o la IP del PC en la red WiFi si se prueba en un celular físico.
+3. Ejecutar en un emulador o dispositivo con Android 8 (API 26) o superior.
+4. Pruebas unitarias de la app: `./gradlew testDebugUnitTest`.
+
+**Cuentas de prueba** (contraseña ficticia `DemoOYL2026!`): `admin@admin.cl` (administrador) y `cliente@cliente.cl` (cliente).
+
+## APK firmado
+*(Se agregará la captura de la configuración de firma y del archivo `.jks`.)*
 
 ## Planificación del proyecto
+La planificación se realiza en Trello con un tablero compartido entre los integrantes.
 
-La planificación de OYL Frutos Secos se realiza
-mediante Trello, utilizando un tablero compartido
-entre los integrantes del equipo.
-
-Tablero de Trello:
-[OYL Frutos Secos - DSY1105](https://trello.com/invite/b/6ad592d5b21864ef22331411/ATTI82ce34dee0663009dc827e7d14b22176E5003B1A/oyl-frutos-secos-dsy1105)
-
-### Organización del trabajo
+Tablero: [OYL Frutos Secos - DSY1105](https://trello.com/invite/b/6ad592d5b21864ef22331411/ATTI82ce34dee0663009dc827e7d14b22176E5003B1A/oyl-frutos-secos-dsy1105)
 
 - Por hacer: funcionalidades pendientes.
 - En desarrollo: tareas en implementación.
@@ -83,5 +112,9 @@ Tablero de Trello:
 - Finalizado: tareas implementadas y verificadas.
 - Bloqueado: tareas con impedimentos identificados.
 
-Las tarjetas incluyen responsables, descripción,
-checklists y evidencias del trabajo realizado.
+Las tarjetas incluyen responsables, descripción, checklists y evidencias.
+
+## Trabajo en equipo
+Los commits de cada integrante quedan registrados en GitHub (Insights > Contributors).
+
+Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
