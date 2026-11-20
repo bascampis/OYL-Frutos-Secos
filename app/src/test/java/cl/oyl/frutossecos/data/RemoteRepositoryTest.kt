@@ -6,12 +6,14 @@ import cl.oyl.frutossecos.data.model.LocalOrderRequest
 import cl.oyl.frutossecos.data.model.LocalProduct
 import cl.oyl.frutossecos.data.model.ProductInputDto
 import cl.oyl.frutossecos.data.model.StockDeltaDto
+import cl.oyl.frutossecos.data.remote.ApiException
 import cl.oyl.frutossecos.data.remote.CatalogApi
 import cl.oyl.frutossecos.data.remote.LoginBody
 import cl.oyl.frutossecos.data.remote.OrderApi
 import cl.oyl.frutossecos.data.remote.RegisterBody
 import cl.oyl.frutossecos.data.remote.RemoteRepository
 import cl.oyl.frutossecos.data.remote.RemoteUser
+import cl.oyl.frutossecos.data.remote.ServerUnavailableException
 import cl.oyl.frutossecos.data.remote.UserApi
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -163,5 +165,36 @@ class RemoteRepositoryTest {
         coEvery { users.delete(1) } returns Response.success(Unit)
         assertEquals(1, repo.users().getOrThrow().size)
         assertTrue(repo.deleteUser(1).isSuccess)
+    }
+
+    // ---------- Tipos de error y crear-o-editar ----------
+    @Test fun httpError_isApiExceptionWithStatusCode() = runTest {
+        coEvery { catalog.products() } throws httpError(409, """{"message":"x"}""")
+        val e = repo.products().exceptionOrNull()
+        assertTrue(e is ApiException)
+        assertEquals(409, (e as ApiException).code)
+    }
+
+    @Test fun networkError_isServerUnavailableException() = runTest {
+        coEvery { catalog.products() } throws IOException("sin red")
+        assertTrue(repo.products().exceptionOrNull() is ServerUnavailableException)
+    }
+
+    @Test fun saveProduct_createsWhenServerReturns404OnUpdate() = runTest {
+        coEvery { catalog.update("OY100", any()) } throws httpError(404, """{"message":"Producto no encontrado"}""")
+        coEvery { catalog.create(any()) } returns product("OY100")
+        assertEquals("OY100", repo.saveProduct(input("OY100")).getOrThrow().id)
+        coVerify { catalog.create(any()) }
+    }
+
+    @Test fun saveProduct_editsWhenProductExists() = runTest {
+        coEvery { catalog.update("OY001", any()) } returns product("OY001")
+        assertTrue(repo.saveProduct(input("OY001")).isSuccess)
+        coVerify(exactly = 0) { catalog.create(any()) }
+    }
+
+    @Test fun saveProduct_propagatesOtherServerErrors() = runTest {
+        coEvery { catalog.update("OY001", any()) } throws httpError(400, """{"message":"Datos inválidos"}""")
+        assertEquals("Datos inválidos", repo.saveProduct(input("OY001")).exceptionOrNull()?.message)
     }
 }

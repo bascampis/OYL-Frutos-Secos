@@ -29,6 +29,7 @@ import cl.oyl.frutossecos.R
 import cl.oyl.frutossecos.data.local.DemoNotificationStore
 import cl.oyl.frutossecos.domain.model.DemoUser
 import cl.oyl.frutossecos.domain.model.UserRole
+import cl.oyl.frutossecos.ui.components.ExchangeRateCard
 import cl.oyl.frutossecos.ui.components.OylBottomBar
 import cl.oyl.frutossecos.ui.theme.OylGreen
 
@@ -189,6 +190,8 @@ fun DashboardScreen(
                     }
                 }
             }
+
+            ExchangeRateCard()
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

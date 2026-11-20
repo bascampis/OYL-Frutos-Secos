@@ -23,6 +23,12 @@ class RemoteRepository(
     suspend fun products(): Result<List<LocalProduct>> = apiCall { catalog.products() }
     suspend fun createProduct(p: ProductInputDto): Result<LocalProduct> = apiCall { catalog.create(p) }
     suspend fun updateProduct(p: ProductInputDto): Result<LocalProduct> = apiCall { catalog.update(p.id, p) }
+    /** Edita el producto; si el servidor no lo conoce (404) lo crea. */
+    suspend fun saveProduct(p: ProductInputDto): Result<LocalProduct> {
+        val updated = updateProduct(p)
+        val error = updated.exceptionOrNull()
+        return if (error is ApiException && error.code == 404) createProduct(p) else updated
+    }
     suspend fun deleteProduct(id: String): Result<Unit> = apiCall {
         val r = catalog.delete(id)
         if (!r.isSuccessful) throw HttpException(r)
@@ -53,13 +59,19 @@ class RemoteRepository(
     }
 }
 
+/** El servidor respondió con un error (400, 401, 404, 409...). `code` es el código HTTP. */
+class ApiException(val code: Int, message: String) : Exception(message)
+
+/** No se pudo llegar al servidor (apagado, sin red o tiempo agotado). */
+class ServerUnavailableException(message: String) : Exception(message)
+
 /** Ejecuta una llamada de red y traduce los errores a mensajes en español. */
 internal suspend fun <T> apiCall(block: suspend () -> T): Result<T> = try {
     Result.success(block())
 } catch (e: HttpException) {
-    Result.failure(Exception(httpMessage(e)))
+    Result.failure(ApiException(e.code(), httpMessage(e)))
 } catch (e: IOException) {
-    Result.failure(Exception("No se pudo conectar con el servidor. Revisa que Spring Boot esté encendido."))
+    Result.failure(ServerUnavailableException("No se pudo conectar con el servidor. Revisa que Spring Boot esté encendido."))
 } catch (e: Exception) {
     Result.failure(Exception(e.message ?: "Error inesperado"))
 }

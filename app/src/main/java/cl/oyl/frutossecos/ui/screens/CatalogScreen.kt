@@ -109,7 +109,8 @@ fun CatalogScreen(
     }
 
     LaunchedEffect(repo) {
-        repo.seedDemoProducts()
+        // Descarga el catálogo desde catalog-service; sin conexión usa la copia local.
+        repo.syncFromServer()
     }
 
     val filteredProducts = products.filter { product ->

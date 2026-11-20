@@ -3,12 +3,14 @@ package cl.oyl.frutossecos.data.repository
 import cl.oyl.frutossecos.data.local.CartItemEntity
 import cl.oyl.frutossecos.data.local.CatalogDao
 import cl.oyl.frutossecos.data.local.ProductEntity
-import cl.oyl.frutossecos.data.model.StockDeltaDto
+import cl.oyl.frutossecos.data.remote.ApiException
+import cl.oyl.frutossecos.data.remote.RemoteRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 
 class CatalogRepository(
- private val dao: CatalogDao
+ private val dao: CatalogDao,
+ private val remote: RemoteRepository = RemoteRepository()
 ) {
  val products: Flow<List<ProductEntity>> = dao.products()
 
@@ -88,10 +90,34 @@ class CatalogRepository(
   }
  }
 
- // Compatibilidad temporal con las pantallas que aún usan este nombre.
- // No realiza ninguna conexión ni consulta a un servidor.
+  /**
+  * Descarga el catálogo desde catalog-service (Spring Boot) y actualiza la copia local en Room.
+  * Devuelve false si el servidor no responde; en ese caso se usa lo que ya hay en Room.
+  */
  suspend fun syncFromServer(): Boolean {
-  return refreshLocalCatalog()
+  val list = remote.products().getOrNull()
+
+  if (list == null) {
+   refreshLocalCatalog()
+   return false
+  }
+
+  dao.saveProducts(
+   list.map {
+    ProductEntity(
+     id = it.id,
+     name = it.name,
+     category = it.category,
+     description = it.description.orEmpty(),
+     presentation = it.presentation.orEmpty(),
+     price = it.price,
+     stock = it.stock,
+     active = it.active,
+     imageUrl = it.imageUrl
+    )
+   }
+  )
+  return true
  }
 
  suspend fun clearCart(owner: String) {
@@ -100,7 +126,16 @@ class CatalogRepository(
 
  suspend fun adjustStock(productId: String, delta: Int): Boolean {
   val p = dao.getProduct(productId) ?: return false
-  val target = (p.stock + delta).coerceAtLeast(0)
+
+  // Primero el microservicio; si está apagado, se ajusta solo en Room.
+  val result = remote.adjustStock(productId, delta)
+  val failure = result.exceptionOrNull()
+
+  if (failure is ApiException) return false
+
+  val target = result.getOrNull()?.stock
+   ?: (p.stock + delta).coerceAtLeast(0)
+
   if (target == p.stock) return false
   dao.saveProducts(listOf(p.copy(stock = target)))
   return true
