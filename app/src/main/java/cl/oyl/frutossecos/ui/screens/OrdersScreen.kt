@@ -303,6 +303,37 @@ fun OrdersScreen(
                                     style = MaterialTheme.typography.bodyMedium
                                 )
 
+                                if (!isAdmin && status == "pendiente de validación") {
+                                    OutlinedButton(
+                                        onClick = {
+                                            if (!busy) {
+                                                updatingId = order.id
+                                                error = ""
+                                                message = ""
+
+                                                scope.launch {
+                                                    try {
+                                                        LocalStore.repository.cancelOrder(order.id)
+                                                        orders = orders.filter { it.id != order.id }
+                                                        message = "Pedido #${order.id.take(8).uppercase()} cancelado."
+                                                    } catch (e: CancellationException) {
+                                                        throw e
+                                                    } catch (e: Exception) {
+                                                        error = e.message?.takeIf { it.isNotBlank() }
+                                                            ?: "No se pudo cancelar el pedido."
+                                                    } finally {
+                                                        updatingId = null
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        enabled = !busy,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Cancelar pedido")
+                                    }
+                                }
+
                                 if (isAdmin) {
                                     val next = when (status) {
                                         "pendiente de validación" -> "Confirmado"

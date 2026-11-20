@@ -258,11 +258,42 @@ fun ProductManagementScreen(
                                     }
                                 )
                             }
+
+                            IconButton(
+                                onClick = { vm.askDelete(product) },
+                                enabled = !busy
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Eliminar ${product.name}",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    vm.productToDelete?.let { product ->
+        AlertDialog(
+            onDismissRequest = { vm.dismissDelete() },
+            title = { Text("Eliminar producto") },
+            text = {
+                Text("¿Eliminar \"${product.name}\"? Esta acción no se puede deshacer.")
+            },
+            confirmButton = {
+                TextButton(onClick = { vm.confirmDelete() }) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { vm.dismissDelete() }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     if (vm.dialogOpen) {

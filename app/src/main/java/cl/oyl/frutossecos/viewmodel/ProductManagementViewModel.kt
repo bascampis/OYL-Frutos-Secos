@@ -358,6 +358,43 @@ class ProductManagementViewModel : ViewModel() {
         }
     }
 
+    var productToDelete by mutableStateOf<LocalProduct?>(null)
+        private set
+
+    fun askDelete(product: LocalProduct) {
+        if (saving || loading) return
+        productToDelete = product
+    }
+
+    fun dismissDelete() {
+        productToDelete = null
+    }
+
+    fun confirmDelete() {
+        val product = productToDelete ?: return
+        if (saving || loading) return
+
+        productToDelete = null
+
+        viewModelScope.launch {
+            saving = true
+            message = ""
+
+            try {
+                repository.deleteProduct(product.id)
+                message = "Producto eliminado."
+                reloadAfterSave()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                message = e.message?.takeIf { it.isNotBlank() }
+                    ?: "No se pudo eliminar el producto."
+            } finally {
+                saving = false
+            }
+        }
+    }
+
     private suspend fun reloadAfterSave() {
         try {
             products = repository.products()

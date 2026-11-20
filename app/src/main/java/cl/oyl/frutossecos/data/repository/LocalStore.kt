@@ -5,6 +5,7 @@ import cl.oyl.frutossecos.data.local.LocalOrderEntity
 import cl.oyl.frutossecos.data.local.OylDatabase
 import cl.oyl.frutossecos.data.local.ProductEntity
 import cl.oyl.frutossecos.data.model.*
+import cl.oyl.frutossecos.data.remote.ApiException
 import cl.oyl.frutossecos.data.remote.RemoteRepository
 import cl.oyl.frutossecos.data.remote.ServerUnavailableException
 import com.google.gson.Gson
@@ -297,6 +298,45 @@ class LocalStoreRepository(
             catalog.clearCart(request.clientAlias)
 
             order
+        }
+    }
+
+    /** Elimina el producto en catalog-service y en Room. Requiere conexión con el servidor. */
+    suspend fun deleteProduct(id: String) {
+        val failure = remoteCall { remote.deleteProduct(id) }.exceptionOrNull()
+
+        // 404: el servidor ya no lo tenía; basta con quitarlo de Room.
+        if (failure != null && !(failure is ApiException && failure.code == 404)) {
+            throw IllegalArgumentException(failure.message)
+        }
+
+        catalog.deleteProduct(id)
+    }
+
+    /** Cancela un pedido pendiente: el servidor repone el stock y aquí se quita de Room. */
+    suspend fun cancelOrder(id: String) {
+        val current = ordersDao.byId(id)?.toModel()
+            ?: error("Pedido no encontrado.")
+
+        require(current.status == "Pendiente de Validación") {
+            "Solo se puede cancelar un pedido pendiente."
+        }
+
+        val failure = remoteCall { remote.cancelOrder(id) }.exceptionOrNull()
+        if (failure is ApiException && failure.code != 404) {
+            throw IllegalArgumentException(failure.message)
+        }
+
+        database.withTransaction {
+            current.lines.forEach { line ->
+                catalog.getProduct(line.productId)?.let { product ->
+                    catalog.saveProducts(
+                        listOf(product.copy(stock = product.stock + line.quantity))
+                    )
+                }
+            }
+
+            ordersDao.delete(id)
         }
     }
 

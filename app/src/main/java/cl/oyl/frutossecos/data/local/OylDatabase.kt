@@ -117,6 +117,9 @@ interface CatalogDao {
  @Upsert
  suspend fun saveProducts(values: List<ProductEntity>)
 
+ @Query("DELETE FROM products WHERE id = :id")
+ suspend fun deleteProduct(id: String)
+
  @Query(
   """
         SELECT * FROM cart_items
@@ -190,6 +193,9 @@ interface LocalOrderDao {
 
  @Upsert
  suspend fun save(order: LocalOrderEntity)
+
+ @Query("DELETE FROM local_orders WHERE id = :id")
+ suspend fun delete(id: String)
 }
 
 @Database(
