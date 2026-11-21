@@ -1,0 +1,298 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MapPointsDatabase_Impl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.local</a>
+</div>
+
+<h1>Coverage Summary for Class: MapPointsDatabase_Impl (cl.oyl.frutossecos.data.local)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MapPointsDatabase_Impl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/21)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">MapPointsDatabase_Impl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/25)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/46)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.local;
+&nbsp;
+&nbsp;import androidx.annotation.NonNull;
+&nbsp;import androidx.room.InvalidationTracker;
+&nbsp;import androidx.room.RoomOpenDelegate;
+&nbsp;import androidx.room.migration.AutoMigrationSpec;
+&nbsp;import androidx.room.migration.Migration;
+&nbsp;import androidx.room.util.DBUtil;
+&nbsp;import androidx.room.util.TableInfo;
+&nbsp;import androidx.sqlite.SQLite;
+&nbsp;import androidx.sqlite.SQLiteConnection;
+&nbsp;import java.lang.Class;
+&nbsp;import java.lang.Override;
+&nbsp;import java.lang.String;
+&nbsp;import java.lang.SuppressWarnings;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.HashSet;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.Set;
+&nbsp;import javax.annotation.processing.Generated;
+&nbsp;
+&nbsp;@Generated(&quot;androidx.room.RoomProcessor&quot;)
+&nbsp;@SuppressWarnings({&quot;unchecked&quot;, &quot;deprecation&quot;, &quot;removal&quot;})
+<b class="nc">&nbsp;public final class MapPointsDatabase_Impl extends MapPointsDatabase {</b>
+&nbsp;  private volatile MapPointDao _mapPointDao;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @NonNull
+&nbsp;  protected RoomOpenDelegate createOpenDelegate() {
+<b class="nc">&nbsp;    final RoomOpenDelegate _openDelegate = new RoomOpenDelegate(1, &quot;abda8f4722b988641d805cf562676613&quot;, &quot;97afbbb70e42e37cfa8bf448cac1c557&quot;) {</b>
+&nbsp;      @Override
+&nbsp;      public void createAllTables(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;        SQLite.execSQL(connection, &quot;CREATE TABLE IF NOT EXISTS `map_points` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `address` TEXT NOT NULL, `hours` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `instructions` TEXT NOT NULL, PRIMARY KEY(`id`))&quot;);</b>
+<b class="nc">&nbsp;        SQLite.execSQL(connection, &quot;CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)&quot;);</b>
+<b class="nc">&nbsp;        SQLite.execSQL(connection, &quot;INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, &#39;abda8f4722b988641d805cf562676613&#39;)&quot;);</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      public void dropAllTables(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;        SQLite.execSQL(connection, &quot;DROP TABLE IF EXISTS `map_points`&quot;);</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      public void onCreate(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;      }</b>
+&nbsp;
+&nbsp;      @Override
+&nbsp;      public void onOpen(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;        internalInitInvalidationTracker(connection);</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      public void onPreMigrate(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;        DBUtil.dropFtsSyncTriggers(connection);</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      public void onPostMigrate(@NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;      }</b>
+&nbsp;
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      public RoomOpenDelegate.ValidationResult onValidateSchema(
+&nbsp;          @NonNull final SQLiteConnection connection) {
+<b class="nc">&nbsp;        final Map&lt;String, TableInfo.Column&gt; _columnsMapPoints = new HashMap&lt;String, TableInfo.Column&gt;(8);</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;id&quot;, new TableInfo.Column(&quot;id&quot;, &quot;TEXT&quot;, true, 1, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;name&quot;, new TableInfo.Column(&quot;name&quot;, &quot;TEXT&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;type&quot;, new TableInfo.Column(&quot;type&quot;, &quot;TEXT&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;address&quot;, new TableInfo.Column(&quot;address&quot;, &quot;TEXT&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;hours&quot;, new TableInfo.Column(&quot;hours&quot;, &quot;TEXT&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;latitude&quot;, new TableInfo.Column(&quot;latitude&quot;, &quot;REAL&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;longitude&quot;, new TableInfo.Column(&quot;longitude&quot;, &quot;REAL&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        _columnsMapPoints.put(&quot;instructions&quot;, new TableInfo.Column(&quot;instructions&quot;, &quot;TEXT&quot;, true, 0, null, TableInfo.CREATED_FROM_ENTITY));</b>
+<b class="nc">&nbsp;        final Set&lt;TableInfo.ForeignKey&gt; _foreignKeysMapPoints = new HashSet&lt;TableInfo.ForeignKey&gt;(0);</b>
+<b class="nc">&nbsp;        final Set&lt;TableInfo.Index&gt; _indicesMapPoints = new HashSet&lt;TableInfo.Index&gt;(0);</b>
+<b class="nc">&nbsp;        final TableInfo _infoMapPoints = new TableInfo(&quot;map_points&quot;, _columnsMapPoints, _foreignKeysMapPoints, _indicesMapPoints);</b>
+<b class="nc">&nbsp;        final TableInfo _existingMapPoints = TableInfo.read(connection, &quot;map_points&quot;);</b>
+<b class="nc">&nbsp;        if (!_infoMapPoints.equals(_existingMapPoints)) {</b>
+<b class="nc">&nbsp;          return new RoomOpenDelegate.ValidationResult(false, &quot;map_points(cl.oyl.frutossecos.data.local.MapPointEntity).\n&quot;</b>
+&nbsp;                  + &quot; Expected:\n&quot; + _infoMapPoints + &quot;\n&quot;
+&nbsp;                  + &quot; Found:\n&quot; + _existingMapPoints);
+&nbsp;        }
+<b class="nc">&nbsp;        return new RoomOpenDelegate.ValidationResult(true, null);</b>
+&nbsp;      }
+&nbsp;    };
+<b class="nc">&nbsp;    return _openDelegate;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @NonNull
+&nbsp;  protected InvalidationTracker createInvalidationTracker() {
+<b class="nc">&nbsp;    final Map&lt;String, String&gt; _shadowTablesMap = new HashMap&lt;String, String&gt;(0);</b>
+<b class="nc">&nbsp;    final Map&lt;String, Set&lt;String&gt;&gt; _viewTables = new HashMap&lt;String, Set&lt;String&gt;&gt;(0);</b>
+<b class="nc">&nbsp;    return new InvalidationTracker(this, _shadowTablesMap, _viewTables, &quot;map_points&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void clearAllTables() {
+<b class="nc">&nbsp;    super.performClear(false, &quot;map_points&quot;);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @NonNull
+&nbsp;  protected Map&lt;Class&lt;?&gt;, List&lt;Class&lt;?&gt;&gt;&gt; getRequiredTypeConverters() {
+<b class="nc">&nbsp;    final Map&lt;Class&lt;?&gt;, List&lt;Class&lt;?&gt;&gt;&gt; _typeConvertersMap = new HashMap&lt;Class&lt;?&gt;, List&lt;Class&lt;?&gt;&gt;&gt;();</b>
+<b class="nc">&nbsp;    _typeConvertersMap.put(MapPointDao.class, MapPointDao_Impl.getRequiredConverters());</b>
+<b class="nc">&nbsp;    return _typeConvertersMap;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @NonNull
+&nbsp;  public Set&lt;Class&lt;? extends AutoMigrationSpec&gt;&gt; getRequiredAutoMigrationSpecs() {
+<b class="nc">&nbsp;    final Set&lt;Class&lt;? extends AutoMigrationSpec&gt;&gt; _autoMigrationSpecsSet = new HashSet&lt;Class&lt;? extends AutoMigrationSpec&gt;&gt;();</b>
+<b class="nc">&nbsp;    return _autoMigrationSpecsSet;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  @NonNull
+&nbsp;  public List&lt;Migration&gt; getAutoMigrations(
+&nbsp;      @NonNull final Map&lt;Class&lt;? extends AutoMigrationSpec&gt;, AutoMigrationSpec&gt; autoMigrationSpecs) {
+<b class="nc">&nbsp;    final List&lt;Migration&gt; _autoMigrations = new ArrayList&lt;Migration&gt;();</b>
+<b class="nc">&nbsp;    return _autoMigrations;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public MapPointDao points() {
+<b class="nc">&nbsp;    if (_mapPointDao != null) {</b>
+<b class="nc">&nbsp;      return _mapPointDao;</b>
+&nbsp;    } else {
+<b class="nc">&nbsp;      synchronized(this) {</b>
+<b class="nc">&nbsp;        if(_mapPointDao == null) {</b>
+<b class="nc">&nbsp;          _mapPointDao = new MapPointDao_Impl(this);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _mapPointDao;</b>
+<b class="nc">&nbsp;      }</b>
+&nbsp;    }
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

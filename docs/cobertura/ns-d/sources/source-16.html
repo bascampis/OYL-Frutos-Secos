@@ -1,0 +1,205 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegisterViewModel</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: RegisterViewModel (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegisterViewModel</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    90%
+  </span>
+  <span class="absValue">
+    (9/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (21/21)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">RegisterViewModel$submit$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (10/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (25/25)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import android.app.Application
+&nbsp;import androidx.lifecycle.AndroidViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.OylApplication
+&nbsp;import cl.oyl.frutossecos.domain.model.DemoUser
+&nbsp;import cl.oyl.frutossecos.domain.validation.RegisterValidator
+&nbsp;import kotlinx.coroutines.flow.*
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;
+&nbsp;data class RegisterState(val name: String = &quot;&quot;, val alias: String = &quot;&quot;, val email: String = &quot;&quot;,
+&nbsp;                         val phone: String = &quot;&quot;, val address: String = &quot;&quot;, val password: String = &quot;&quot;, val confirm: String = &quot;&quot;,
+&nbsp;                         val error: String? = null, val busy: Boolean = false)
+&nbsp;
+<b class="fc">&nbsp;class RegisterViewModel(application: Application): AndroidViewModel(application) {</b>
+<b class="fc">&nbsp; private val repo = (application as OylApplication).authRepository</b>
+<b class="fc">&nbsp; private val _state = MutableStateFlow(RegisterState())</b>
+<b class="fc">&nbsp; val state = _state.asStateFlow()</b>
+<b class="fc">&nbsp; fun edit(field: String, v: String) = _state.update {</b>
+<b class="fc">&nbsp;  when (field) {</b>
+<b class="fc">&nbsp;   &quot;name&quot; -&gt; it.copy(name = v, error = null)</b>
+<b class="fc">&nbsp;   &quot;alias&quot; -&gt; it.copy(alias = v, error = null)</b>
+<b class="fc">&nbsp;   &quot;email&quot; -&gt; it.copy(email = v, error = null)</b>
+<b class="fc">&nbsp;   &quot;phone&quot; -&gt; it.copy(phone = v, error = null)</b>
+<b class="fc">&nbsp;   &quot;address&quot; -&gt; it.copy(address = v, error = null)</b>
+<b class="fc">&nbsp;   &quot;confirm&quot; -&gt; it.copy(confirm = v, error = null)</b>
+<b class="fc">&nbsp;   else -&gt; it.copy(password = v, error = null)</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp; }
+&nbsp; fun submit(onSuccess: (DemoUser) -&gt; Unit) {
+<b class="fc">&nbsp;  val s = _state.value</b>
+<b class="pc">&nbsp;  if (s.busy) return</b>
+<b class="fc">&nbsp;  val email = s.email.trim().lowercase()</b>
+<b class="fc">&nbsp;  val errors = RegisterValidator.validate(s.name, email, s.phone, s.address, s.password, s.confirm)</b>
+<b class="fc">&nbsp;  if (!errors.isValid) {</b>
+<b class="fc">&nbsp;   _state.update { it.copy(error = &quot;Revisa los campos marcados en rojo.&quot;) }</b>
+&nbsp;   return
+&nbsp;  }
+<b class="fc">&nbsp;  viewModelScope.launch {</b>
+<b class="fc">&nbsp;   _state.update { it.copy(busy = true, error = null) }</b>
+<b class="fc">&nbsp;   try { onSuccess(repo.register(s.name, email, email, s.phone, s.address, s.password)) }</b>
+<b class="pc">&nbsp;   catch (e: Exception) { _state.update { it.copy(error = e.message ?: &quot;No se pudo registrar.&quot;) } }</b>
+<b class="fc">&nbsp;   finally { _state.update { it.copy(busy = false) } }</b>
+&nbsp;  }
+&nbsp; }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

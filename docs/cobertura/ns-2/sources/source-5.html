@@ -1,0 +1,968 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CatalogDao_Impl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.local</a>
+</div>
+
+<h1>Coverage Summary for Class: CatalogDao_Impl (cl.oyl.frutossecos.data.local)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CatalogDao_Impl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/28)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/94)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/262)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">CatalogDao_Impl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogDao_Impl$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/9)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogDao_Impl$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/24)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogDao_Impl$4</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/27)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/40)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/136)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/346)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.local;
+&nbsp;
+&nbsp;import androidx.annotation.NonNull;
+&nbsp;import androidx.room.EntityDeleteOrUpdateAdapter;
+&nbsp;import androidx.room.EntityInsertAdapter;
+&nbsp;import androidx.room.EntityUpsertAdapter;
+&nbsp;import androidx.room.RoomDatabase;
+&nbsp;import androidx.room.coroutines.FlowUtil;
+&nbsp;import androidx.room.util.DBUtil;
+&nbsp;import androidx.room.util.SQLiteStatementUtil;
+&nbsp;import androidx.sqlite.SQLiteStatement;
+&nbsp;import java.lang.Class;
+&nbsp;import java.lang.Integer;
+&nbsp;import java.lang.NullPointerException;
+&nbsp;import java.lang.Object;
+&nbsp;import java.lang.Override;
+&nbsp;import java.lang.String;
+&nbsp;import java.lang.SuppressWarnings;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import javax.annotation.processing.Generated;
+&nbsp;import kotlin.Unit;
+&nbsp;import kotlin.coroutines.Continuation;
+&nbsp;import kotlinx.coroutines.flow.Flow;
+&nbsp;
+&nbsp;@Generated(&quot;androidx.room.RoomProcessor&quot;)
+&nbsp;@SuppressWarnings({&quot;unchecked&quot;, &quot;deprecation&quot;, &quot;removal&quot;})
+&nbsp;public final class CatalogDao_Impl implements CatalogDao {
+&nbsp;  private final RoomDatabase __db;
+&nbsp;
+&nbsp;  private final EntityInsertAdapter&lt;ProductEntity&gt; __insertAdapterOfProductEntity;
+&nbsp;
+&nbsp;  private final EntityInsertAdapter&lt;CartItemEntity&gt; __insertAdapterOfCartItemEntity;
+&nbsp;
+&nbsp;  private final EntityUpsertAdapter&lt;ProductEntity&gt; __upsertAdapterOfProductEntity;
+&nbsp;
+<b class="nc">&nbsp;  public CatalogDao_Impl(@NonNull final RoomDatabase __db) {</b>
+<b class="nc">&nbsp;    this.__db = __db;</b>
+<b class="nc">&nbsp;    this.__insertAdapterOfProductEntity = new EntityInsertAdapter&lt;ProductEntity&gt;() {</b>
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      protected String createQuery() {
+<b class="nc">&nbsp;        return &quot;INSERT OR IGNORE INTO `products` (`id`,`name`,`category`,`description`,`presentation`,`price`,`stock`,`active`,`imageUrl`) VALUES (?,?,?,?,?,?,?,?,?)&quot;;</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      protected void bind(@NonNull final SQLiteStatement statement,
+&nbsp;          @NonNull final ProductEntity entity) {
+<b class="nc">&nbsp;        if (entity.getId() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(1);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(1, entity.getId());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getName() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(2);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(2, entity.getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getCategory() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(3);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(3, entity.getCategory());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getDescription() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(4);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(4, entity.getDescription());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getPresentation() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(5);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(5, entity.getPresentation());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        statement.bindLong(6, entity.getPrice());</b>
+<b class="nc">&nbsp;        statement.bindLong(7, entity.getStock());</b>
+<b class="nc">&nbsp;        final int _tmp = entity.getActive() ? 1 : 0;</b>
+<b class="nc">&nbsp;        statement.bindLong(8, _tmp);</b>
+<b class="nc">&nbsp;        if (entity.getImageUrl() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(9);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(9, entity.getImageUrl());</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    };
+<b class="nc">&nbsp;    this.__insertAdapterOfCartItemEntity = new EntityInsertAdapter&lt;CartItemEntity&gt;() {</b>
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      protected String createQuery() {
+<b class="nc">&nbsp;        return &quot;INSERT OR REPLACE INTO `cart_items` (`ownerAlias`,`productId`,`quantity`) VALUES (?,?,?)&quot;;</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      protected void bind(@NonNull final SQLiteStatement statement,
+&nbsp;          @NonNull final CartItemEntity entity) {
+<b class="nc">&nbsp;        if (entity.getOwnerAlias() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(1);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(1, entity.getOwnerAlias());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getProductId() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(2);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(2, entity.getProductId());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        statement.bindLong(3, entity.getQuantity());</b>
+&nbsp;      }
+&nbsp;    };
+<b class="nc">&nbsp;    this.__upsertAdapterOfProductEntity = new EntityUpsertAdapter&lt;ProductEntity&gt;(new EntityInsertAdapter&lt;ProductEntity&gt;() {</b>
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      protected String createQuery() {
+<b class="nc">&nbsp;        return &quot;INSERT INTO `products` (`id`,`name`,`category`,`description`,`presentation`,`price`,`stock`,`active`,`imageUrl`) VALUES (?,?,?,?,?,?,?,?,?)&quot;;</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      protected void bind(@NonNull final SQLiteStatement statement,
+&nbsp;          @NonNull final ProductEntity entity) {
+<b class="nc">&nbsp;        if (entity.getId() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(1);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(1, entity.getId());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getName() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(2);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(2, entity.getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getCategory() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(3);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(3, entity.getCategory());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getDescription() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(4);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(4, entity.getDescription());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getPresentation() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(5);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(5, entity.getPresentation());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        statement.bindLong(6, entity.getPrice());</b>
+<b class="nc">&nbsp;        statement.bindLong(7, entity.getStock());</b>
+<b class="nc">&nbsp;        final int _tmp = entity.getActive() ? 1 : 0;</b>
+<b class="nc">&nbsp;        statement.bindLong(8, _tmp);</b>
+<b class="nc">&nbsp;        if (entity.getImageUrl() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(9);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(9, entity.getImageUrl());</b>
+&nbsp;        }
+&nbsp;      }
+<b class="nc">&nbsp;    }, new EntityDeleteOrUpdateAdapter&lt;ProductEntity&gt;() {</b>
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      protected String createQuery() {
+<b class="nc">&nbsp;        return &quot;UPDATE `products` SET `id` = ?,`name` = ?,`category` = ?,`description` = ?,`presentation` = ?,`price` = ?,`stock` = ?,`active` = ?,`imageUrl` = ? WHERE `id` = ?&quot;;</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      protected void bind(@NonNull final SQLiteStatement statement,
+&nbsp;          @NonNull final ProductEntity entity) {
+<b class="nc">&nbsp;        if (entity.getId() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(1);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(1, entity.getId());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getName() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(2);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(2, entity.getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getCategory() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(3);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(3, entity.getCategory());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getDescription() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(4);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(4, entity.getDescription());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getPresentation() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(5);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(5, entity.getPresentation());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        statement.bindLong(6, entity.getPrice());</b>
+<b class="nc">&nbsp;        statement.bindLong(7, entity.getStock());</b>
+<b class="nc">&nbsp;        final int _tmp = entity.getActive() ? 1 : 0;</b>
+<b class="nc">&nbsp;        statement.bindLong(8, _tmp);</b>
+<b class="nc">&nbsp;        if (entity.getImageUrl() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(9);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(9, entity.getImageUrl());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getId() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(10);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(10, entity.getId());</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    });
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object seedProducts(final List&lt;ProductEntity&gt; values,
+&nbsp;      final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    if (values == null) throw new NullPointerException();</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      __insertAdapterOfProductEntity.insert(_connection, values);</b>
+&nbsp;      return Unit.INSTANCE;
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object upsertCart(final CartItemEntity value,
+&nbsp;      final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    if (value == null) throw new NullPointerException();</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      __insertAdapterOfCartItemEntity.insert(_connection, value);</b>
+&nbsp;      return Unit.INSTANCE;
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object saveProducts(final List&lt;ProductEntity&gt; values,
+&nbsp;      final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    if (values == null) throw new NullPointerException();</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      __upsertAdapterOfProductEntity.upsert(_connection, values);</b>
+&nbsp;      return Unit.INSTANCE;
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Flow&lt;List&lt;ProductEntity&gt;&gt; products() {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM products WHERE active = 1 ORDER BY name&quot;;</b>
+<b class="nc">&nbsp;    return FlowUtil.createFlow(__db, false, new String[] {&quot;products&quot;}, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        final int _columnIndexOfId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;id&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfCategory = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;category&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfDescription = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;description&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPresentation = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;presentation&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPrice = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;price&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfStock = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;stock&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfActive = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;active&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfImageUrl = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;imageUrl&quot;);</b>
+<b class="nc">&nbsp;        final List&lt;ProductEntity&gt; _result = new ArrayList&lt;ProductEntity&gt;();</b>
+<b class="nc">&nbsp;        while (_stmt.step()) {</b>
+&nbsp;          final ProductEntity _item;
+&nbsp;          final String _tmpId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfId)) {</b>
+<b class="nc">&nbsp;            _tmpId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpId = _stmt.getText(_columnIndexOfId);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpCategory;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfCategory)) {</b>
+<b class="nc">&nbsp;            _tmpCategory = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpCategory = _stmt.getText(_columnIndexOfCategory);</b>
+&nbsp;          }
+&nbsp;          final String _tmpDescription;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfDescription)) {</b>
+<b class="nc">&nbsp;            _tmpDescription = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpDescription = _stmt.getText(_columnIndexOfDescription);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPresentation;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPresentation)) {</b>
+<b class="nc">&nbsp;            _tmpPresentation = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPresentation = _stmt.getText(_columnIndexOfPresentation);</b>
+&nbsp;          }
+&nbsp;          final int _tmpPrice;
+<b class="nc">&nbsp;          _tmpPrice = (int) (_stmt.getLong(_columnIndexOfPrice));</b>
+&nbsp;          final int _tmpStock;
+<b class="nc">&nbsp;          _tmpStock = (int) (_stmt.getLong(_columnIndexOfStock));</b>
+&nbsp;          final boolean _tmpActive;
+&nbsp;          final int _tmp;
+<b class="nc">&nbsp;          _tmp = (int) (_stmt.getLong(_columnIndexOfActive));</b>
+<b class="nc">&nbsp;          _tmpActive = _tmp != 0;</b>
+&nbsp;          final String _tmpImageUrl;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfImageUrl)) {</b>
+<b class="nc">&nbsp;            _tmpImageUrl = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpImageUrl = _stmt.getText(_columnIndexOfImageUrl);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _item = new ProductEntity(_tmpId,_tmpName,_tmpCategory,_tmpDescription,_tmpPresentation,_tmpPrice,_tmpStock,_tmpActive,_tmpImageUrl);</b>
+<b class="nc">&nbsp;          _result.add(_item);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    });
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Flow&lt;List&lt;ProductEntity&gt;&gt; allProducts() {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM products ORDER BY name&quot;;</b>
+<b class="nc">&nbsp;    return FlowUtil.createFlow(__db, false, new String[] {&quot;products&quot;}, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        final int _columnIndexOfId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;id&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfCategory = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;category&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfDescription = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;description&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPresentation = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;presentation&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPrice = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;price&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfStock = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;stock&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfActive = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;active&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfImageUrl = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;imageUrl&quot;);</b>
+<b class="nc">&nbsp;        final List&lt;ProductEntity&gt; _result = new ArrayList&lt;ProductEntity&gt;();</b>
+<b class="nc">&nbsp;        while (_stmt.step()) {</b>
+&nbsp;          final ProductEntity _item;
+&nbsp;          final String _tmpId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfId)) {</b>
+<b class="nc">&nbsp;            _tmpId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpId = _stmt.getText(_columnIndexOfId);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpCategory;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfCategory)) {</b>
+<b class="nc">&nbsp;            _tmpCategory = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpCategory = _stmt.getText(_columnIndexOfCategory);</b>
+&nbsp;          }
+&nbsp;          final String _tmpDescription;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfDescription)) {</b>
+<b class="nc">&nbsp;            _tmpDescription = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpDescription = _stmt.getText(_columnIndexOfDescription);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPresentation;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPresentation)) {</b>
+<b class="nc">&nbsp;            _tmpPresentation = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPresentation = _stmt.getText(_columnIndexOfPresentation);</b>
+&nbsp;          }
+&nbsp;          final int _tmpPrice;
+<b class="nc">&nbsp;          _tmpPrice = (int) (_stmt.getLong(_columnIndexOfPrice));</b>
+&nbsp;          final int _tmpStock;
+<b class="nc">&nbsp;          _tmpStock = (int) (_stmt.getLong(_columnIndexOfStock));</b>
+&nbsp;          final boolean _tmpActive;
+&nbsp;          final int _tmp;
+<b class="nc">&nbsp;          _tmp = (int) (_stmt.getLong(_columnIndexOfActive));</b>
+<b class="nc">&nbsp;          _tmpActive = _tmp != 0;</b>
+&nbsp;          final String _tmpImageUrl;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfImageUrl)) {</b>
+<b class="nc">&nbsp;            _tmpImageUrl = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpImageUrl = _stmt.getText(_columnIndexOfImageUrl);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _item = new ProductEntity(_tmpId,_tmpName,_tmpCategory,_tmpDescription,_tmpPresentation,_tmpPrice,_tmpStock,_tmpActive,_tmpImageUrl);</b>
+<b class="nc">&nbsp;          _result.add(_item);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    });
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object productList(final Continuation&lt;? super List&lt;ProductEntity&gt;&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM products ORDER BY name&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        final int _columnIndexOfId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;id&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfCategory = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;category&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfDescription = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;description&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPresentation = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;presentation&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPrice = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;price&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfStock = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;stock&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfActive = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;active&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfImageUrl = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;imageUrl&quot;);</b>
+<b class="nc">&nbsp;        final List&lt;ProductEntity&gt; _result = new ArrayList&lt;ProductEntity&gt;();</b>
+<b class="nc">&nbsp;        while (_stmt.step()) {</b>
+&nbsp;          final ProductEntity _item;
+&nbsp;          final String _tmpId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfId)) {</b>
+<b class="nc">&nbsp;            _tmpId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpId = _stmt.getText(_columnIndexOfId);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpCategory;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfCategory)) {</b>
+<b class="nc">&nbsp;            _tmpCategory = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpCategory = _stmt.getText(_columnIndexOfCategory);</b>
+&nbsp;          }
+&nbsp;          final String _tmpDescription;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfDescription)) {</b>
+<b class="nc">&nbsp;            _tmpDescription = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpDescription = _stmt.getText(_columnIndexOfDescription);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPresentation;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPresentation)) {</b>
+<b class="nc">&nbsp;            _tmpPresentation = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPresentation = _stmt.getText(_columnIndexOfPresentation);</b>
+&nbsp;          }
+&nbsp;          final int _tmpPrice;
+<b class="nc">&nbsp;          _tmpPrice = (int) (_stmt.getLong(_columnIndexOfPrice));</b>
+&nbsp;          final int _tmpStock;
+<b class="nc">&nbsp;          _tmpStock = (int) (_stmt.getLong(_columnIndexOfStock));</b>
+&nbsp;          final boolean _tmpActive;
+&nbsp;          final int _tmp;
+<b class="nc">&nbsp;          _tmp = (int) (_stmt.getLong(_columnIndexOfActive));</b>
+<b class="nc">&nbsp;          _tmpActive = _tmp != 0;</b>
+&nbsp;          final String _tmpImageUrl;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfImageUrl)) {</b>
+<b class="nc">&nbsp;            _tmpImageUrl = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpImageUrl = _stmt.getText(_columnIndexOfImageUrl);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _item = new ProductEntity(_tmpId,_tmpName,_tmpCategory,_tmpDescription,_tmpPresentation,_tmpPrice,_tmpStock,_tmpActive,_tmpImageUrl);</b>
+<b class="nc">&nbsp;          _result.add(_item);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object getProduct(final String id, final Continuation&lt;? super ProductEntity&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM products WHERE id = ? LIMIT 1&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (id == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, id);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        final int _columnIndexOfId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;id&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfCategory = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;category&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfDescription = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;description&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPresentation = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;presentation&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPrice = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;price&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfStock = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;stock&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfActive = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;active&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfImageUrl = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;imageUrl&quot;);</b>
+&nbsp;        final ProductEntity _result;
+<b class="nc">&nbsp;        if (_stmt.step()) {</b>
+&nbsp;          final String _tmpId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfId)) {</b>
+<b class="nc">&nbsp;            _tmpId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpId = _stmt.getText(_columnIndexOfId);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpCategory;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfCategory)) {</b>
+<b class="nc">&nbsp;            _tmpCategory = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpCategory = _stmt.getText(_columnIndexOfCategory);</b>
+&nbsp;          }
+&nbsp;          final String _tmpDescription;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfDescription)) {</b>
+<b class="nc">&nbsp;            _tmpDescription = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpDescription = _stmt.getText(_columnIndexOfDescription);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPresentation;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPresentation)) {</b>
+<b class="nc">&nbsp;            _tmpPresentation = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPresentation = _stmt.getText(_columnIndexOfPresentation);</b>
+&nbsp;          }
+&nbsp;          final int _tmpPrice;
+<b class="nc">&nbsp;          _tmpPrice = (int) (_stmt.getLong(_columnIndexOfPrice));</b>
+&nbsp;          final int _tmpStock;
+<b class="nc">&nbsp;          _tmpStock = (int) (_stmt.getLong(_columnIndexOfStock));</b>
+&nbsp;          final boolean _tmpActive;
+&nbsp;          final int _tmp;
+<b class="nc">&nbsp;          _tmp = (int) (_stmt.getLong(_columnIndexOfActive));</b>
+<b class="nc">&nbsp;          _tmpActive = _tmp != 0;</b>
+&nbsp;          final String _tmpImageUrl;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfImageUrl)) {</b>
+<b class="nc">&nbsp;            _tmpImageUrl = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpImageUrl = _stmt.getText(_columnIndexOfImageUrl);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _result = new ProductEntity(_tmpId,_tmpName,_tmpCategory,_tmpDescription,_tmpPresentation,_tmpPrice,_tmpStock,_tmpActive,_tmpImageUrl);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _result = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object productCount(final Continuation&lt;? super Integer&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT COUNT(*) FROM products&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+&nbsp;        final Integer _result;
+<b class="nc">&nbsp;        if (_stmt.step()) {</b>
+&nbsp;          final Integer _tmp;
+<b class="nc">&nbsp;          if (_stmt.isNull(0)) {</b>
+<b class="nc">&nbsp;            _tmp = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmp = (int) (_stmt.getLong(0));</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _result = _tmp;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _result = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Flow&lt;List&lt;CartItemEntity&gt;&gt; cartRaw(final String alias) {
+<b class="nc">&nbsp;    final String _sql = &quot;\n&quot;</b>
+&nbsp;            + &quot;        SELECT * FROM cart_items\n&quot;
+&nbsp;            + &quot;        WHERE ownerAlias = ?\n&quot;
+&nbsp;            + &quot;        ORDER BY productId\n&quot;
+&nbsp;            + &quot;        &quot;;
+<b class="nc">&nbsp;    return FlowUtil.createFlow(__db, false, new String[] {&quot;cart_items&quot;}, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        final int _columnIndexOfOwnerAlias = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;ownerAlias&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfProductId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;productId&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfQuantity = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;quantity&quot;);</b>
+<b class="nc">&nbsp;        final List&lt;CartItemEntity&gt; _result = new ArrayList&lt;CartItemEntity&gt;();</b>
+<b class="nc">&nbsp;        while (_stmt.step()) {</b>
+&nbsp;          final CartItemEntity _item;
+&nbsp;          final String _tmpOwnerAlias;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfOwnerAlias)) {</b>
+<b class="nc">&nbsp;            _tmpOwnerAlias = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpOwnerAlias = _stmt.getText(_columnIndexOfOwnerAlias);</b>
+&nbsp;          }
+&nbsp;          final String _tmpProductId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfProductId)) {</b>
+<b class="nc">&nbsp;            _tmpProductId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpProductId = _stmt.getText(_columnIndexOfProductId);</b>
+&nbsp;          }
+&nbsp;          final int _tmpQuantity;
+<b class="nc">&nbsp;          _tmpQuantity = (int) (_stmt.getLong(_columnIndexOfQuantity));</b>
+<b class="nc">&nbsp;          _item = new CartItemEntity(_tmpOwnerAlias,_tmpProductId,_tmpQuantity);</b>
+<b class="nc">&nbsp;          _result.add(_item);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    });
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object getCartItem(final String alias, final String product,
+&nbsp;      final Continuation&lt;? super CartItemEntity&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;\n&quot;</b>
+&nbsp;            + &quot;        SELECT * FROM cart_items\n&quot;
+&nbsp;            + &quot;        WHERE ownerAlias = ? AND productId = ?\n&quot;
+&nbsp;            + &quot;        LIMIT 1\n&quot;
+&nbsp;            + &quot;        &quot;;
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 2;</b>
+<b class="nc">&nbsp;        if (product == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, product);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        final int _columnIndexOfOwnerAlias = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;ownerAlias&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfProductId = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;productId&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfQuantity = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;quantity&quot;);</b>
+&nbsp;        final CartItemEntity _result;
+<b class="nc">&nbsp;        if (_stmt.step()) {</b>
+&nbsp;          final String _tmpOwnerAlias;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfOwnerAlias)) {</b>
+<b class="nc">&nbsp;            _tmpOwnerAlias = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpOwnerAlias = _stmt.getText(_columnIndexOfOwnerAlias);</b>
+&nbsp;          }
+&nbsp;          final String _tmpProductId;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfProductId)) {</b>
+<b class="nc">&nbsp;            _tmpProductId = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpProductId = _stmt.getText(_columnIndexOfProductId);</b>
+&nbsp;          }
+&nbsp;          final int _tmpQuantity;
+<b class="nc">&nbsp;          _tmpQuantity = (int) (_stmt.getLong(_columnIndexOfQuantity));</b>
+<b class="nc">&nbsp;          _result = new CartItemEntity(_tmpOwnerAlias,_tmpProductId,_tmpQuantity);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _result = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object deleteProduct(final String id, final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;DELETE FROM products WHERE id = ?&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (id == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, id);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _stmt.step();</b>
+<b class="nc">&nbsp;        return Unit.INSTANCE;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object clearCart(final String alias, final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;DELETE FROM cart_items WHERE ownerAlias = ?&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _stmt.step();</b>
+<b class="nc">&nbsp;        return Unit.INSTANCE;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object removeCart(final String alias, final String product,
+&nbsp;      final Continuation&lt;? super Unit&gt; $completion) {
+<b class="nc">&nbsp;    final String _sql = &quot;\n&quot;</b>
+&nbsp;            + &quot;        DELETE FROM cart_items\n&quot;
+&nbsp;            + &quot;        WHERE ownerAlias = ? AND productId = ?\n&quot;
+&nbsp;            + &quot;        &quot;;
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 2;</b>
+<b class="nc">&nbsp;        if (product == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, product);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _stmt.step();</b>
+<b class="nc">&nbsp;        return Unit.INSTANCE;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, $completion);
+&nbsp;  }
+&nbsp;
+&nbsp;  @NonNull
+&nbsp;  public static List&lt;Class&lt;?&gt;&gt; getRequiredConverters() {
+<b class="nc">&nbsp;    return Collections.emptyList();</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

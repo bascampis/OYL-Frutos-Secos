@@ -1,0 +1,191 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ExchangeUiState</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: ExchangeUiState (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+  <tr>
+    <td class="name">ExchangeUiState$Error</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExchangeUiState$Loading</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ExchangeUiState$Success</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import androidx.lifecycle.ViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.data.remote.ExchangeRateApi
+&nbsp;import cl.oyl.frutossecos.data.remote.RetrofitProvider
+&nbsp;import kotlinx.coroutines.flow.MutableStateFlow
+&nbsp;import kotlinx.coroutines.flow.StateFlow
+&nbsp;import kotlinx.coroutines.flow.asStateFlow
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;
+&nbsp;sealed interface ExchangeUiState {
+<b class="fc">&nbsp;    data object Loading : ExchangeUiState</b>
+<b class="fc">&nbsp;    data class Success(val clpPerUsd: Double, val updated: String) : ExchangeUiState</b>
+<b class="fc">&nbsp;    data class Error(val message: String) : ExchangeUiState</b>
+&nbsp;}
+&nbsp;
+&nbsp;/** Consume la API externa (Retrofit) y expone el estado a la interfaz. */
+&nbsp;class ExchangeRateViewModel(
+&nbsp;    private val api: ExchangeRateApi = RetrofitProvider.exchangeApi
+&nbsp;) : ViewModel() {
+&nbsp;
+&nbsp;    private val _state = MutableStateFlow&lt;ExchangeUiState&gt;(ExchangeUiState.Loading)
+&nbsp;    val state: StateFlow&lt;ExchangeUiState&gt; = _state.asStateFlow()
+&nbsp;
+&nbsp;    init { load() }
+&nbsp;
+&nbsp;    fun load() {
+&nbsp;        _state.value = ExchangeUiState.Loading
+&nbsp;        viewModelScope.launch {
+&nbsp;            _state.value = try {
+&nbsp;                val r = api.latestUsd()
+&nbsp;                val clp = r.rates?.get(&quot;CLP&quot;)
+&nbsp;                if (r.result == &quot;success&quot; &amp;&amp; clp != null)
+&nbsp;                    ExchangeUiState.Success(clp, r.time_last_update_utc.orEmpty())
+&nbsp;                else ExchangeUiState.Error(&quot;La API no entregó el valor del dólar&quot;)
+&nbsp;            } catch (e: Exception) {
+&nbsp;                ExchangeUiState.Error(&quot;No se pudo consultar el dólar&quot;)
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocalOrderItem</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.model</a>
+</div>
+
+<h1>Coverage Summary for Class: LocalOrderItem (cl.oyl.frutossecos.data.model)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocalOrderItem</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (3/3)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.model
+&nbsp;
+&nbsp;data class LocalProduct(
+&nbsp;    val id: String,
+&nbsp;    val name: String,
+&nbsp;    val category: String,
+&nbsp;    val description: String?,
+&nbsp;    val presentation: String?,
+&nbsp;    val price: Int,
+&nbsp;    val stock: Int,
+&nbsp;    val active: Boolean,
+&nbsp;    val imageUrl: String? = null
+&nbsp;)
+&nbsp;
+<b class="fc">&nbsp;data class LocalOrderItem(</b>
+<b class="fc">&nbsp;    val productId: String,</b>
+<b class="fc">&nbsp;    val quantity: Int</b>
+&nbsp;)
+&nbsp;
+&nbsp;data class LocalOrderRequest(
+&nbsp;    val clientAlias: String,
+&nbsp;    val fulfillment: String,
+&nbsp;    val items: List&lt;LocalOrderItem&gt;
+&nbsp;)
+&nbsp;
+&nbsp;data class LocalOrderLine(
+&nbsp;    val id: Long,
+&nbsp;    val productId: String,
+&nbsp;    val productName: String,
+&nbsp;    val quantity: Int,
+&nbsp;    val unitPrice: Int
+&nbsp;)
+&nbsp;
+&nbsp;data class LocalOrder(
+&nbsp;    val id: String,
+&nbsp;    val clientAlias: String,
+&nbsp;    val createdAt: String,
+&nbsp;    val total: Int,
+&nbsp;    val status: String,
+&nbsp;    val fulfillment: String,
+&nbsp;    val lines: List&lt;LocalOrderLine&gt;
+&nbsp;)
+&nbsp;
+&nbsp;data class ProductInputDto(
+&nbsp;    val id: String,
+&nbsp;    val name: String,
+&nbsp;    val category: String,
+&nbsp;    val description: String,
+&nbsp;    val presentation: String,
+&nbsp;    val price: Int,
+&nbsp;    val stock: Int,
+&nbsp;    val active: Boolean,
+&nbsp;    val imageUrl: String? = null
+&nbsp;)
+&nbsp;
+&nbsp;data class StockDeltaDto(
+&nbsp;    val delta: Int
+&nbsp;)
+&nbsp;
+&nbsp;data class OrderStatusDto(
+&nbsp;    val status: String
+&nbsp;)
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

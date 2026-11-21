@@ -1,0 +1,174 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OrderReceiptStore</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: OrderReceiptStore (cl.oyl.frutossecos.data.repository)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OrderReceiptStore</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    20%
+  </span>
+  <span class="absValue">
+    (2/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (13/26)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.repository
+&nbsp;
+&nbsp;import android.content.Context
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrder
+&nbsp;import com.google.gson.Gson
+&nbsp;
+<b class="fc">&nbsp;class OrderReceiptStore(context: Context) {</b>
+&nbsp;
+&nbsp;    private val preferences =
+<b class="fc">&nbsp;        context.applicationContext.getSharedPreferences(</b>
+<b class="fc">&nbsp;            &quot;oyl_order_receipts&quot;,</b>
+<b class="fc">&nbsp;            Context.MODE_PRIVATE</b>
+&nbsp;        )
+&nbsp;
+<b class="fc">&nbsp;    private val gson = Gson()</b>
+&nbsp;
+&nbsp;    fun save(
+&nbsp;        owner: String,
+&nbsp;        order: LocalOrder
+&nbsp;    ) {
+<b class="pc">&nbsp;        require(order.clientAlias == owner) {</b>
+<b class="nc">&nbsp;            &quot;El pedido no pertenece a esta sesión.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        val saved = preferences.edit()</b>
+<b class="fc">&nbsp;            .putString(</b>
+<b class="fc">&nbsp;                &quot;$owner:${order.id}&quot;,</b>
+<b class="fc">&nbsp;                gson.toJson(order)</b>
+&nbsp;            )
+<b class="fc">&nbsp;            .commit()</b>
+&nbsp;
+<b class="pc">&nbsp;        check(saved) {</b>
+<b class="fc">&nbsp;            &quot;No se pudo guardar el comprobante local.&quot;</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun read(
+&nbsp;        owner: String,
+&nbsp;        orderId: String
+&nbsp;    ): LocalOrder? {
+&nbsp;        return try {
+<b class="nc">&nbsp;            preferences.getString(</b>
+<b class="nc">&nbsp;                &quot;$owner:$orderId&quot;,</b>
+<b class="nc">&nbsp;                null</b>
+<b class="nc">&nbsp;            )?.let { json -&gt;</b>
+<b class="nc">&nbsp;                gson.fromJson(</b>
+<b class="nc">&nbsp;                    json,</b>
+<b class="nc">&nbsp;                    LocalOrder::class.java</b>
+<b class="nc">&nbsp;                ).takeIf {</b>
+<b class="nc">&nbsp;                    it.id == orderId &amp;&amp;</b>
+<b class="nc">&nbsp;                            it.clientAlias == owner</b>
+<b class="nc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;        } catch (_: Exception) {
+<b class="nc">&nbsp;            null</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

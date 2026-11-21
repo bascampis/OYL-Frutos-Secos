@@ -1,0 +1,571 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocalStore</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: LocalStore (cl.oyl.frutossecos.data.repository)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocalStore</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    66,7%
+  </span>
+  <span class="absValue">
+    (2/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.repository
+&nbsp;
+&nbsp;import androidx.room.withTransaction
+&nbsp;import cl.oyl.frutossecos.data.local.LocalOrderEntity
+&nbsp;import cl.oyl.frutossecos.data.local.OylDatabase
+&nbsp;import cl.oyl.frutossecos.data.local.ProductEntity
+&nbsp;import cl.oyl.frutossecos.data.model.*
+&nbsp;import cl.oyl.frutossecos.data.remote.ApiException
+&nbsp;import cl.oyl.frutossecos.data.remote.RemoteRepository
+&nbsp;import cl.oyl.frutossecos.data.remote.ServerUnavailableException
+&nbsp;import com.google.gson.Gson
+&nbsp;import java.time.Instant
+&nbsp;import java.util.UUID
+&nbsp;
+&nbsp;object LocalStore {
+&nbsp;
+<b class="pc">&nbsp;    lateinit var repository: LocalStoreRepository</b>
+<b class="nc">&nbsp;        private set</b>
+&nbsp;
+&nbsp;    fun initialize(
+&nbsp;        database: OylDatabase,
+<b class="nc">&nbsp;        remote: RemoteRepository = RemoteRepository()</b>
+&nbsp;    ) {
+<b class="fc">&nbsp;        repository = LocalStoreRepository(database, remote)</b>
+&nbsp;    }
+&nbsp;}
+&nbsp;
+&nbsp;/**
+&nbsp; * Repositorio de la tienda: los microservicios son la fuente de verdad y Room guarda una copia local.
+&nbsp; * - Lecturas: se consulta el servidor y se actualiza Room; si no hay conexión se usa Room.
+&nbsp; * - Escrituras: se envían primero al servidor; si está apagado, se aplican solo en Room.
+&nbsp; * - Si el servidor rechaza la operación (stock insuficiente, datos inválidos), se muestra su mensaje.
+&nbsp; */
+&nbsp;class LocalStoreRepository(
+&nbsp;    private val database: OylDatabase,
+&nbsp;    private val remote: RemoteRepository = RemoteRepository()
+&nbsp;) {
+&nbsp;    private val gson = Gson()
+&nbsp;
+&nbsp;    // Evita esperar timeouts en cada llamada cuando el servidor está apagado.
+&nbsp;    private var downUntil = 0L
+&nbsp;    private var nextCatalogSyncAt = 0L
+&nbsp;
+&nbsp;    private suspend fun &lt;T&gt; remoteCall(block: suspend () -&gt; Result&lt;T&gt;): Result&lt;T&gt; {
+&nbsp;        if (System.currentTimeMillis() &lt; downUntil) {
+&nbsp;            return Result.failure(ServerUnavailableException(&quot;Servidor no disponible&quot;))
+&nbsp;        }
+&nbsp;        val result = block()
+&nbsp;        if (result.exceptionOrNull() is ServerUnavailableException) {
+&nbsp;            downUntil = System.currentTimeMillis() + 15_000
+&nbsp;        }
+&nbsp;        return result
+&nbsp;    }
+&nbsp;
+&nbsp;    /** El servidor rechazó la operación: se propaga su mensaje. Si no hay conexión, devuelve null. */
+&nbsp;    private fun &lt;T&gt; Result&lt;T&gt;.rejectionOrNull(): Exception? {
+&nbsp;        val failure = exceptionOrNull() ?: return null
+&nbsp;        return if (failure is ServerUnavailableException) null else IllegalArgumentException(failure.message)
+&nbsp;    }
+&nbsp;
+&nbsp;    private suspend fun syncProducts() {
+&nbsp;        if (System.currentTimeMillis() &lt; nextCatalogSyncAt) return
+&nbsp;        val list = remoteCall { remote.products() }.getOrNull() ?: return
+&nbsp;        nextCatalogSyncAt = System.currentTimeMillis() + 3_000
+&nbsp;        catalog.saveProducts(list.map { it.toEntity() })
+&nbsp;    }
+&nbsp;
+&nbsp;    private val catalog
+&nbsp;        get() = database.catalogDao()
+&nbsp;
+&nbsp;    private val ordersDao
+&nbsp;        get() = database.orderDao()
+&nbsp;
+&nbsp;    suspend fun products(): List&lt;LocalProduct&gt; {
+&nbsp;        syncProducts()
+&nbsp;
+&nbsp;        return database.withTransaction {
+&nbsp;            CatalogRepository(catalog).seedDemoProducts()
+&nbsp;
+&nbsp;            catalog.productList().map {
+&nbsp;                it.toModel()
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun saveProduct(
+&nbsp;        value: ProductInputDto
+&nbsp;    ): LocalProduct {
+&nbsp;        require(
+&nbsp;            value.id.isNotBlank() &amp;&amp;
+&nbsp;                    value.name.isNotBlank()
+&nbsp;        ) {
+&nbsp;            &quot;Identificador y nombre obligatorios.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        require(
+&nbsp;            value.category.isNotBlank() &amp;&amp;
+&nbsp;                    value.description.isNotBlank() &amp;&amp;
+&nbsp;                    value.presentation.isNotBlank()
+&nbsp;        ) {
+&nbsp;            &quot;Completa categoría, descripción y presentación.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        require(value.price &gt; 0) {
+&nbsp;            &quot;El precio debe ser mayor que cero.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        require(value.stock &gt;= 0) {
+&nbsp;            &quot;El stock no puede ser negativo.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        val imageUrl = value.imageUrl?.trim()?.takeIf { it.isNotEmpty() }
+&nbsp;        imageUrl?.let {
+&nbsp;            require(it.startsWith(&quot;https://&quot;)) {
+&nbsp;                &quot;La URL de la imagen debe comenzar con https://.&quot;
+&nbsp;            }
+&nbsp;        }
+&nbsp;
+&nbsp;        // Primero el microservicio (crea o edita).
+&nbsp;        val remoteResult = remoteCall { remote.saveProduct(value.copy(imageUrl = imageUrl)) }
+&nbsp;        remoteResult.rejectionOrNull()?.let { throw it }
+&nbsp;        val serverProduct = remoteResult.getOrNull()
+&nbsp;
+&nbsp;        return database.withTransaction {
+&nbsp;            val existing = catalog.getProduct(value.id)
+&nbsp;
+&nbsp;            val saved = ProductEntity(
+&nbsp;                id = value.id,
+&nbsp;                name = value.name,
+&nbsp;                category = value.category,
+&nbsp;                description = value.description,
+&nbsp;                presentation = value.presentation,
+&nbsp;                price = value.price,
+&nbsp;                // Editar los datos no reemplaza el stock actual.
+&nbsp;                stock = serverProduct?.stock ?: existing?.stock ?: value.stock,
+&nbsp;                active = value.active,
+&nbsp;                imageUrl = imageUrl
+&nbsp;            )
+&nbsp;
+&nbsp;            catalog.saveProducts(listOf(saved))
+&nbsp;
+&nbsp;            saved.toModel()
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun adjustStock(
+&nbsp;        id: String,
+&nbsp;        value: StockDeltaDto
+&nbsp;    ): LocalProduct {
+&nbsp;        val remoteResult = remoteCall { remote.adjustStock(id, value.delta) }
+&nbsp;        remoteResult.rejectionOrNull()?.let { throw it }
+&nbsp;        val serverProduct = remoteResult.getOrNull()
+&nbsp;
+&nbsp;        return database.withTransaction {
+&nbsp;            val product = catalog.getProduct(id)
+&nbsp;                ?: error(&quot;Producto no encontrado.&quot;)
+&nbsp;
+&nbsp;            val newStock = serverProduct?.stock?.toLong()
+&nbsp;                ?: (product.stock.toLong() + value.delta.toLong())
+&nbsp;
+&nbsp;            require(newStock in 0..Int.MAX_VALUE.toLong()) {
+&nbsp;                &quot;El movimiento produce un stock inválido.&quot;
+&nbsp;            }
+&nbsp;
+&nbsp;            val saved = product.copy(
+&nbsp;                stock = newStock.toInt()
+&nbsp;            )
+&nbsp;
+&nbsp;            catalog.saveProducts(listOf(saved))
+&nbsp;
+&nbsp;            saved.toModel()
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun order(
+&nbsp;        request: LocalOrderRequest
+&nbsp;    ): LocalOrder {
+&nbsp;        require(request.clientAlias.isNotBlank()) {
+&nbsp;            &quot;Inicia sesión para comprar.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        require(request.items.isNotEmpty()) {
+&nbsp;            &quot;El carrito está vacío.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        val remoteResult = remoteCall { remote.placeOrder(request) }
+&nbsp;        remoteResult.rejectionOrNull()?.let { throw it }
+&nbsp;
+&nbsp;        val serverOrder = remoteResult.getOrNull()
+&nbsp;        return if (serverOrder != null) {
+&nbsp;            saveServerOrder(serverOrder)
+&nbsp;        } else {
+&nbsp;            // Sin conexión: se registra solo en Room.
+&nbsp;            localOrder(request)
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private suspend fun saveServerOrder(order: LocalOrder): LocalOrder {
+&nbsp;        return database.withTransaction {
+&nbsp;            order.lines.forEach { line -&gt;
+&nbsp;                catalog.getProduct(line.productId)?.let { product -&gt;
+&nbsp;                    catalog.saveProducts(
+&nbsp;                        listOf(
+&nbsp;                            product.copy(
+&nbsp;                                stock = (product.stock - line.quantity).coerceAtLeast(0)
+&nbsp;                            )
+&nbsp;                        )
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            ordersDao.save(order.toEntity())
+&nbsp;            catalog.clearCart(order.clientAlias)
+&nbsp;
+&nbsp;            order
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private suspend fun localOrder(
+&nbsp;        request: LocalOrderRequest
+&nbsp;    ): LocalOrder {
+&nbsp;        return database.withTransaction {
+&nbsp;            require(request.clientAlias.isNotBlank()) {
+&nbsp;                &quot;Inicia sesión para comprar.&quot;
+&nbsp;            }
+&nbsp;
+&nbsp;            require(request.items.isNotEmpty()) {
+&nbsp;                &quot;El carrito está vacío.&quot;
+&nbsp;            }
+&nbsp;
+&nbsp;            val quantities = linkedMapOf&lt;String, Long&gt;()
+&nbsp;
+&nbsp;            request.items.forEach { item -&gt;
+&nbsp;                require(item.quantity &gt; 0) {
+&nbsp;                    &quot;La cantidad debe ser mayor que cero.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                quantities[item.productId] =
+&nbsp;                    (quantities[item.productId] ?: 0L) +
+&nbsp;                            item.quantity.toLong()
+&nbsp;            }
+&nbsp;
+&nbsp;            var total = 0L
+&nbsp;
+&nbsp;            val lines = quantities.entries.mapIndexed {
+&nbsp;                    index, entry -&gt;
+&nbsp;
+&nbsp;                val productId = entry.key
+&nbsp;                val quantity = entry.value
+&nbsp;
+&nbsp;                val product = catalog.getProduct(productId)
+&nbsp;                    ?: error(&quot;Producto $productId no encontrado.&quot;)
+&nbsp;
+&nbsp;                require(product.active) {
+&nbsp;                    &quot;${product.name} ya no está disponible.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                require(quantity &lt;= product.stock.toLong()) {
+&nbsp;                    &quot;Stock insuficiente para ${product.name}.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                require(product.price &gt; 0) {
+&nbsp;                    &quot;Precio inválido para ${product.name}.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                total += product.price.toLong() * quantity
+&nbsp;
+&nbsp;                require(total &lt;= Int.MAX_VALUE.toLong()) {
+&nbsp;                    &quot;El total supera el máximo permitido.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                catalog.saveProducts(
+&nbsp;                    listOf(
+&nbsp;                        product.copy(
+&nbsp;                            stock = product.stock - quantity.toInt()
+&nbsp;                        )
+&nbsp;                    )
+&nbsp;                )
+&nbsp;
+&nbsp;                LocalOrderLine(
+&nbsp;                    id = index.toLong(),
+&nbsp;                    productId = product.id,
+&nbsp;                    productName = product.name,
+&nbsp;                    quantity = quantity.toInt(),
+&nbsp;                    unitPrice = product.price
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            val order = LocalOrder(
+&nbsp;                id = UUID.randomUUID().toString(),
+&nbsp;                clientAlias = request.clientAlias,
+&nbsp;                createdAt = Instant.now().toString(),
+&nbsp;                total = total.toInt(),
+&nbsp;                status = &quot;Pendiente de Validación&quot;,
+&nbsp;                fulfillment = request.fulfillment,
+&nbsp;                lines = lines
+&nbsp;            )
+&nbsp;
+&nbsp;            ordersDao.save(order.toEntity())
+&nbsp;
+&nbsp;            catalog.clearCart(request.clientAlias)
+&nbsp;
+&nbsp;            order
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Elimina el producto en catalog-service y en Room. Requiere conexión con el servidor. */
+&nbsp;    suspend fun deleteProduct(id: String) {
+&nbsp;        val failure = remoteCall { remote.deleteProduct(id) }.exceptionOrNull()
+&nbsp;
+&nbsp;        // 404: el servidor ya no lo tenía; basta con quitarlo de Room.
+&nbsp;        if (failure != null &amp;&amp; !(failure is ApiException &amp;&amp; failure.code == 404)) {
+&nbsp;            throw IllegalArgumentException(failure.message)
+&nbsp;        }
+&nbsp;
+&nbsp;        catalog.deleteProduct(id)
+&nbsp;    }
+&nbsp;
+&nbsp;    /** Cancela un pedido pendiente: el servidor repone el stock y aquí se quita de Room. */
+&nbsp;    suspend fun cancelOrder(id: String) {
+&nbsp;        val current = ordersDao.byId(id)?.toModel()
+&nbsp;            ?: error(&quot;Pedido no encontrado.&quot;)
+&nbsp;
+&nbsp;        require(current.status == &quot;Pendiente de Validación&quot;) {
+&nbsp;            &quot;Solo se puede cancelar un pedido pendiente.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        val failure = remoteCall { remote.cancelOrder(id) }.exceptionOrNull()
+&nbsp;        if (failure is ApiException &amp;&amp; failure.code != 404) {
+&nbsp;            throw IllegalArgumentException(failure.message)
+&nbsp;        }
+&nbsp;
+&nbsp;        database.withTransaction {
+&nbsp;            current.lines.forEach { line -&gt;
+&nbsp;                catalog.getProduct(line.productId)?.let { product -&gt;
+&nbsp;                    catalog.saveProducts(
+&nbsp;                        listOf(product.copy(stock = product.stock + line.quantity))
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            ordersDao.delete(id)
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun allOrders(): List&lt;LocalOrder&gt; {
+&nbsp;        remoteCall { remote.allOrders() }.getOrNull()?.let { list -&gt;
+&nbsp;            cacheOrders(list)
+&nbsp;            return list
+&nbsp;        }
+&nbsp;
+&nbsp;        return ordersDao.all().map {
+&nbsp;            it.toModel()
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun orders(alias: String): List&lt;LocalOrder&gt; {
+&nbsp;        remoteCall { remote.ordersOf(alias) }.getOrNull()?.let { list -&gt;
+&nbsp;            cacheOrders(list)
+&nbsp;            return list
+&nbsp;        }
+&nbsp;
+&nbsp;        return ordersDao.byOwner(alias).map {
+&nbsp;            it.toModel()
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private suspend fun cacheOrders(list: List&lt;LocalOrder&gt;) {
+&nbsp;        list.forEach { ordersDao.save(it.toEntity()) }
+&nbsp;    }
+&nbsp;
+&nbsp;    suspend fun setStatus(
+&nbsp;        id: String,
+&nbsp;        value: OrderStatusDto
+&nbsp;    ): LocalOrder {
+&nbsp;        val remoteResult = remoteCall { remote.setOrderStatus(id, value.status) }
+&nbsp;        remoteResult.rejectionOrNull()?.let { throw it }
+&nbsp;
+&nbsp;        remoteResult.getOrNull()?.let { updated -&gt;
+&nbsp;            ordersDao.save(updated.toEntity())
+&nbsp;            return updated
+&nbsp;        }
+&nbsp;
+&nbsp;        return database.withTransaction {
+&nbsp;            val current = ordersDao.byId(id)?.toModel()
+&nbsp;                ?: error(&quot;Pedido no encontrado.&quot;)
+&nbsp;
+&nbsp;            val nextStatus = when (current.status) {
+&nbsp;                &quot;Pendiente de Validación&quot; -&gt; &quot;Confirmado&quot;
+&nbsp;                &quot;Confirmado&quot; -&gt; &quot;Preparado&quot;
+&nbsp;                &quot;Preparado&quot; -&gt; &quot;Entregado&quot;
+&nbsp;                else -&gt; null
+&nbsp;            }
+&nbsp;
+&nbsp;            require(
+&nbsp;                value.status == current.status ||
+&nbsp;                        value.status == nextStatus
+&nbsp;            ) {
+&nbsp;                &quot;Cambio de estado no permitido.&quot;
+&nbsp;            }
+&nbsp;
+&nbsp;            val updated = current.copy(
+&nbsp;                status = value.status
+&nbsp;            )
+&nbsp;
+&nbsp;            ordersDao.save(updated.toEntity())
+&nbsp;
+&nbsp;            updated
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private fun ProductEntity.toModel(): LocalProduct {
+&nbsp;        return LocalProduct(
+&nbsp;            id = id,
+&nbsp;            name = name,
+&nbsp;            category = category,
+&nbsp;            description = description,
+&nbsp;            presentation = presentation,
+&nbsp;            price = price,
+&nbsp;            stock = stock,
+&nbsp;            active = active,
+&nbsp;            imageUrl = imageUrl
+&nbsp;        )
+&nbsp;    }
+&nbsp;
+&nbsp;    private fun LocalProduct.toEntity(): ProductEntity {
+&nbsp;        return ProductEntity(
+&nbsp;            id = id,
+&nbsp;            name = name,
+&nbsp;            category = category,
+&nbsp;            description = description.orEmpty(),
+&nbsp;            presentation = presentation.orEmpty(),
+&nbsp;            price = price,
+&nbsp;            stock = stock,
+&nbsp;            active = active,
+&nbsp;            imageUrl = imageUrl
+&nbsp;        )
+&nbsp;    }
+&nbsp;
+&nbsp;    private fun LocalOrder.toEntity(): LocalOrderEntity {
+&nbsp;        return LocalOrderEntity(
+&nbsp;            id = id,
+&nbsp;            clientAlias = clientAlias,
+&nbsp;            createdAt = createdAt,
+&nbsp;            payload = gson.toJson(this)
+&nbsp;        )
+&nbsp;    }
+&nbsp;
+&nbsp;    private fun LocalOrderEntity.toModel(): LocalOrder {
+&nbsp;        return gson.fromJson(
+&nbsp;            payload,
+&nbsp;            LocalOrder::class.java
+&nbsp;        )
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

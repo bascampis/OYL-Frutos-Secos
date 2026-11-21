@@ -1,0 +1,435 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CartContact</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: CartContact (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CartContact</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import android.app.Application
+&nbsp;import androidx.lifecycle.AndroidViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.OylApplication
+&nbsp;import cl.oyl.frutossecos.data.local.CartItemEntity
+&nbsp;import cl.oyl.frutossecos.data.local.ProductEntity
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrder
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrderItem
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrderRequest
+&nbsp;import cl.oyl.frutossecos.data.repository.LocalStore
+&nbsp;import cl.oyl.frutossecos.data.repository.OrderReceiptStore
+&nbsp;import cl.oyl.frutossecos.domain.checkout.*
+&nbsp;import kotlinx.coroutines.CancellationException
+&nbsp;import kotlinx.coroutines.Dispatchers
+&nbsp;import kotlinx.coroutines.flow.*
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;import kotlinx.coroutines.withContext
+&nbsp;
+&nbsp;data class CartRow(
+&nbsp;    val item: CartItemEntity,
+&nbsp;    val product: ProductEntity?
+&nbsp;) {
+&nbsp;    val subtotal: Long
+&nbsp;        get() = (product?.price ?: 0).toLong() * item.quantity
+&nbsp;
+&nbsp;    val name: String
+&nbsp;        get() = product?.name ?: &quot;Producto ${item.productId}&quot;
+&nbsp;}
+&nbsp;
+<b class="fc">&nbsp;data class CartContact(</b>
+<b class="fc">&nbsp;    val name: String,</b>
+<b class="fc">&nbsp;    val email: String,</b>
+<b class="fc">&nbsp;    val phone: String</b>
+&nbsp;)
+&nbsp;
+&nbsp;data class CartState(
+&nbsp;    val rows: List&lt;CartRow&gt; = emptyList(),
+&nbsp;    val loading: Boolean = true,
+&nbsp;    val busy: Boolean = false,
+&nbsp;    val message: String? = null,
+&nbsp;    val reviewOpen: Boolean = false,
+&nbsp;    val contact: CartContact? = null,
+&nbsp;    val completedOrder: LocalOrder? = null
+&nbsp;) {
+&nbsp;    val subtotal: Long
+&nbsp;        get() = rows.sumOf { it.subtotal }
+&nbsp;}
+&nbsp;
+&nbsp;class CartViewModel(
+&nbsp;    application: Application
+&nbsp;) : AndroidViewModel(application) {
+&nbsp;
+&nbsp;    private val app = application as OylApplication
+&nbsp;    private val repository = app.catalogRepository
+&nbsp;    private val receipts = OrderReceiptStore(application)
+&nbsp;
+&nbsp;    private val _state = MutableStateFlow(CartState())
+&nbsp;    val state = _state.asStateFlow()
+&nbsp;
+&nbsp;    private var owner: String? = null
+&nbsp;
+&nbsp;    fun start(alias: String) {
+&nbsp;        if (owner == alias) return
+&nbsp;
+&nbsp;        check(owner == null) {
+&nbsp;            &quot;La sesión del carrito cambió.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        owner = alias
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                val client = app.database.clientDao().byAlias(alias)
+&nbsp;
+&nbsp;                val contact = client?.let {
+&nbsp;                    CartContact(
+&nbsp;                        name = it.name,
+&nbsp;                        email = it.email,
+&nbsp;                        phone = it.phone
+&nbsp;                    )
+&nbsp;                }
+&nbsp;
+&nbsp;                _state.update {
+&nbsp;                    it.copy(contact = contact)
+&nbsp;                }
+&nbsp;
+&nbsp;                combine(
+&nbsp;                    repository.cart(alias),
+&nbsp;                    app.database.catalogDao().allProducts()
+&nbsp;                ) { items, products -&gt;
+&nbsp;                    val lookup = products.associateBy {
+&nbsp;                        it.id
+&nbsp;                    }
+&nbsp;
+&nbsp;                    items.map {
+&nbsp;                        CartRow(
+&nbsp;                            item = it,
+&nbsp;                            product = lookup[it.productId]
+&nbsp;                        )
+&nbsp;                    }
+&nbsp;                }.collect { rows -&gt;
+&nbsp;                    _state.update {
+&nbsp;                        it.copy(
+&nbsp;                            rows = rows,
+&nbsp;                            loading = false
+&nbsp;                        )
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        loading = false,
+&nbsp;                        message = &quot;No se pudo cargar el carrito local.&quot;
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun change(
+&nbsp;        productId: String,
+&nbsp;        delta: Int
+&nbsp;    ) {
+&nbsp;        val alias = owner ?: return
+&nbsp;
+&nbsp;        if (
+&nbsp;            _state.value.busy ||
+&nbsp;            _state.value.completedOrder != null
+&nbsp;        ) {
+&nbsp;            return
+&nbsp;        }
+&nbsp;
+&nbsp;        _state.update {
+&nbsp;            it.copy(
+&nbsp;                busy = true,
+&nbsp;                message = null,
+&nbsp;                reviewOpen = false
+&nbsp;            )
+&nbsp;        }
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                repository.changeCart(
+&nbsp;                    owner = alias,
+&nbsp;                    productId = productId,
+&nbsp;                    delta = delta
+&nbsp;                )
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        message = &quot;No se pudo actualizar el carrito.&quot;
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(busy = false)
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun review() {
+&nbsp;        val current = _state.value
+&nbsp;
+&nbsp;        if (
+&nbsp;            current.busy ||
+&nbsp;            current.loading ||
+&nbsp;            current.completedOrder != null
+&nbsp;        ) {
+&nbsp;            return
+&nbsp;        }
+&nbsp;
+&nbsp;        val snapshot = current.rows
+&nbsp;
+&nbsp;        _state.update {
+&nbsp;            it.copy(
+&nbsp;                busy = true,
+&nbsp;                message = null
+&nbsp;            )
+&nbsp;        }
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                val products = LocalStore.repository.products()
+&nbsp;
+&nbsp;                val result = CheckoutRules.review(
+&nbsp;                    snapshot.map {
+&nbsp;                        CheckoutItem(
+&nbsp;                            it.item.productId,
+&nbsp;                            it.name,
+&nbsp;                            it.item.quantity,
+&nbsp;                            it.product?.price ?: 0
+&nbsp;                        )
+&nbsp;                    },
+&nbsp;                    products.map {
+&nbsp;                        AvailableItem(
+&nbsp;                            it.id,
+&nbsp;                            it.name,
+&nbsp;                            it.price,
+&nbsp;                            it.stock,
+&nbsp;                            it.active
+&nbsp;                        )
+&nbsp;                    }
+&nbsp;                )
+&nbsp;
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        reviewOpen = result.canConfirm,
+&nbsp;                        message = when {
+&nbsp;                            result.problems.isNotEmpty() -&gt; {
+&nbsp;                                result.problems.joinToString(&quot;\n&quot;)
+&nbsp;                            }
+&nbsp;
+&nbsp;                            result.pricesChanged -&gt; {
+&nbsp;                                &quot;Los precios cambiaron. Revisa el carrito antes de continuar.&quot;
+&nbsp;                            }
+&nbsp;
+&nbsp;                            else -&gt; null
+&nbsp;                        }
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (e: Exception) {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        message = cartErrorMessage(e),
+&nbsp;                        reviewOpen = false
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(busy = false)
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun closeReview() {
+&nbsp;        if (!_state.value.busy) {
+&nbsp;            _state.update {
+&nbsp;                it.copy(reviewOpen = false)
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun confirm() {
+&nbsp;        val alias = owner ?: return
+&nbsp;        val current = _state.value
+&nbsp;
+&nbsp;        if (
+&nbsp;            current.busy ||
+&nbsp;            !current.reviewOpen ||
+&nbsp;            current.completedOrder != null
+&nbsp;        ) {
+&nbsp;            return
+&nbsp;        }
+&nbsp;
+&nbsp;        val items = current.rows.map {
+&nbsp;            LocalOrderItem(
+&nbsp;                productId = it.item.productId,
+&nbsp;                quantity = it.item.quantity
+&nbsp;            )
+&nbsp;        }
+&nbsp;
+&nbsp;        _state.update {
+&nbsp;            it.copy(
+&nbsp;                busy = true,
+&nbsp;                message = null
+&nbsp;            )
+&nbsp;        }
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                // Una sola transacción de Room:
+&nbsp;                // valida stock, guarda el pedido,
+&nbsp;                // descuenta existencias y vacía este carrito.
+&nbsp;                val order = LocalStore.repository.order(
+&nbsp;                    LocalOrderRequest(
+&nbsp;                        clientAlias = alias,
+&nbsp;                        fulfillment = &quot;Retiro&quot;,
+&nbsp;                        items = items
+&nbsp;                    )
+&nbsp;                )
+&nbsp;
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        completedOrder = order,
+&nbsp;                        reviewOpen = false
+&nbsp;                    )
+&nbsp;                }
+&nbsp;
+&nbsp;                try {
+&nbsp;                    withContext(Dispatchers.IO) {
+&nbsp;                        receipts.save(alias, order)
+&nbsp;                    }
+&nbsp;                } catch (e: CancellationException) {
+&nbsp;                    throw e
+&nbsp;                } catch (_: Exception) {
+&nbsp;                    // El pedido ya está guardado en Room.
+&nbsp;                    // El comprobante puede recuperarse desde allí.
+&nbsp;                }
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (e: Exception) {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(
+&nbsp;                        message = cartErrorMessage(e),
+&nbsp;                        reviewOpen = false
+&nbsp;                    )
+&nbsp;                }
+&nbsp;            } finally {
+&nbsp;                _state.update {
+&nbsp;                    it.copy(busy = false)
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+&nbsp;
+&nbsp;private fun cartErrorMessage(error: Exception): String {
+&nbsp;    return error.message?.takeIf {
+&nbsp;        it.isNotBlank()
+&nbsp;    } ?: &quot;No se pudo guardar el pedido local. Revisa Mis pedidos antes de reintentar.&quot;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

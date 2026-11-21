@@ -1,0 +1,135 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RegisterBody</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: RegisterBody (cl.oyl.frutossecos.data.remote)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RegisterBody</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.remote
+&nbsp;
+&nbsp;/** Usuario devuelto por user-service (nunca incluye la contraseña). */
+&nbsp;data class RemoteUser(
+&nbsp;    val id: Long,
+&nbsp;    val name: String,
+&nbsp;    val email: String,
+&nbsp;    val phone: String?,
+&nbsp;    val address: String?,
+&nbsp;    val role: String
+&nbsp;)
+&nbsp;
+<b class="fc">&nbsp;data class RegisterBody(</b>
+<b class="fc">&nbsp;    val name: String,</b>
+<b class="fc">&nbsp;    val email: String,</b>
+<b class="fc">&nbsp;    val phone: String,</b>
+<b class="fc">&nbsp;    val address: String,</b>
+<b class="fc">&nbsp;    val password: String</b>
+&nbsp;)
+&nbsp;
+&nbsp;data class LoginBody(val email: String, val password: String)
+&nbsp;
+&nbsp;data class UpdateUserBody(val name: String, val phone: String, val address: String)
+&nbsp;
+&nbsp;/** Respuesta de la API externa de tipo de cambio (open.er-api.com). */
+&nbsp;data class ExchangeRateResponse(
+&nbsp;    val result: String?,
+&nbsp;    val base_code: String?,
+&nbsp;    val time_last_update_utc: String?,
+&nbsp;    val rates: Map&lt;String, Double&gt;?
+&nbsp;)
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

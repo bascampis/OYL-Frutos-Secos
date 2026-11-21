@@ -1,0 +1,511 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ProductForm</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: ProductForm (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ProductForm</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import androidx.compose.runtime.getValue
+&nbsp;import androidx.compose.runtime.mutableStateOf
+&nbsp;import androidx.compose.runtime.setValue
+&nbsp;import androidx.lifecycle.ViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.data.model.LocalProduct
+&nbsp;import cl.oyl.frutossecos.data.model.ProductInputDto
+&nbsp;import cl.oyl.frutossecos.data.repository.LocalStore
+&nbsp;import kotlinx.coroutines.CancellationException
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;
+&nbsp;data class ProductForm(
+<b class="fc">&nbsp;    val id: String = &quot;&quot;,</b>
+<b class="fc">&nbsp;    val name: String = &quot;&quot;,</b>
+<b class="fc">&nbsp;    val category: String = &quot;Frutos secos&quot;,</b>
+<b class="fc">&nbsp;    val description: String = &quot;&quot;,</b>
+<b class="fc">&nbsp;    val presentation: String = &quot;&quot;,</b>
+<b class="fc">&nbsp;    val price: String = &quot;&quot;,</b>
+<b class="fc">&nbsp;    val stock: String = &quot;0&quot;,</b>
+<b class="fc">&nbsp;    val imageUrl: String = &quot;&quot;</b>
+&nbsp;)
+&nbsp;
+&nbsp;object ProductFormValidator {
+&nbsp;
+&nbsp;    fun validate(
+&nbsp;        form: ProductForm,
+&nbsp;        existingIds: Set&lt;String&gt;,
+&nbsp;        editing: Boolean
+&nbsp;    ): Map&lt;String, String&gt; {
+&nbsp;        val errors = mutableMapOf&lt;String, String&gt;()
+&nbsp;
+&nbsp;        val id = form.id.trim()
+&nbsp;        val price = form.price.trim().toIntOrNull()
+&nbsp;        val stock = form.stock.trim().toIntOrNull()
+&nbsp;
+&nbsp;        if (id.isBlank()) {
+&nbsp;            errors[&quot;id&quot;] = &quot;Ingresa el identificador.&quot;
+&nbsp;        } else if (!Regex(&quot;[A-Za-z0-9_-]+&quot;).matches(id)) {
+&nbsp;            errors[&quot;id&quot;] =
+&nbsp;                &quot;Usa letras, números, guion o guion bajo.&quot;
+&nbsp;        } else if (
+&nbsp;            !editing &amp;&amp;
+&nbsp;            existingIds.any {
+&nbsp;                it.equals(id, ignoreCase = true)
+&nbsp;            }
+&nbsp;        ) {
+&nbsp;            errors[&quot;id&quot;] = &quot;Ese identificador ya existe.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (form.name.isBlank()) {
+&nbsp;            errors[&quot;name&quot;] = &quot;Ingresa el nombre.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (form.category.isBlank()) {
+&nbsp;            errors[&quot;category&quot;] = &quot;Ingresa la categoría.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (form.description.isBlank()) {
+&nbsp;            errors[&quot;description&quot;] = &quot;Ingresa la descripción.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (form.presentation.isBlank()) {
+&nbsp;            errors[&quot;presentation&quot;] =
+&nbsp;                &quot;Ingresa la presentación, por ejemplo 250 g.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (price == null || price &lt;= 0) {
+&nbsp;            errors[&quot;price&quot;] =
+&nbsp;                &quot;Ingresa un precio entero mayor que cero.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        if (!editing &amp;&amp; (stock == null || stock &lt; 0)) {
+&nbsp;            errors[&quot;stock&quot;] =
+&nbsp;                &quot;Ingresa un stock entero igual o mayor que cero.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        val url = form.imageUrl.trim()
+&nbsp;
+&nbsp;        if (
+&nbsp;            url.isNotEmpty() &amp;&amp;
+&nbsp;            !Regex(&quot;^https://\\S+\\.\\S+$&quot;).matches(url)
+&nbsp;        ) {
+&nbsp;            errors[&quot;imageUrl&quot;] =
+&nbsp;                &quot;La URL debe comenzar con https:// y ser válida.&quot;
+&nbsp;        }
+&nbsp;
+&nbsp;        return errors
+&nbsp;    }
+&nbsp;}
+&nbsp;
+&nbsp;class ProductManagementViewModel : ViewModel() {
+&nbsp;
+&nbsp;    private val repository
+&nbsp;        get() = LocalStore.repository
+&nbsp;
+&nbsp;    var products by mutableStateOf&lt;List&lt;LocalProduct&gt;&gt;(emptyList())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var loading by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var saving by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var message by mutableStateOf(&quot;&quot;)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var dialogOpen by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var editing by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var form by mutableStateOf(ProductForm())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var errors by mutableStateOf&lt;Map&lt;String, String&gt;&gt;(emptyMap())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var formError by mutableStateOf(&quot;&quot;)
+&nbsp;        private set
+&nbsp;
+&nbsp;    init {
+&nbsp;        refresh()
+&nbsp;    }
+&nbsp;
+&nbsp;    fun refresh() {
+&nbsp;        if (loading || saving) return
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            loading = true
+&nbsp;            message = &quot;&quot;
+&nbsp;
+&nbsp;            try {
+&nbsp;                products = repository.products()
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                message =
+&nbsp;                    &quot;No se pudieron cargar los productos locales.&quot;
+&nbsp;            } finally {
+&nbsp;                loading = false
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun openCreate() {
+&nbsp;        if (saving || loading) return
+&nbsp;
+&nbsp;        editing = false
+&nbsp;        form = ProductForm()
+&nbsp;        errors = emptyMap()
+&nbsp;        formError = &quot;&quot;
+&nbsp;        dialogOpen = true
+&nbsp;    }
+&nbsp;
+&nbsp;    fun openEdit(product: LocalProduct) {
+&nbsp;        if (saving || loading) return
+&nbsp;
+&nbsp;        editing = true
+&nbsp;
+&nbsp;        form = ProductForm(
+&nbsp;            id = product.id,
+&nbsp;            name = product.name,
+&nbsp;            category = product.category,
+&nbsp;            description = product.description.orEmpty(),
+&nbsp;            presentation = product.presentation.orEmpty(),
+&nbsp;            price = product.price.toString(),
+&nbsp;            stock = product.stock.toString(),
+&nbsp;            imageUrl = product.imageUrl.orEmpty()
+&nbsp;        )
+&nbsp;
+&nbsp;        errors = emptyMap()
+&nbsp;        formError = &quot;&quot;
+&nbsp;        dialogOpen = true
+&nbsp;    }
+&nbsp;
+&nbsp;    fun closeDialog() {
+&nbsp;        if (!saving) {
+&nbsp;            dialogOpen = false
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun updateField(
+&nbsp;        field: String,
+&nbsp;        value: String
+&nbsp;    ) {
+&nbsp;        if (saving) return
+&nbsp;
+&nbsp;        form = when (field) {
+&nbsp;            &quot;id&quot; -&gt; {
+&nbsp;                if (editing) {
+&nbsp;                    form
+&nbsp;                } else {
+&nbsp;                    form.copy(id = value)
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            &quot;name&quot; -&gt; form.copy(name = value)
+&nbsp;
+&nbsp;            &quot;category&quot; -&gt; form.copy(category = value)
+&nbsp;
+&nbsp;            &quot;description&quot; -&gt; form.copy(description = value)
+&nbsp;
+&nbsp;            &quot;presentation&quot; -&gt; form.copy(presentation = value)
+&nbsp;
+&nbsp;            &quot;price&quot; -&gt; form.copy(price = value)
+&nbsp;
+&nbsp;            &quot;imageUrl&quot; -&gt; {
+&nbsp;                form.copy(
+&nbsp;                    imageUrl = value.filter {
+&nbsp;                        !it.isWhitespace()
+&nbsp;                    }
+&nbsp;                )
+&nbsp;            }
+&nbsp;
+&nbsp;            &quot;stock&quot; -&gt; {
+&nbsp;                if (editing) {
+&nbsp;                    form
+&nbsp;                } else {
+&nbsp;                    form.copy(stock = value)
+&nbsp;                }
+&nbsp;            }
+&nbsp;
+&nbsp;            else -&gt; form
+&nbsp;        }
+&nbsp;
+&nbsp;        if (errors.isNotEmpty()) {
+&nbsp;            errors = ProductFormValidator.validate(
+&nbsp;                form = form,
+&nbsp;                existingIds = products.map { it.id }.toSet(),
+&nbsp;                editing = editing
+&nbsp;            )
+&nbsp;        }
+&nbsp;
+&nbsp;        formError = &quot;&quot;
+&nbsp;    }
+&nbsp;
+&nbsp;    fun save() {
+&nbsp;        if (saving || loading) return
+&nbsp;
+&nbsp;        errors = ProductFormValidator.validate(
+&nbsp;            form = form,
+&nbsp;            existingIds = products.map { it.id }.toSet(),
+&nbsp;            editing = editing
+&nbsp;        )
+&nbsp;
+&nbsp;        if (errors.isNotEmpty()) return
+&nbsp;
+&nbsp;        val submitted = form
+&nbsp;        val wasEditing = editing
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            saving = true
+&nbsp;            formError = &quot;&quot;
+&nbsp;
+&nbsp;            try {
+&nbsp;                val latestProducts = repository.products()
+&nbsp;
+&nbsp;                errors = ProductFormValidator.validate(
+&nbsp;                    form = submitted,
+&nbsp;                    existingIds = latestProducts.map { it.id }.toSet(),
+&nbsp;                    editing = wasEditing
+&nbsp;                )
+&nbsp;
+&nbsp;                if (errors.isNotEmpty()) {
+&nbsp;                    return@launch
+&nbsp;                }
+&nbsp;
+&nbsp;                val latestProduct = if (wasEditing) {
+&nbsp;                    latestProducts.find {
+&nbsp;                        it.id == submitted.id
+&nbsp;                    } ?: error(&quot;El producto ya no existe.&quot;)
+&nbsp;                } else {
+&nbsp;                    null
+&nbsp;                }
+&nbsp;
+&nbsp;                repository.saveProduct(
+&nbsp;                    ProductInputDto(
+&nbsp;                        id = submitted.id.trim(),
+&nbsp;                        name = submitted.name.trim(),
+&nbsp;                        category = submitted.category.trim(),
+&nbsp;                        description = submitted.description.trim(),
+&nbsp;                        presentation = submitted.presentation.trim(),
+&nbsp;                        price = submitted.price.trim().toInt(),
+&nbsp;                        stock = latestProduct?.stock
+&nbsp;                            ?: submitted.stock.trim().toInt(),
+&nbsp;                        active = latestProduct?.active ?: true,
+&nbsp;                        imageUrl = submitted.imageUrl.trim().ifBlank {
+&nbsp;                            null
+&nbsp;                        }
+&nbsp;                    )
+&nbsp;                )
+&nbsp;
+&nbsp;                dialogOpen = false
+&nbsp;
+&nbsp;                message = if (wasEditing) {
+&nbsp;                    &quot;Producto actualizado en el celular.&quot;
+&nbsp;                } else {
+&nbsp;                    &quot;Producto creado en el celular.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                reloadAfterSave()
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                formError =
+&nbsp;                    &quot;No se pudo guardar el producto local.&quot;
+&nbsp;            } finally {
+&nbsp;                saving = false
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun toggleActive(product: LocalProduct) {
+&nbsp;        if (saving || loading) return
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            saving = true
+&nbsp;            message = &quot;&quot;
+&nbsp;
+&nbsp;            try {
+&nbsp;                val latest = repository.products().find {
+&nbsp;                    it.id == product.id
+&nbsp;                } ?: error(&quot;El producto ya no existe.&quot;)
+&nbsp;
+&nbsp;                repository.saveProduct(
+&nbsp;                    ProductInputDto(
+&nbsp;                        id = latest.id,
+&nbsp;                        name = latest.name,
+&nbsp;                        category = latest.category,
+&nbsp;                        description = latest.description.orEmpty(),
+&nbsp;                        presentation = latest.presentation.orEmpty(),
+&nbsp;                        price = latest.price,
+&nbsp;                        stock = latest.stock,
+&nbsp;                        active = !latest.active,
+&nbsp;                        imageUrl = latest.imageUrl
+&nbsp;                    )
+&nbsp;                )
+&nbsp;
+&nbsp;                message = if (latest.active) {
+&nbsp;                    &quot;Producto desactivado.&quot;
+&nbsp;                } else {
+&nbsp;                    &quot;Producto activado.&quot;
+&nbsp;                }
+&nbsp;
+&nbsp;                reloadAfterSave()
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                message =
+&nbsp;                    &quot;No se pudo cambiar el estado del producto.&quot;
+&nbsp;            } finally {
+&nbsp;                saving = false
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    var productToDelete by mutableStateOf&lt;LocalProduct?&gt;(null)
+&nbsp;        private set
+&nbsp;
+&nbsp;    fun askDelete(product: LocalProduct) {
+&nbsp;        if (saving || loading) return
+&nbsp;        productToDelete = product
+&nbsp;    }
+&nbsp;
+&nbsp;    fun dismissDelete() {
+&nbsp;        productToDelete = null
+&nbsp;    }
+&nbsp;
+&nbsp;    fun confirmDelete() {
+&nbsp;        val product = productToDelete ?: return
+&nbsp;        if (saving || loading) return
+&nbsp;
+&nbsp;        productToDelete = null
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            saving = true
+&nbsp;            message = &quot;&quot;
+&nbsp;
+&nbsp;            try {
+&nbsp;                repository.deleteProduct(product.id)
+&nbsp;                message = &quot;Producto eliminado.&quot;
+&nbsp;                reloadAfterSave()
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (e: Exception) {
+&nbsp;                message = e.message?.takeIf { it.isNotBlank() }
+&nbsp;                    ?: &quot;No se pudo eliminar el producto.&quot;
+&nbsp;            } finally {
+&nbsp;                saving = false
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private suspend fun reloadAfterSave() {
+&nbsp;        try {
+&nbsp;            products = repository.products()
+&nbsp;        } catch (e: CancellationException) {
+&nbsp;            throw e
+&nbsp;        } catch (_: Exception) {
+&nbsp;            message += &quot; Pulsa actualizar para recargar la lista.&quot;
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

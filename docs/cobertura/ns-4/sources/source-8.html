@@ -1,0 +1,131 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > RetrofitProvider</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: RetrofitProvider (cl.oyl.frutossecos.data.remote)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">RetrofitProvider</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.remote
+&nbsp;
+&nbsp;import okhttp3.OkHttpClient
+&nbsp;import retrofit2.Retrofit
+&nbsp;import retrofit2.converter.gson.GsonConverterFactory
+&nbsp;import java.util.concurrent.TimeUnit
+&nbsp;
+&nbsp;/** Crea los clientes Retrofit una sola vez (singleton perezoso). */
+&nbsp;object RetrofitProvider {
+<b class="fc">&nbsp;    private val client by lazy {</b>
+<b class="fc">&nbsp;        OkHttpClient.Builder()</b>
+<b class="fc">&nbsp;            .connectTimeout(8, TimeUnit.SECONDS)</b>
+<b class="fc">&nbsp;            .readTimeout(10, TimeUnit.SECONDS)</b>
+<b class="fc">&nbsp;            .build()</b>
+&nbsp;    }
+&nbsp;
+<b class="fc">&nbsp;    private fun retrofit(baseUrl: String) = Retrofit.Builder()</b>
+<b class="fc">&nbsp;        .baseUrl(baseUrl)</b>
+<b class="fc">&nbsp;        .client(client)</b>
+<b class="fc">&nbsp;        .addConverterFactory(GsonConverterFactory.create())</b>
+<b class="fc">&nbsp;        .build()</b>
+&nbsp;
+<b class="fc">&nbsp;    val catalogApi: CatalogApi by lazy { retrofit(ApiConfig.CATALOG_URL).create(CatalogApi::class.java) }</b>
+<b class="fc">&nbsp;    val orderApi: OrderApi by lazy { retrofit(ApiConfig.ORDERS_URL).create(OrderApi::class.java) }</b>
+<b class="fc">&nbsp;    val userApi: UserApi by lazy { retrofit(ApiConfig.USERS_URL).create(UserApi::class.java) }</b>
+<b class="fc">&nbsp;    val exchangeApi: ExchangeRateApi by lazy { retrofit(ApiConfig.EXCHANGE_URL).create(ExchangeRateApi::class.java) }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

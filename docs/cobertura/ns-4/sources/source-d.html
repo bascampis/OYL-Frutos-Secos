@@ -1,0 +1,133 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CatalogApi</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.remote</a>
+</div>
+
+<h1>Coverage Summary for Class: CatalogApi (cl.oyl.frutossecos.data.remote)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">CatalogApi$Subclass10</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogApi$Subclass10$auxiliary$cMUjz7zw</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogApi$Subclass10$auxiliary$irqKcQwe</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogApi$Subclass10$auxiliary$ug9oIEte</td>
+  </tr>
+  <tr>
+    <td class="name">CatalogApi$Subclass10$auxiliary$V4Iis4aX</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.remote
+&nbsp;
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrder
+&nbsp;import cl.oyl.frutossecos.data.model.LocalOrderRequest
+&nbsp;import cl.oyl.frutossecos.data.model.LocalProduct
+&nbsp;import cl.oyl.frutossecos.data.model.OrderStatusDto
+&nbsp;import cl.oyl.frutossecos.data.model.ProductInputDto
+&nbsp;import cl.oyl.frutossecos.data.model.StockDeltaDto
+&nbsp;import retrofit2.Response
+&nbsp;import retrofit2.http.Body
+&nbsp;import retrofit2.http.DELETE
+&nbsp;import retrofit2.http.GET
+&nbsp;import retrofit2.http.PATCH
+&nbsp;import retrofit2.http.POST
+&nbsp;import retrofit2.http.PUT
+&nbsp;import retrofit2.http.Path
+&nbsp;import retrofit2.http.Query
+&nbsp;
+&nbsp;/** catalog-service (puerto 8081) */
+&nbsp;interface CatalogApi {
+&nbsp;    @GET(&quot;api/products&quot;) suspend fun products(): List&lt;LocalProduct&gt;
+&nbsp;    @GET(&quot;api/products/{id}&quot;) suspend fun product(@Path(&quot;id&quot;) id: String): LocalProduct
+&nbsp;    @POST(&quot;api/products&quot;) suspend fun create(@Body body: ProductInputDto): LocalProduct
+&nbsp;    @PUT(&quot;api/products/{id}&quot;) suspend fun update(@Path(&quot;id&quot;) id: String, @Body body: ProductInputDto): LocalProduct
+&nbsp;    @DELETE(&quot;api/products/{id}&quot;) suspend fun delete(@Path(&quot;id&quot;) id: String): Response&lt;Unit&gt;
+&nbsp;    @PATCH(&quot;api/products/{id}/stock&quot;) suspend fun adjustStock(@Path(&quot;id&quot;) id: String, @Body body: StockDeltaDto): LocalProduct
+&nbsp;}
+&nbsp;
+&nbsp;/** order-service (puerto 8082) */
+&nbsp;interface OrderApi {
+&nbsp;    @POST(&quot;api/orders&quot;) suspend fun create(@Body body: LocalOrderRequest): LocalOrder
+&nbsp;    @GET(&quot;api/orders&quot;) suspend fun all(): List&lt;LocalOrder&gt;
+&nbsp;    @GET(&quot;api/orders&quot;) suspend fun byClient(@Query(&quot;clientAlias&quot;) alias: String): List&lt;LocalOrder&gt;
+&nbsp;    @PATCH(&quot;api/orders/{id}/status&quot;) suspend fun setStatus(@Path(&quot;id&quot;) id: String, @Body body: OrderStatusDto): LocalOrder
+&nbsp;    @DELETE(&quot;api/orders/{id}&quot;) suspend fun cancel(@Path(&quot;id&quot;) id: String): Response&lt;Unit&gt;
+&nbsp;}
+&nbsp;
+&nbsp;/** user-service (puerto 8083) */
+&nbsp;interface UserApi {
+&nbsp;    @POST(&quot;api/users/register&quot;) suspend fun register(@Body body: RegisterBody): RemoteUser
+&nbsp;    @POST(&quot;api/users/login&quot;) suspend fun login(@Body body: LoginBody): RemoteUser
+&nbsp;    @GET(&quot;api/users&quot;) suspend fun users(): List&lt;RemoteUser&gt;
+&nbsp;    @PUT(&quot;api/users/{id}&quot;) suspend fun update(@Path(&quot;id&quot;) id: Long, @Body body: UpdateUserBody): RemoteUser
+&nbsp;    @DELETE(&quot;api/users/{id}&quot;) suspend fun delete(@Path(&quot;id&quot;) id: Long): Response&lt;Unit&gt;
+&nbsp;}
+&nbsp;
+&nbsp;/** API externa: tipo de cambio USD -&gt; CLP */
+&nbsp;interface ExchangeRateApi {
+&nbsp;    @GET(&quot;v6/latest/USD&quot;) suspend fun latestUsd(): ExchangeRateResponse
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

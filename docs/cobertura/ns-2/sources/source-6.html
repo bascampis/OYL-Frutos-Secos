@@ -1,0 +1,482 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ClientDao_Impl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.local</a>
+</div>
+
+<h1>Coverage Summary for Class: ClientDao_Impl (cl.oyl.frutossecos.data.local)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ClientDao_Impl</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/54)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/127)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ClientDao_Impl$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/23)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/68)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/150)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.local;
+&nbsp;
+&nbsp;import androidx.annotation.NonNull;
+&nbsp;import androidx.room.EntityInsertAdapter;
+&nbsp;import androidx.room.RoomDatabase;
+&nbsp;import androidx.room.util.DBUtil;
+&nbsp;import androidx.room.util.SQLiteStatementUtil;
+&nbsp;import androidx.sqlite.SQLiteStatement;
+&nbsp;import java.lang.Class;
+&nbsp;import java.lang.NullPointerException;
+&nbsp;import java.lang.Object;
+&nbsp;import java.lang.Override;
+&nbsp;import java.lang.String;
+&nbsp;import java.lang.SuppressWarnings;
+&nbsp;import java.util.Collections;
+&nbsp;import java.util.List;
+&nbsp;import javax.annotation.processing.Generated;
+&nbsp;import kotlin.Unit;
+&nbsp;import kotlin.coroutines.Continuation;
+&nbsp;
+&nbsp;@Generated(&quot;androidx.room.RoomProcessor&quot;)
+&nbsp;@SuppressWarnings({&quot;unchecked&quot;, &quot;deprecation&quot;, &quot;removal&quot;})
+&nbsp;public final class ClientDao_Impl implements ClientDao {
+&nbsp;  private final RoomDatabase __db;
+&nbsp;
+&nbsp;  private final EntityInsertAdapter&lt;ClientEntity&gt; __insertAdapterOfClientEntity;
+&nbsp;
+<b class="nc">&nbsp;  public ClientDao_Impl(@NonNull final RoomDatabase __db) {</b>
+<b class="nc">&nbsp;    this.__db = __db;</b>
+<b class="nc">&nbsp;    this.__insertAdapterOfClientEntity = new EntityInsertAdapter&lt;ClientEntity&gt;() {</b>
+&nbsp;      @Override
+&nbsp;      @NonNull
+&nbsp;      protected String createQuery() {
+<b class="nc">&nbsp;        return &quot;INSERT OR ABORT INTO `clients` (`alias`,`name`,`email`,`phone`,`address`,`salt`,`hash`) VALUES (?,?,?,?,?,?,?)&quot;;</b>
+&nbsp;      }
+&nbsp;
+&nbsp;      @Override
+&nbsp;      protected void bind(@NonNull final SQLiteStatement statement,
+&nbsp;          @NonNull final ClientEntity entity) {
+<b class="nc">&nbsp;        if (entity.getAlias() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(1);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(1, entity.getAlias());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getName() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(2);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(2, entity.getName());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getEmail() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(3);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(3, entity.getEmail());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getPhone() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(4);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(4, entity.getPhone());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getAddress() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(5);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(5, entity.getAddress());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getSalt() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(6);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(6, entity.getSalt());</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (entity.getHash() == null) {</b>
+<b class="nc">&nbsp;          statement.bindNull(7);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          statement.bindText(7, entity.getHash());</b>
+&nbsp;        }
+&nbsp;      }
+&nbsp;    };
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object add(final ClientEntity client, final Continuation&lt;? super Unit&gt; arg1) {
+<b class="nc">&nbsp;    if (client == null) throw new NullPointerException();</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      __insertAdapterOfClientEntity.insert(_connection, client);</b>
+&nbsp;      return Unit.INSTANCE;
+&nbsp;    }, arg1);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object byAlias(final String alias, final Continuation&lt;? super ClientEntity&gt; arg1) {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM clients WHERE alias = ? LIMIT 1&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        final int _columnIndexOfAlias = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;alias&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfEmail = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;email&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPhone = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;phone&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfAddress = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;address&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfSalt = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;salt&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfHash = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;hash&quot;);</b>
+&nbsp;        final ClientEntity _result;
+<b class="nc">&nbsp;        if (_stmt.step()) {</b>
+&nbsp;          final String _tmpAlias;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfAlias)) {</b>
+<b class="nc">&nbsp;            _tmpAlias = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpAlias = _stmt.getText(_columnIndexOfAlias);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpEmail;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfEmail)) {</b>
+<b class="nc">&nbsp;            _tmpEmail = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpEmail = _stmt.getText(_columnIndexOfEmail);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPhone;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPhone)) {</b>
+<b class="nc">&nbsp;            _tmpPhone = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPhone = _stmt.getText(_columnIndexOfPhone);</b>
+&nbsp;          }
+&nbsp;          final String _tmpAddress;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfAddress)) {</b>
+<b class="nc">&nbsp;            _tmpAddress = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpAddress = _stmt.getText(_columnIndexOfAddress);</b>
+&nbsp;          }
+&nbsp;          final String _tmpSalt;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfSalt)) {</b>
+<b class="nc">&nbsp;            _tmpSalt = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpSalt = _stmt.getText(_columnIndexOfSalt);</b>
+&nbsp;          }
+&nbsp;          final String _tmpHash;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfHash)) {</b>
+<b class="nc">&nbsp;            _tmpHash = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpHash = _stmt.getText(_columnIndexOfHash);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _result = new ClientEntity(_tmpAlias,_tmpName,_tmpEmail,_tmpPhone,_tmpAddress,_tmpSalt,_tmpHash);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _result = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, arg1);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object byEmail(final String email, final Continuation&lt;? super ClientEntity&gt; arg1) {
+<b class="nc">&nbsp;    final String _sql = &quot;SELECT * FROM clients WHERE email = ? LIMIT 1&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, true, false, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (email == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, email);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        final int _columnIndexOfAlias = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;alias&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfName = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;name&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfEmail = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;email&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfPhone = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;phone&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfAddress = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;address&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfSalt = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;salt&quot;);</b>
+<b class="nc">&nbsp;        final int _columnIndexOfHash = SQLiteStatementUtil.getColumnIndexOrThrow(_stmt, &quot;hash&quot;);</b>
+&nbsp;        final ClientEntity _result;
+<b class="nc">&nbsp;        if (_stmt.step()) {</b>
+&nbsp;          final String _tmpAlias;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfAlias)) {</b>
+<b class="nc">&nbsp;            _tmpAlias = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpAlias = _stmt.getText(_columnIndexOfAlias);</b>
+&nbsp;          }
+&nbsp;          final String _tmpName;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfName)) {</b>
+<b class="nc">&nbsp;            _tmpName = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpName = _stmt.getText(_columnIndexOfName);</b>
+&nbsp;          }
+&nbsp;          final String _tmpEmail;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfEmail)) {</b>
+<b class="nc">&nbsp;            _tmpEmail = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpEmail = _stmt.getText(_columnIndexOfEmail);</b>
+&nbsp;          }
+&nbsp;          final String _tmpPhone;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfPhone)) {</b>
+<b class="nc">&nbsp;            _tmpPhone = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpPhone = _stmt.getText(_columnIndexOfPhone);</b>
+&nbsp;          }
+&nbsp;          final String _tmpAddress;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfAddress)) {</b>
+<b class="nc">&nbsp;            _tmpAddress = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpAddress = _stmt.getText(_columnIndexOfAddress);</b>
+&nbsp;          }
+&nbsp;          final String _tmpSalt;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfSalt)) {</b>
+<b class="nc">&nbsp;            _tmpSalt = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpSalt = _stmt.getText(_columnIndexOfSalt);</b>
+&nbsp;          }
+&nbsp;          final String _tmpHash;
+<b class="nc">&nbsp;          if (_stmt.isNull(_columnIndexOfHash)) {</b>
+<b class="nc">&nbsp;            _tmpHash = null;</b>
+&nbsp;          } else {
+<b class="nc">&nbsp;            _tmpHash = _stmt.getText(_columnIndexOfHash);</b>
+&nbsp;          }
+<b class="nc">&nbsp;          _result = new ClientEntity(_tmpAlias,_tmpName,_tmpEmail,_tmpPhone,_tmpAddress,_tmpSalt,_tmpHash);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _result = null;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        return _result;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, arg1);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object updateProfile(final String alias, final String name, final String phone,
+&nbsp;      final String address, final Continuation&lt;? super Unit&gt; arg4) {
+<b class="nc">&nbsp;    final String _sql = &quot;\n&quot;</b>
+&nbsp;            + &quot;        UPDATE clients\n&quot;
+&nbsp;            + &quot;        SET name = ?,\n&quot;
+&nbsp;            + &quot;            phone = ?,\n&quot;
+&nbsp;            + &quot;            address = ?\n&quot;
+&nbsp;            + &quot;        WHERE alias = ?\n&quot;
+&nbsp;            + &quot;        &quot;;
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (name == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 2;</b>
+<b class="nc">&nbsp;        if (phone == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, phone);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 3;</b>
+<b class="nc">&nbsp;        if (address == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, address);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 4;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _stmt.step();</b>
+<b class="nc">&nbsp;        return Unit.INSTANCE;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, arg4);
+&nbsp;  }
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public Object updateContact(final String alias, final String name, final String email,
+&nbsp;      final String phone, final Continuation&lt;? super Unit&gt; arg4) {
+<b class="nc">&nbsp;    final String _sql = &quot;UPDATE clients SET name = ?, email = ?, phone = ? WHERE alias = ?&quot;;</b>
+<b class="nc">&nbsp;    return DBUtil.performSuspending(__db, false, true, (_connection) -&gt; {</b>
+<b class="nc">&nbsp;      final SQLiteStatement _stmt = _connection.prepare(_sql);</b>
+&nbsp;      try {
+<b class="nc">&nbsp;        int _argIndex = 1;</b>
+<b class="nc">&nbsp;        if (name == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, name);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 2;</b>
+<b class="nc">&nbsp;        if (email == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, email);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 3;</b>
+<b class="nc">&nbsp;        if (phone == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, phone);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _argIndex = 4;</b>
+<b class="nc">&nbsp;        if (alias == null) {</b>
+<b class="nc">&nbsp;          _stmt.bindNull(_argIndex);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;          _stmt.bindText(_argIndex, alias);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        _stmt.step();</b>
+<b class="nc">&nbsp;        return Unit.INSTANCE;</b>
+&nbsp;      } finally {
+&nbsp;        _stmt.close();
+&nbsp;      }
+&nbsp;    }, arg4);
+&nbsp;  }
+&nbsp;
+&nbsp;  @NonNull
+&nbsp;  public static List&lt;Class&lt;?&gt;&gt; getRequiredConverters() {
+<b class="nc">&nbsp;    return Collections.emptyList();</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

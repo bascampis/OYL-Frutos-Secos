@@ -1,0 +1,225 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AboutScreenKt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.ui.screens</a>
+</div>
+
+<h1>Coverage Summary for Class: AboutScreenKt (cl.oyl.frutossecos.ui.screens)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AboutScreenKt</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">AboutScreenKt$AboutScreen$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">AboutScreenKt$AboutScreen$1$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/3)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.ui.screens
+&nbsp;
+&nbsp;import androidx.compose.foundation.layout.Arrangement
+&nbsp;import androidx.compose.foundation.layout.Column
+&nbsp;import androidx.compose.foundation.layout.fillMaxSize
+&nbsp;import androidx.compose.foundation.layout.padding
+&nbsp;import androidx.compose.foundation.rememberScrollState
+&nbsp;import androidx.compose.foundation.verticalScroll
+&nbsp;import androidx.compose.material.icons.Icons
+&nbsp;import androidx.compose.material.icons.automirrored.filled.ArrowBack
+&nbsp;import androidx.compose.material3.Icon
+&nbsp;import androidx.compose.material3.IconButton
+&nbsp;import androidx.compose.material3.MaterialTheme
+&nbsp;import androidx.compose.material3.ExperimentalMaterial3Api
+&nbsp;import androidx.compose.material3.Scaffold
+&nbsp;import androidx.compose.material3.Text
+&nbsp;import androidx.compose.material3.TopAppBar
+&nbsp;import androidx.compose.runtime.Composable
+&nbsp;import androidx.compose.ui.Modifier
+&nbsp;import androidx.compose.ui.unit.dp
+&nbsp;
+&nbsp;@OptIn(ExperimentalMaterial3Api::class)
+&nbsp;@Composable
+<b class="nc">&nbsp;fun AboutScreen(onBack: () -&gt; Unit) {</b>
+<b class="nc">&nbsp;    Scaffold(</b>
+<b class="nc">&nbsp;        topBar = {</b>
+<b class="nc">&nbsp;            TopAppBar(</b>
+&nbsp;                title = { Text(&quot;Acerca del proyecto&quot;) },
+<b class="nc">&nbsp;                navigationIcon = {</b>
+<b class="nc">&nbsp;                    IconButton(onClick = onBack) {</b>
+&nbsp;                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = &quot;Volver&quot;)
+&nbsp;                    }
+&nbsp;                }
+&nbsp;            )
+&nbsp;        },
+<b class="nc">&nbsp;        containerColor = MaterialTheme.colorScheme.background</b>
+&nbsp;    ) { innerPadding -&gt;
+&nbsp;        Column(
+&nbsp;            modifier = Modifier.fillMaxSize().padding(innerPadding)
+&nbsp;                .verticalScroll(rememberScrollState()).padding(24.dp),
+&nbsp;            verticalArrangement = Arrangement.spacedBy(14.dp)
+&nbsp;        ) {
+&nbsp;            Text(&quot;OYL Frutos Secos&quot;, style = MaterialTheme.typography.headlineMedium)
+&nbsp;            Text(&quot;Versión 0.1.0 · Entrega ZIP 01&quot;)
+&nbsp;            Text(&quot;Aplicación académica para DSY1105 de Duoc UC.&quot;)
+&nbsp;            Text(&quot;Disponible actualmente&quot;, style = MaterialTheme.typography.titleLarge)
+&nbsp;            Text(&quot;Bienvenida animada, selección de rol, inicio de sesión de prueba, panel de rol y cierre de sesión.&quot;)
+&nbsp;            Text(&quot;Todavía no está implementado&quot;, style = MaterialTheme.typography.titleLarge)
+&nbsp;            Text(&quot;Registro de usuarios, Room/SQLite, catálogo, carrito, pedidos, API REST, Spring Boot, cámara, QR, mapa y notificaciones.&quot;)
+&nbsp;            Text(
+&nbsp;                &quot;Las credenciales incluidas son ficticias. Los pedidos y el inventario oficiales requerirán un backend en las siguientes entregas.&quot;,
+&nbsp;                color = MaterialTheme.colorScheme.secondary
+&nbsp;            )
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

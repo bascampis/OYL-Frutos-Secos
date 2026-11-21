@@ -1,0 +1,267 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > OylBottomBarKt</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.ui.components</a>
+</div>
+
+<h1>Coverage Summary for Class: OylBottomBarKt (cl.oyl.frutossecos.ui.components)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OylBottomBarKt</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/15)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">OylBottomBarKt$OylBottomBar$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/19)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">OylBottomBarKt$OylBottomBar$1$1$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">OylBottomBarKt$OylBottomBar$1$1$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/36)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.ui.components
+&nbsp;
+&nbsp;import androidx.compose.material.icons.Icons
+&nbsp;import androidx.compose.material.icons.automirrored.filled.ListAlt
+&nbsp;import androidx.compose.material.icons.filled.*
+&nbsp;import androidx.compose.material3.*
+&nbsp;import androidx.compose.runtime.Composable
+&nbsp;import androidx.compose.ui.graphics.vector.ImageVector
+&nbsp;import androidx.navigation.NavController
+&nbsp;import cl.oyl.frutossecos.navigation.Routes
+&nbsp;
+&nbsp;sealed class BottomNavTab(val route: String, val title: String, val icon: ImageVector) {
+&nbsp;    object Inicio : BottomNavTab(Routes.DASHBOARD, &quot;Inicio&quot;, Icons.Default.Home)
+&nbsp;    object Mapa : BottomNavTab(Routes.MAP, &quot;Mapa&quot;, Icons.Default.Place)
+&nbsp;    object Qr : BottomNavTab(Routes.QR, &quot;Escáner&quot;, Icons.Default.QrCodeScanner)
+&nbsp;    object Pedidos : BottomNavTab(Routes.ORDERS, &quot;Pedidos&quot;, Icons.AutoMirrored.Filled.ListAlt)
+&nbsp;    object Inventario : BottomNavTab(Routes.INVENTORY_MANAGEMENT, &quot;Inventario&quot;, Icons.Default.Inventory)
+&nbsp;    object Productos : BottomNavTab(Routes.PRODUCT_MANAGEMENT, &quot;Productos&quot;, Icons.Default.Store)
+&nbsp;    object Perfil : BottomNavTab(Routes.PROFILE, &quot;Perfil&quot;, Icons.Default.Person)
+&nbsp;}
+&nbsp;
+&nbsp;@Composable
+<b class="nc">&nbsp;fun OylBottomBar(navController: NavController, currentRoute: String, isAdmin: Boolean) {</b>
+<b class="nc">&nbsp;    val tabs = if (isAdmin) {</b>
+<b class="nc">&nbsp;        listOf(</b>
+<b class="nc">&nbsp;            BottomNavTab.Inicio,</b>
+<b class="nc">&nbsp;            BottomNavTab.Inventario,</b>
+<b class="nc">&nbsp;            BottomNavTab.Qr,</b>
+<b class="nc">&nbsp;            BottomNavTab.Pedidos,</b>
+<b class="nc">&nbsp;            BottomNavTab.Perfil</b>
+&nbsp;        )
+&nbsp;    } else {
+<b class="nc">&nbsp;        listOf(</b>
+<b class="nc">&nbsp;            BottomNavTab.Inicio,</b>
+<b class="nc">&nbsp;            BottomNavTab.Mapa,</b>
+<b class="nc">&nbsp;            BottomNavTab.Qr,</b>
+<b class="nc">&nbsp;            BottomNavTab.Pedidos,</b>
+<b class="nc">&nbsp;            BottomNavTab.Perfil</b>
+&nbsp;        )
+&nbsp;    }
+&nbsp;
+<b class="nc">&nbsp;    NavigationBar {</b>
+<b class="nc">&nbsp;        tabs.forEach { tab -&gt;</b>
+<b class="nc">&nbsp;            val selected = currentRoute == tab.route</b>
+<b class="nc">&nbsp;            NavigationBarItem(</b>
+<b class="nc">&nbsp;                selected = selected,</b>
+<b class="nc">&nbsp;                onClick = {</b>
+<b class="nc">&nbsp;                    if (selected) return@NavigationBarItem</b>
+<b class="nc">&nbsp;                    if (tab.route == Routes.DASHBOARD) {</b>
+&nbsp;                        // Inicio: sacar de la pila todo lo que esté encima del dashboard.
+<b class="nc">&nbsp;                        val volvio = navController.popBackStack(Routes.DASHBOARD, inclusive = false)</b>
+<b class="nc">&nbsp;                        if (!volvio) {</b>
+<b class="nc">&nbsp;                            navController.navigate(Routes.DASHBOARD) { launchSingleTop = true }</b>
+&nbsp;                        }
+&nbsp;                    } else {
+<b class="nc">&nbsp;                        navController.navigate(tab.route) {</b>
+<b class="nc">&nbsp;                            popUpTo(Routes.DASHBOARD)</b>
+<b class="nc">&nbsp;                            launchSingleTop = true</b>
+&nbsp;                        }
+&nbsp;                    }
+&nbsp;                },
+<b class="nc">&nbsp;                icon = { Icon(tab.icon, contentDescription = tab.title) },</b>
+<b class="nc">&nbsp;                label = { Text(tab.title) },</b>
+<b class="nc">&nbsp;                colors = NavigationBarItemDefaults.colors(</b>
+<b class="nc">&nbsp;                    selectedIconColor = MaterialTheme.colorScheme.primary,</b>
+<b class="nc">&nbsp;                    selectedTextColor = MaterialTheme.colorScheme.primary</b>
+&nbsp;                )
+&nbsp;            )
+<b class="nc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

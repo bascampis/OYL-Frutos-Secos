@@ -1,0 +1,157 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > DemoAuthRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.repository</a>
+</div>
+
+<h1>Coverage Summary for Class: DemoAuthRepository (cl.oyl.frutossecos.data.repository)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">DemoAuthRepository</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">DemoAuthRepository$Companion</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (8/8)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.repository
+&nbsp;
+&nbsp;import cl.oyl.frutossecos.domain.model.DemoUser
+&nbsp;import cl.oyl.frutossecos.domain.model.UserRole
+&nbsp;
+&nbsp;/** Solo para pruebas académicas. NO hay autenticación de servidor. */
+<b class="fc">&nbsp;class DemoAuthRepository : AuthRepository {</b>
+&nbsp;    @Suppress(&quot;UNUSED_PARAMETER&quot;)
+&nbsp;    override suspend fun signIn(role: UserRole, alias: String, password: String): DemoUser? {
+<b class="fc">&nbsp;        if (password != DEMO_PASSWORD) return null</b>
+<b class="fc">&nbsp;        return when {</b>
+<b class="fc">&nbsp;            alias.trim().equals(&quot;admin@admin.cl&quot;, ignoreCase = true) -&gt;</b>
+<b class="fc">&nbsp;                DemoUser(alias = &quot;admin@admin.cl&quot;, displayName = &quot;Administrador&quot;, role = UserRole.ADMINISTRADOR)</b>
+<b class="fc">&nbsp;            alias.trim().equals(&quot;cliente@cliente.cl&quot;, ignoreCase = true) -&gt;</b>
+<b class="fc">&nbsp;                DemoUser(alias = &quot;cliente&quot;, displayName = &quot;Cliente Demo&quot;, role = UserRole.CLIENTE)</b>
+<b class="fc">&nbsp;            else -&gt; null</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    companion object {
+&nbsp;        const val DEMO_PASSWORD = &quot;DemoOYL2026!&quot; // Ficticia, pública y solo de demostración.
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

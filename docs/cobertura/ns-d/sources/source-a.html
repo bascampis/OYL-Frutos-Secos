@@ -1,0 +1,198 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LoginViewModel</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: LoginViewModel (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LoginViewModel</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (5/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">LoginViewModel$signIn$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87,5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (19/19)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import android.app.Application
+&nbsp;import androidx.lifecycle.AndroidViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.OylApplication
+&nbsp;import cl.oyl.frutossecos.data.repository.DemoAuthRepository
+&nbsp;import cl.oyl.frutossecos.domain.model.*
+&nbsp;import cl.oyl.frutossecos.domain.validation.LoginValidator
+&nbsp;import kotlinx.coroutines.flow.*
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;
+&nbsp;data class LoginUiState(val role: UserRole = UserRole.CLIENTE, val alias: String = &quot;&quot;, val password: String = &quot;&quot;,
+&nbsp; val aliasError: String? = null, val passwordError: String? = null, val generalError: String? = null,
+&nbsp; val isLoading: Boolean = false)
+&nbsp;
+<b class="fc">&nbsp;class LoginViewModel(application: Application): AndroidViewModel(application) {</b>
+<b class="fc">&nbsp; private val repo = (application as OylApplication).authRepository</b>
+<b class="fc">&nbsp; private val _uiState = MutableStateFlow(LoginUiState())</b>
+<b class="fc">&nbsp; val uiState = _uiState.asStateFlow()</b>
+<b class="fc">&nbsp; fun selectRole(role: UserRole) = _uiState.update { it.copy(role = role, alias = &quot;&quot;, password = &quot;&quot;, aliasError = null, passwordError = null, generalError = null) }</b>
+<b class="fc">&nbsp; fun updateAlias(value: String) = _uiState.update { it.copy(alias = value, aliasError = null, generalError = null) }</b>
+<b class="fc">&nbsp; fun updatePassword(value: String) = _uiState.update { it.copy(password = value, passwordError = null, generalError = null) }</b>
+<b class="fc">&nbsp; fun useDemoCredentials() = _uiState.update { it.copy(alias = if (it.role == UserRole.CLIENTE) &quot;cliente@cliente.cl&quot; else &quot;admin@admin.cl&quot;,</b>
+<b class="fc">&nbsp;  password = DemoAuthRepository.DEMO_PASSWORD, aliasError = null, passwordError = null, generalError = null) }</b>
+&nbsp; fun signIn(onSuccess: (DemoUser) -&gt; Unit) {
+<b class="fc">&nbsp;  val s = _uiState.value</b>
+<b class="pc">&nbsp;  if (s.isLoading) return</b>
+<b class="fc">&nbsp;  val e = LoginValidator.validate(s.alias, s.password)</b>
+<b class="fc">&nbsp;  if (!e.isValid) { _uiState.update { it.copy(aliasError = e.alias, passwordError = e.password) }; return }</b>
+<b class="fc">&nbsp;  viewModelScope.launch {</b>
+<b class="fc">&nbsp;   _uiState.update { it.copy(isLoading = true, generalError = null) }</b>
+&nbsp;   try {
+<b class="fc">&nbsp;    val u = repo.signIn(s.role, s.alias, s.password)</b>
+<b class="fc">&nbsp;    if (u != null) onSuccess(u) else _uiState.update { it.copy(generalError = &quot;Correo o contraseña incorrectos.&quot;) }</b>
+<b class="fc">&nbsp;   } catch (_: Exception) { _uiState.update { it.copy(generalError = &quot;Error al consultar datos locales.&quot;) } }</b>
+<b class="fc">&nbsp;   finally { _uiState.update { it.copy(isLoading = false) } }</b>
+&nbsp;  }
+&nbsp; }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

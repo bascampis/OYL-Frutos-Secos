@@ -1,0 +1,136 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PromotionDao</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.local</a>
+</div>
+
+<h1>Coverage Summary for Class: PromotionDao (cl.oyl.frutossecos.data.local)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">PromotionDao$Subclass14</td>
+  </tr>
+  <tr>
+    <td class="name">PromotionDao$Subclass14$auxiliary$gY11M5CS</td>
+  </tr>
+  <tr>
+    <td class="name">PromotionDao$Subclass14$auxiliary$sdFI04wa</td>
+  </tr>
+  <tr>
+    <td class="name">PromotionDao$Subclass14$auxiliary$YiXvyRwm</td>
+  </tr>
+  <tr>
+    <td class="name">PromotionDao$Subclass14$auxiliary$ZNAWlW4V</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.local
+&nbsp;
+&nbsp;import android.content.Context
+&nbsp;import androidx.room.*
+&nbsp;import kotlinx.coroutines.flow.Flow
+&nbsp;
+&nbsp;@Entity(tableName = &quot;promotions&quot;)
+&nbsp;data class PromotionEntity(
+&nbsp;    @PrimaryKey val id: String,
+&nbsp;    val title: String,
+&nbsp;    val description: String,
+&nbsp;    val productId: String,
+&nbsp;    val startDate: String,
+&nbsp;    val endDate: String,
+&nbsp;    val active: Boolean = true
+&nbsp;)
+&nbsp;
+&nbsp;@Dao
+&nbsp;interface PromotionDao {
+&nbsp;
+&nbsp;    @Query(&quot;SELECT * FROM promotions ORDER BY startDate DESC, title&quot;)
+&nbsp;    fun observe(): Flow&lt;List&lt;PromotionEntity&gt;&gt;
+&nbsp;
+&nbsp;    @Upsert
+&nbsp;    suspend fun save(value: PromotionEntity)
+&nbsp;}
+&nbsp;
+&nbsp;@Database(
+&nbsp;    entities = [PromotionEntity::class],
+&nbsp;    version = 1,
+&nbsp;    exportSchema = false
+&nbsp;)
+&nbsp;abstract class PromotionsDatabase : RoomDatabase() {
+&nbsp;
+&nbsp;    abstract fun promotionDao(): PromotionDao
+&nbsp;
+&nbsp;    companion object {
+&nbsp;        @Volatile
+&nbsp;        private var instance: PromotionsDatabase? = null
+&nbsp;
+&nbsp;        fun get(context: Context): PromotionsDatabase {
+&nbsp;            return instance ?: synchronized(this) {
+&nbsp;                instance ?: Room.databaseBuilder(
+&nbsp;                    context.applicationContext,
+&nbsp;                    PromotionsDatabase::class.java,
+&nbsp;                    &quot;oyl_promotions.db&quot;
+&nbsp;                ).build().also {
+&nbsp;                    instance = it
+&nbsp;                }
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

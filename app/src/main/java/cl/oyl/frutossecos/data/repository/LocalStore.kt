@@ -17,8 +17,11 @@ object LocalStore {
     lateinit var repository: LocalStoreRepository
         private set
 
-    fun initialize(database: OylDatabase) {
-        repository = LocalStoreRepository(database)
+    fun initialize(
+        database: OylDatabase,
+        remote: RemoteRepository = RemoteRepository()
+    ) {
+        repository = LocalStoreRepository(database, remote)
     }
 }
 

@@ -1,0 +1,468 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LocalNotice</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.data.local</a>
+</div>
+
+<h1>Coverage Summary for Class: LocalNotice (cl.oyl.frutossecos.data.local)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LocalNotice</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.data.local
+&nbsp;
+&nbsp;import android.Manifest
+&nbsp;import android.app.NotificationChannel
+&nbsp;import android.app.NotificationManager
+&nbsp;import android.app.PendingIntent
+&nbsp;import android.content.Context
+&nbsp;import android.content.Intent
+&nbsp;import android.content.SharedPreferences
+&nbsp;import android.content.pm.PackageManager
+&nbsp;import android.net.Uri
+&nbsp;import android.os.Build
+&nbsp;import androidx.core.app.NotificationCompat
+&nbsp;import androidx.core.app.NotificationManagerCompat
+&nbsp;import androidx.core.content.ContextCompat
+&nbsp;import cl.oyl.frutossecos.MainActivity
+&nbsp;import cl.oyl.frutossecos.data.repository.LocalStore
+&nbsp;import com.google.gson.Gson
+&nbsp;import kotlinx.coroutines.CancellationException
+&nbsp;import kotlinx.coroutines.channels.awaitClose
+&nbsp;import kotlinx.coroutines.flow.Flow
+&nbsp;import kotlinx.coroutines.flow.callbackFlow
+&nbsp;import kotlinx.coroutines.flow.distinctUntilChanged
+&nbsp;import kotlinx.coroutines.sync.Mutex
+&nbsp;import kotlinx.coroutines.sync.withLock
+&nbsp;import org.json.JSONObject
+&nbsp;import java.time.Instant
+&nbsp;
+&nbsp;data class LocalNotice(
+<b class="nc">&nbsp; val id: String,</b>
+<b class="nc">&nbsp; val title: String,</b>
+<b class="nc">&nbsp; val message: String,</b>
+<b class="nc">&nbsp; val category: String,</b>
+<b class="nc">&nbsp; val target: String,</b>
+<b class="nc">&nbsp; val createdAt: String,</b>
+<b class="nc">&nbsp; val read: Boolean = false</b>
+&nbsp;)
+&nbsp;
+&nbsp;class DemoNotificationStore(context: Context) {
+&nbsp;
+&nbsp; private val app = context.applicationContext
+&nbsp;
+&nbsp; private val prefs = app.getSharedPreferences(
+&nbsp;  &quot;oyl_local_notices&quot;,
+&nbsp;  Context.MODE_PRIVATE
+&nbsp; )
+&nbsp;
+&nbsp; private val session = app.getSharedPreferences(
+&nbsp;  &quot;oyl_session&quot;,
+&nbsp;  Context.MODE_PRIVATE
+&nbsp; )
+&nbsp;
+&nbsp; private val gson = Gson()
+&nbsp;
+&nbsp; companion object {
+&nbsp;  // Evita actualizar al mismo tiempo desde la actividad y la pantalla.
+&nbsp;  private val refreshMutex = Mutex()
+&nbsp; }
+&nbsp;
+&nbsp; fun list(alias: String): List&lt;LocalNotice&gt; {
+&nbsp;  return runCatching {
+&nbsp;   gson.fromJson(
+&nbsp;    prefs.getString(&quot;list:$alias&quot;, &quot;[]&quot;),
+&nbsp;    Array&lt;LocalNotice&gt;::class.java
+&nbsp;   )?.toList().orEmpty()
+&nbsp;  }.getOrDefault(emptyList())
+&nbsp; }
+&nbsp;
+&nbsp; fun observe(alias: String): Flow&lt;List&lt;LocalNotice&gt;&gt; = callbackFlow {
+&nbsp;  val listener =
+&nbsp;   SharedPreferences.OnSharedPreferenceChangeListener { _, key -&gt;
+&nbsp;    if (key == &quot;list:$alias&quot;) {
+&nbsp;     trySend(list(alias))
+&nbsp;    }
+&nbsp;   }
+&nbsp;
+&nbsp;  prefs.registerOnSharedPreferenceChangeListener(listener)
+&nbsp;
+&nbsp;  trySend(list(alias))
+&nbsp;
+&nbsp;  awaitClose {
+&nbsp;   prefs.unregisterOnSharedPreferenceChangeListener(listener)
+&nbsp;  }
+&nbsp; }.distinctUntilChanged()
+&nbsp;
+&nbsp; fun markRead(alias: String, id: String) {
+&nbsp;  val updated = list(alias).map {
+&nbsp;   if (it.id == id) {
+&nbsp;    it.copy(read = true)
+&nbsp;   } else {
+&nbsp;    it
+&nbsp;   }
+&nbsp;  }
+&nbsp;
+&nbsp;  save(alias, updated)
+&nbsp; }
+&nbsp;
+&nbsp; private fun save(
+&nbsp;  alias: String,
+&nbsp;  notices: List&lt;LocalNotice&gt;
+&nbsp; ) {
+&nbsp;  prefs.edit()
+&nbsp;   .putString(
+&nbsp;    &quot;list:$alias&quot;,
+&nbsp;    gson.toJson(notices.take(100))
+&nbsp;   )
+&nbsp;   .apply()
+&nbsp; }
+&nbsp;
+&nbsp; private fun add(
+&nbsp;  alias: String,
+&nbsp;  id: String,
+&nbsp;  title: String,
+&nbsp;  message: String,
+&nbsp;  category: String,
+&nbsp;  target: String
+&nbsp; ) {
+&nbsp;  val previous = list(alias)
+&nbsp;
+&nbsp;  if (previous.any { it.id == id }) return
+&nbsp;
+&nbsp;  val notice = LocalNotice(
+&nbsp;   id = id,
+&nbsp;   title = title,
+&nbsp;   message = message,
+&nbsp;   category = category,
+&nbsp;   target = target,
+&nbsp;   createdAt = Instant.now().toString()
+&nbsp;  )
+&nbsp;
+&nbsp;  save(alias, listOf(notice) + previous)
+&nbsp;
+&nbsp;  showSystemNotification(alias, notice)
+&nbsp; }
+&nbsp;
+&nbsp; suspend fun refresh(): Boolean {
+&nbsp;  return refreshMutex.withLock {
+&nbsp;   refreshLocalData()
+&nbsp;  }
+&nbsp; }
+&nbsp;
+&nbsp; private suspend fun refreshLocalData(): Boolean {
+&nbsp;  val alias = session.getString(&quot;alias&quot;, null) ?: return true
+&nbsp;
+&nbsp;  val admin =
+&nbsp;   session.getString(&quot;role&quot;, &quot;&quot;) == &quot;ADMINISTRADOR&quot;
+&nbsp;
+&nbsp;  return try {
+&nbsp;   val orders = if (admin) {
+&nbsp;    LocalStore.repository.allOrders()
+&nbsp;   } else {
+&nbsp;    LocalStore.repository.orders(alias)
+&nbsp;   }
+&nbsp;
+&nbsp;   if (session.getString(&quot;alias&quot;, null) != alias) {
+&nbsp;    return true
+&nbsp;   }
+&nbsp;
+&nbsp;   // Usa claves distintas de las antiguas consultas al servidor.
+&nbsp;   val snapshotKey = &quot;room-orders:$alias&quot;
+&nbsp;
+&nbsp;   val previous = prefs.getString(
+&nbsp;    snapshotKey,
+&nbsp;    null
+&nbsp;   )?.let {
+&nbsp;    JSONObject(it)
+&nbsp;   }
+&nbsp;
+&nbsp;   val current = JSONObject()
+&nbsp;
+&nbsp;   orders.forEach { order -&gt;
+&nbsp;    current.put(order.id, order.status)
+&nbsp;
+&nbsp;    // La primera consulta establece el punto de partida.
+&nbsp;    if (previous != null) {
+&nbsp;     val existed = previous.has(order.id)
+&nbsp;     val oldStatus = previous.optString(order.id)
+&nbsp;
+&nbsp;     if (!existed) {
+&nbsp;      add(
+&nbsp;       alias = alias,
+&nbsp;       id = &quot;room-order:${order.id}:new&quot;,
+&nbsp;       title = if (admin) {
+&nbsp;        &quot;Nuevo pedido recibido&quot;
+&nbsp;       } else {
+&nbsp;        &quot;Solicitud recibida&quot;
+&nbsp;       },
+&nbsp;       message = &quot;Pedido #${order.id.take(8)} · ${order.status}&quot;,
+&nbsp;       category = &quot;Pedidos&quot;,
+&nbsp;       target = &quot;orders&quot;
+&nbsp;      )
+&nbsp;     } else if (
+&nbsp;      !admin &amp;&amp;
+&nbsp;      oldStatus != order.status
+&nbsp;     ) {
+&nbsp;      add(
+&nbsp;       alias = alias,
+&nbsp;       id = &quot;room-order:${order.id}:${order.status}&quot;,
+&nbsp;       title = &quot;Estado del pedido actualizado&quot;,
+&nbsp;       message = &quot;Pedido #${order.id.take(8)}: ${order.status}&quot;,
+&nbsp;       category = &quot;Pedidos&quot;,
+&nbsp;       target = &quot;orders&quot;
+&nbsp;      )
+&nbsp;     }
+&nbsp;    }
+&nbsp;   }
+&nbsp;
+&nbsp;   prefs.edit()
+&nbsp;    .putString(
+&nbsp;     snapshotKey,
+&nbsp;     current.toString()
+&nbsp;    )
+&nbsp;    .apply()
+&nbsp;
+&nbsp;   if (admin) {
+&nbsp;    checkStock(alias)
+&nbsp;   }
+&nbsp;
+&nbsp;   true
+&nbsp;  } catch (e: CancellationException) {
+&nbsp;   throw e
+&nbsp;  } catch (_: Exception) {
+&nbsp;   false
+&nbsp;  }
+&nbsp; }
+&nbsp;
+&nbsp; private suspend fun checkStock(alias: String) {
+&nbsp;  val products = LocalStore.repository.products()
+&nbsp;
+&nbsp;  if (session.getString(&quot;alias&quot;, null) != alias) return
+&nbsp;
+&nbsp;  val snapshotKey = &quot;room-stock:$alias&quot;
+&nbsp;
+&nbsp;  val previous = prefs.getString(
+&nbsp;   snapshotKey,
+&nbsp;   null
+&nbsp;  )?.let {
+&nbsp;   JSONObject(it)
+&nbsp;  }
+&nbsp;
+&nbsp;  val current = JSONObject()
+&nbsp;
+&nbsp;  products.filter { it.active }.forEach { product -&gt;
+&nbsp;   current.put(product.id, product.stock)
+&nbsp;
+&nbsp;   val wasAboveMinimum =
+&nbsp;    previous?.optInt(
+&nbsp;     product.id,
+&nbsp;     Int.MAX_VALUE
+&nbsp;    )?.let {
+&nbsp;     it &gt; 5
+&nbsp;    } ?: true
+&nbsp;
+&nbsp;   if (
+&nbsp;    product.stock &lt;= 5 &amp;&amp;
+&nbsp;    wasAboveMinimum
+&nbsp;   ) {
+&nbsp;    add(
+&nbsp;     alias = alias,
+&nbsp;     id = &quot;room-stock:${product.id}:${System.currentTimeMillis()}&quot;,
+&nbsp;     title = &quot;Producto con stock bajo&quot;,
+&nbsp;     message = &quot;${product.name}: quedan ${product.stock} unidades.&quot;,
+&nbsp;     category = &quot;Inventario&quot;,
+&nbsp;     target = &quot;inventory&quot;
+&nbsp;    )
+&nbsp;   }
+&nbsp;  }
+&nbsp;
+&nbsp;  prefs.edit()
+&nbsp;   .putString(
+&nbsp;    snapshotKey,
+&nbsp;    current.toString()
+&nbsp;   )
+&nbsp;   .apply()
+&nbsp; }
+&nbsp;
+&nbsp; private fun showSystemNotification(
+&nbsp;  alias: String,
+&nbsp;  notice: LocalNotice
+&nbsp; ) {
+&nbsp;  if (session.getString(&quot;alias&quot;, null) != alias) {
+&nbsp;   return
+&nbsp;  }
+&nbsp;
+&nbsp;  if (!prefs.getBoolean(&quot;enabled:$alias&quot;, true)) {
+&nbsp;   return
+&nbsp;  }
+&nbsp;
+&nbsp;  if (
+&nbsp;   Build.VERSION.SDK_INT &gt;= 33 &amp;&amp;
+&nbsp;   ContextCompat.checkSelfPermission(
+&nbsp;    app,
+&nbsp;    Manifest.permission.POST_NOTIFICATIONS
+&nbsp;   ) != PackageManager.PERMISSION_GRANTED
+&nbsp;  ) {
+&nbsp;   return
+&nbsp;  }
+&nbsp;
+&nbsp;  val manager = app.getSystemService(
+&nbsp;   NotificationManager::class.java
+&nbsp;  )
+&nbsp;
+&nbsp;  manager.createNotificationChannel(
+&nbsp;   NotificationChannel(
+&nbsp;    &quot;oyl_local_events&quot;,
+&nbsp;    &quot;Avisos de OYL&quot;,
+&nbsp;    NotificationManager.IMPORTANCE_DEFAULT
+&nbsp;   )
+&nbsp;  )
+&nbsp;
+&nbsp;  val intent = Intent(
+&nbsp;   app,
+&nbsp;   MainActivity::class.java
+&nbsp;  ).apply {
+&nbsp;   flags =
+&nbsp;    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+&nbsp;            Intent.FLAG_ACTIVITY_SINGLE_TOP
+&nbsp;
+&nbsp;   data = Uri.Builder()
+&nbsp;    .scheme(&quot;oyl&quot;)
+&nbsp;    .authority(&quot;notification&quot;)
+&nbsp;    .appendPath(alias)
+&nbsp;    .appendPath(notice.id)
+&nbsp;    .build()
+&nbsp;
+&nbsp;   putExtra(&quot;notification_target&quot;, notice.target)
+&nbsp;   putExtra(&quot;notification_alias&quot;, alias)
+&nbsp;   putExtra(&quot;notification_id&quot;, notice.id)
+&nbsp;  }
+&nbsp;
+&nbsp;  val notificationId = &quot;$alias:${notice.id}&quot;.hashCode()
+&nbsp;
+&nbsp;  val pendingIntent = PendingIntent.getActivity(
+&nbsp;   app,
+&nbsp;   notificationId,
+&nbsp;   intent,
+&nbsp;   PendingIntent.FLAG_UPDATE_CURRENT or
+&nbsp;           PendingIntent.FLAG_IMMUTABLE
+&nbsp;  )
+&nbsp;
+&nbsp;  val notification = NotificationCompat.Builder(
+&nbsp;   app,
+&nbsp;   &quot;oyl_local_events&quot;
+&nbsp;  )
+&nbsp;   .setSmallIcon(android.R.drawable.ic_dialog_info)
+&nbsp;   .setContentTitle(notice.title)
+&nbsp;   .setContentText(notice.message)
+&nbsp;   .setStyle(
+&nbsp;    NotificationCompat.BigTextStyle()
+&nbsp;     .bigText(notice.message)
+&nbsp;   )
+&nbsp;   .setContentIntent(pendingIntent)
+&nbsp;   .setAutoCancel(true)
+&nbsp;   .build()
+&nbsp;
+&nbsp;  runCatching {
+&nbsp;   NotificationManagerCompat.from(app)
+&nbsp;    .notify(
+&nbsp;     notificationId,
+&nbsp;     notification
+&nbsp;    )
+&nbsp;  }
+&nbsp; }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>

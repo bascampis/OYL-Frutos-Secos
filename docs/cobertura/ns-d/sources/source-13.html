@@ -1,0 +1,344 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PromotionValidator</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">cl.oyl.frutossecos.viewmodel</a>
+</div>
+
+<h1>Coverage Summary for Class: PromotionValidator (cl.oyl.frutossecos.viewmodel)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PromotionValidator</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87,5%
+  </span>
+  <span class="absValue">
+    (21/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (25/25)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package cl.oyl.frutossecos.viewmodel
+&nbsp;
+&nbsp;import android.app.Application
+&nbsp;import androidx.compose.runtime.*
+&nbsp;import androidx.lifecycle.AndroidViewModel
+&nbsp;import androidx.lifecycle.viewModelScope
+&nbsp;import cl.oyl.frutossecos.OylApplication
+&nbsp;import cl.oyl.frutossecos.data.local.*
+&nbsp;import kotlinx.coroutines.CancellationException
+&nbsp;import kotlinx.coroutines.flow.combine
+&nbsp;import kotlinx.coroutines.launch
+&nbsp;import java.time.LocalDate
+&nbsp;import java.util.UUID
+&nbsp;
+&nbsp;data class PromotionForm(
+&nbsp;    val id: String = &quot;&quot;,
+&nbsp;    val title: String = &quot;&quot;,
+&nbsp;    val description: String = &quot;&quot;,
+&nbsp;    val productId: String = &quot;&quot;,
+&nbsp;    val startDate: String = LocalDate.now().toString(),
+&nbsp;    val endDate: String = LocalDate.now().plusDays(7).toString(),
+&nbsp;    val active: Boolean = true
+&nbsp;)
+&nbsp;
+&nbsp;object PromotionValidator {
+&nbsp;
+&nbsp;    fun validate(
+&nbsp;        form: PromotionForm,
+&nbsp;        products: List&lt;ProductEntity&gt;
+&nbsp;    ): Map&lt;String, String&gt; {
+<b class="fc">&nbsp;        val errors = mutableMapOf&lt;String, String&gt;()</b>
+&nbsp;
+<b class="fc">&nbsp;        if (form.title.isBlank()) {</b>
+<b class="fc">&nbsp;            errors[&quot;title&quot;] = &quot;Ingresa un título.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (form.description.isBlank()) {</b>
+<b class="fc">&nbsp;            errors[&quot;description&quot;] = &quot;Ingresa una descripción.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (products.none { it.id == form.productId }) {</b>
+<b class="fc">&nbsp;            errors[&quot;productId&quot;] = &quot;Selecciona un producto.&quot;</b>
+&nbsp;        } else if (
+<b class="pc">&nbsp;            form.active &amp;&amp;</b>
+<b class="pc">&nbsp;            products.none { it.id == form.productId &amp;&amp; it.active }</b>
+&nbsp;        ) {
+<b class="fc">&nbsp;            errors[&quot;productId&quot;] =</b>
+<b class="fc">&nbsp;                &quot;Selecciona un producto activo para publicar.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        val start = runCatching {</b>
+<b class="fc">&nbsp;            LocalDate.parse(form.startDate.trim())</b>
+<b class="fc">&nbsp;        }.getOrNull()</b>
+&nbsp;
+<b class="fc">&nbsp;        val end = runCatching {</b>
+<b class="fc">&nbsp;            LocalDate.parse(form.endDate.trim())</b>
+<b class="fc">&nbsp;        }.getOrNull()</b>
+&nbsp;
+<b class="fc">&nbsp;        if (start == null) {</b>
+<b class="fc">&nbsp;            errors[&quot;startDate&quot;] = &quot;Usa el formato AAAA-MM-DD.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        if (end == null) {</b>
+<b class="fc">&nbsp;            errors[&quot;endDate&quot;] = &quot;Usa el formato AAAA-MM-DD.&quot;</b>
+<b class="pc">&nbsp;        } else if (start != null &amp;&amp; end.isBefore(start)) {</b>
+<b class="fc">&nbsp;            errors[&quot;endDate&quot;] =</b>
+<b class="fc">&nbsp;                &quot;La fecha final no puede ser anterior al inicio.&quot;</b>
+&nbsp;        }
+&nbsp;
+<b class="fc">&nbsp;        return errors</b>
+&nbsp;    }
+&nbsp;}
+&nbsp;
+&nbsp;class PromotionsViewModel(
+&nbsp;    application: Application
+&nbsp;) : AndroidViewModel(application) {
+&nbsp;
+&nbsp;    private val app = application as OylApplication
+&nbsp;
+&nbsp;    private val dao = PromotionsDatabase
+&nbsp;        .get(application)
+&nbsp;        .promotionDao()
+&nbsp;
+&nbsp;    private fun isAdmin(): Boolean {
+&nbsp;        return app.getSharedPreferences(&quot;oyl_session&quot;, 0)
+&nbsp;            .getString(&quot;role&quot;, &quot;&quot;) == &quot;ADMINISTRADOR&quot;
+&nbsp;    }
+&nbsp;
+&nbsp;    var promotions by mutableStateOf&lt;List&lt;PromotionEntity&gt;&gt;(emptyList())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var products by mutableStateOf&lt;List&lt;ProductEntity&gt;&gt;(emptyList())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var form by mutableStateOf(PromotionForm())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var errors by mutableStateOf&lt;Map&lt;String, String&gt;&gt;(emptyMap())
+&nbsp;        private set
+&nbsp;
+&nbsp;    var dialogOpen by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var loading by mutableStateOf(true)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var saving by mutableStateOf(false)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var message by mutableStateOf(&quot;&quot;)
+&nbsp;        private set
+&nbsp;
+&nbsp;    var formError by mutableStateOf(&quot;&quot;)
+&nbsp;        private set
+&nbsp;
+&nbsp;    init {
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                app.catalogRepository.seedDemoProducts()
+&nbsp;
+&nbsp;                combine(
+&nbsp;                    dao.observe(),
+&nbsp;                    app.database.catalogDao().allProducts()
+&nbsp;                ) { offers, items -&gt;
+&nbsp;                    offers to items
+&nbsp;                }.collect { (offers, items) -&gt;
+&nbsp;                    promotions = offers
+&nbsp;                    products = items
+&nbsp;                    loading = false
+&nbsp;                }
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                loading = false
+&nbsp;                message = &quot;No se pudieron cargar las promociones.&quot;
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun openCreate() {
+&nbsp;        if (!isAdmin() || saving) return
+&nbsp;
+&nbsp;        form = PromotionForm()
+&nbsp;        errors = emptyMap()
+&nbsp;        formError = &quot;&quot;
+&nbsp;        dialogOpen = true
+&nbsp;    }
+&nbsp;
+&nbsp;    fun openEdit(value: PromotionEntity) {
+&nbsp;        if (!isAdmin() || saving) return
+&nbsp;
+&nbsp;        form = PromotionForm(
+&nbsp;            id = value.id,
+&nbsp;            title = value.title,
+&nbsp;            description = value.description,
+&nbsp;            productId = value.productId,
+&nbsp;            startDate = value.startDate,
+&nbsp;            endDate = value.endDate,
+&nbsp;            active = value.active
+&nbsp;        )
+&nbsp;
+&nbsp;        errors = emptyMap()
+&nbsp;        formError = &quot;&quot;
+&nbsp;        dialogOpen = true
+&nbsp;    }
+&nbsp;
+&nbsp;    fun closeDialog() {
+&nbsp;        if (!saving) dialogOpen = false
+&nbsp;    }
+&nbsp;
+&nbsp;    fun update(value: PromotionForm) {
+&nbsp;        if (saving) return
+&nbsp;
+&nbsp;        form = value
+&nbsp;        formError = &quot;&quot;
+&nbsp;
+&nbsp;        if (errors.isNotEmpty()) {
+&nbsp;            errors = PromotionValidator.validate(form, products)
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    fun save() {
+&nbsp;        if (!isAdmin() || saving) return
+&nbsp;
+&nbsp;        errors = PromotionValidator.validate(form, products)
+&nbsp;        if (errors.isNotEmpty()) return
+&nbsp;
+&nbsp;        val submitted = form
+&nbsp;        saving = true
+&nbsp;
+&nbsp;        viewModelScope.launch {
+&nbsp;            try {
+&nbsp;                val latestProducts =
+&nbsp;                    app.database.catalogDao().productList()
+&nbsp;
+&nbsp;                errors = PromotionValidator.validate(
+&nbsp;                    submitted,
+&nbsp;                    latestProducts
+&nbsp;                )
+&nbsp;
+&nbsp;                if (errors.isNotEmpty()) return@launch
+&nbsp;
+&nbsp;                dao.save(
+&nbsp;                    PromotionEntity(
+&nbsp;                        id = submitted.id.ifBlank {
+&nbsp;                            UUID.randomUUID().toString()
+&nbsp;                        },
+&nbsp;                        title = submitted.title.trim(),
+&nbsp;                        description = submitted.description.trim(),
+&nbsp;                        productId = submitted.productId,
+&nbsp;                        startDate = submitted.startDate.trim(),
+&nbsp;                        endDate = submitted.endDate.trim(),
+&nbsp;                        active = submitted.active
+&nbsp;                    )
+&nbsp;                )
+&nbsp;
+&nbsp;                dialogOpen = false
+&nbsp;                message = &quot;Promoción guardada.&quot;
+&nbsp;            } catch (e: CancellationException) {
+&nbsp;                throw e
+&nbsp;            } catch (_: Exception) {
+&nbsp;                formError = &quot;No se pudo guardar la promoción.&quot;
+&nbsp;            } finally {
+&nbsp;                saving = false
+&nbsp;            }
+&nbsp;        }
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-11-21 12:49</div>
+</div>
+</body>
+</html>
