@@ -1,12 +1,24 @@
+
+import java.util.Properties
+
 plugins {
  id("com.android.application")
  id("org.jetbrains.kotlin.android")
  id("org.jetbrains.kotlin.plugin.compose")
  id("org.jetbrains.kotlin.kapt")
 }
+
+val keystoreProperties = Properties().apply {
+ val propertiesFile = rootProject.file("key.properties")
+ if (propertiesFile.exists()) {
+  propertiesFile.inputStream().use { load(it) }
+ }
+}
+
 android {
  namespace = "cl.oyl.frutossecos"
  compileSdk = 35
+
  defaultConfig {
   applicationId = "cl.oyl.frutossecos"
   minSdk = 26
@@ -15,12 +27,47 @@ android {
   versionName = "0.2.0"
   testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
  }
- buildTypes { release { isMinifyEnabled = false; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") } }
- compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
- kotlinOptions { jvmTarget = "17" }
- buildFeatures { compose = true }
- packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+
+ signingConfigs {
+  create("release") {
+   storeFile = file(keystoreProperties["storeFile"] as String)
+   storePassword = keystoreProperties["storePassword"] as String
+   keyAlias = keystoreProperties["keyAlias"] as String
+   keyPassword = keystoreProperties["keyPassword"] as String
+  }
+ }
+
+ buildTypes {
+  release {
+   isMinifyEnabled = false
+   signingConfig = signingConfigs.getByName("release")
+   proguardFiles(
+    getDefaultProguardFile("proguard-android-optimize.txt"),
+    "proguard-rules.pro"
+   )
+  }
+ }
+
+ compileOptions {
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
+ }
+
+ kotlinOptions {
+  jvmTarget = "17"
+ }
+
+ buildFeatures {
+  compose = true
+ }
+
+ packaging {
+  resources {
+   excludes += "/META-INF/{AL2.0,LGPL2.1}"
+  }
+ }
 }
+
 dependencies {
  implementation(platform("androidx.compose:compose-bom:2025.04.01"))
  implementation("androidx.compose.ui:ui")
