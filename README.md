@@ -100,16 +100,41 @@ Pruebas unitarias del backend: `mvn test` (37 pruebas).
 **Cuentas de prueba** (contraseña ficticia `DemoOYL2026!`): `admin@admin.cl` (administrador) y `cliente@cliente.cl` (cliente).
 
 ## APK firmado
-Se verificó la firma digital del archivo `app-release.apk` utilizando la herramienta `apksigner` del SDK de Android.
+## Captura del APK firmado y archivo .jks
 
-**Resultado de la verificación:**
-- Verificación general: `Verifies`.
-- Esquema de firma APK v2: `true`.
-- Número de firmantes: 1.
-- Algoritmo de firma: RSA de 2048 bits.
-- Organización del certificado: OYL Frutos Secos.
+El APK de la versión release de **OYL Frutos Secos** fue firmado digitalmente utilizando una llave propia (*keystore* `.jks`), configurada en el archivo `app/build.gradle.kts`.
 
-La captura de la verificación se encuentra en la documentación de entrega `README.docx`.
+### Archivos y configuración de firma
+
+- **APK firmado:** `app/release/app-release.apk`
+- **Keystore:** `keystore/OYL-Frutos-Secos.jks`
+- **Alias de la llave:** `oyl_frutos_secos`
+- **Configuración:** bloques `signingConfigs` y `buildTypes.release` en `app/build.gradle.kts`.
+- **Contraseñas:** se obtienen desde `key.properties`, archivo que no se incluye en el repositorio por seguridad.
+
+Para volver a firmar la aplicación, se debe crear el archivo `key.properties` con las propiedades `storeFile`, `storePassword`, `keyAlias` y `keyPassword`, utilizando los datos de firma correspondientes.
+
+### 1. Generación del APK firmado
+
+La siguiente captura muestra la evidencia de generación del APK firmado.
+
+<img width="642" height="600" alt="1" src="https://github.com/user-attachments/assets/dbde5365-7d52-41ef-b7ed-2d3ff332f263" />
+
+### 2. Configuración de firma en build.gradle.kts
+
+La siguiente imagen muestra la configuración de firma utilizada para generar la versión release.
+
+<img width="642" height="672" alt="2" src="https://github.com/user-attachments/assets/3d269e02-29db-4123-8d72-a8b36b79368a" />
+
+
+### 3. Keystore (.jks) del proyecto
+
+La siguiente captura muestra la ubicación del archivo keystore utilizado para la firma digital.
+
+<img width="1492" height="261" alt="3" src="https://github.com/user-attachments/assets/3e236cae-9a70-4701-a616-a104e9beec52" />
+
+**Nota de seguridad:** el archivo `.jks` y las contraseñas de firma deben mantenerse protegidos y no publicarse en el repositorio.
+  
 
 ## Planificación del proyecto
 La planificación se realiza en Trello con un tablero compartido entre los integrantes.
