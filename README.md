@@ -136,24 +136,27 @@ La siguiente captura muestra la ubicación del archivo keystore utilizado para l
 **Nota de seguridad:** el archivo `.jks` y las contraseñas de firma deben mantenerse protegidos y no publicarse en el repositorio.
   
 
-## Planificación del proyecto
-La planificación se realiza en Trello con un tablero compartido entre los integrantes.
-
-Tablero: [OYL Frutos Secos - DSY1105](https://trello.com/invite/b/6ad592d5b21864ef22331411/ATTI82ce34dee0663009dc827e7d14b22176E5003B1A/oyl-frutos-secos-dsy1105)
-
-- Por hacer: funcionalidades pendientes.
-- En desarrollo: tareas en implementación.
-- En revisión: funcionalidades pendientes de pruebas.
-- Finalizado: tareas implementadas y verificadas.
-- Bloqueado: tareas con impedimentos identificados.
-
-Las tarjetas incluyen responsables, descripción, checklists y evidencias.
-
-## Trabajo en equipo
-Los commits de cada integrante quedan registrados en GitHub (Insights > Contributors).
 ## Organización del trabajo en equipo
 
-Para organizar el desarrollo de OYL Frutos Secos utilizamos Trello, distribuyendo las actividades entre los tres integrantes del equipo.
-El tablero se organiza en tres estados: Pendiente, En curso y Hecho. Esto permite visualizar las tareas realizadas, las que están en desarrollo y las que faltan por completar.La documentación del proyecto incluye los endpoints de los microservicios, las pantallas de la aplicación y las instrucciones de ejecución.
+Para organizar el desarrollo del proyecto **OYL Frutos Secos**, utilizamos Trello como herramienta de planificación y seguimiento de actividades, distribuyendo las tareas entre los tres integrantes del equipo: **Bastián, Catalina y Suimey**.
 
-Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
+### Tablero de Trello
+
+[OYL Frutos Secos – DSY1105](https://trello.com/invite/b/6b025a75b2bd272593e406c8/ATTIedf5e028767b3dc3e41dcb8eba7508802997A205/oyl-frutos-secos-dsy1105)
+El tablero está organizado en tres columnas:
+
+- **Por hacer:** tareas pendientes.
+- **En proceso:** tareas en desarrollo.
+- **Una columna por integrante:** tareas asignadas a cada uno (Bastián, Catalina y Suimey).
+- **Terminado:** tareas completadas y verificadas.
+
+### Distribución de tareas
+
+Las actividades del proyecto se distribuyeron entre los integrantes del equipo, permitiendo organizar el trabajo y visualizar el avance de cada tarea.
+
+### Evidencia del tablero Trello
+
+La siguiente captura muestra la organización y el estado de las actividades del proyecto.
+
+<img width="1035" height="359" alt="4" src="https://github.com/user-attachments/assets/fa3278ba-0255-472c-889c-fdcb0ee460b7" />
+
