@@ -100,7 +100,16 @@ Pruebas unitarias del backend: `mvn test` (37 pruebas).
 **Cuentas de prueba** (contraseña ficticia `DemoOYL2026!`): `admin@admin.cl` (administrador) y `cliente@cliente.cl` (cliente).
 
 ## APK firmado
-*(Se agregará la captura de la configuración de firma y del archivo `.jks`.)*
+Se verificó la firma digital del archivo `app-release.apk` utilizando la herramienta `apksigner` del SDK de Android.
+
+**Resultado de la verificación:**
+- Verificación general: `Verifies`.
+- Esquema de firma APK v2: `true`.
+- Número de firmantes: 1.
+- Algoritmo de firma: RSA de 2048 bits.
+- Organización del certificado: OYL Frutos Secos.
+
+La captura de la verificación se encuentra en la documentación de entrega `README.docx`.
 
 ## Planificación del proyecto
 La planificación se realiza en Trello con un tablero compartido entre los integrantes.
