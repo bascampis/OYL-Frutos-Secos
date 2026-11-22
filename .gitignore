@@ -18,10 +18,15 @@ Thumbs.db
 # Credenciales y configuraciones no versionadas
 .env
 .env.*
+# Proteger credenciales
 *.jks
 *.keystore
-keystore/
 key.properties
+
+# Permitir únicamente la llave académica seleccionada
+!keystore/
+keystore/*
+!keystore/OYL-Frutos-Secos.jks
 google-services.json
 
 # Embedded backend demo database
