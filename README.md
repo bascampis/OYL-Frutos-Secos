@@ -117,5 +117,9 @@ Las tarjetas incluyen responsables, descripción, checklists y evidencias.
 
 ## Trabajo en equipo
 Los commits de cada integrante quedan registrados en GitHub (Insights > Contributors).
+## Organización del trabajo en equipo
+
+Para organizar el desarrollo de OYL Frutos Secos utilizamos Trello, distribuyendo las actividades entre los tres integrantes del equipo.
+El tablero se organiza en tres estados: Pendiente, En curso y Hecho. Esto permite visualizar las tareas realizadas, las que están en desarrollo y las que faltan por completar.La documentación del proyecto incluye los endpoints de los microservicios, las pantallas de la aplicación y las instrucciones de ejecución.
 
 Licencia: no se ha seleccionado. Uso educativo, sin datos reales.
