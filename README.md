@@ -93,13 +93,27 @@ Pruebas unitarias del backend: `mvn test` (37 pruebas).
 
 ### 2. App Android
 1. Abrir en Android Studio la **carpeta raíz** (donde está `settings.gradle.kts`) y sincronizar Gradle.
-2. En `app/src/main/java/cl/oyl/frutossecos/data/remote/ApiConfig.kt`, usar `HOST = "10.0.2.2"` en el emulador, o la IP del PC en la red WiFi si se prueba en un celular físico.
-3. Ejecutar en un emulador o dispositivo con Android 8 (API 26) o superior.
-4. Pruebas unitarias de la app: `./gradlew testDebugUnitTest`.
+2. En `app/src/main/java/cl/oyl/frutossecos/data/remote/ApiConfig.kt`, el valor es `HOST = "127.0.0.1"`. La app se conecta al backend mediante redirección de puertos por USB (`adb reverse`), por lo que no depende de la red ni de la IP del computador.
+3. Iniciar los tres microservicios (sección 1).
+4. Conectar el celular (o emulador) por USB con la depuración USB activada y redirigir los puertos desde una terminal:
+   ```bash
+   adb reverse tcp:8081 tcp:8081
+   adb reverse tcp:8082 tcp:8082
+   adb reverse tcp:8083 tcp:8083
+   ```
+   `adb` está en `Android/Sdk/platform-tools`. Con `adb devices` se comprueba que el dispositivo esté conectado. Estos comandos deben repetirse cada vez que se reconecta el dispositivo.
+5. Ejecutar la app desde Android Studio, o instalar el APK firmado:
+   ```bash
+   adb install app/release/app-release.apk
+   ```
+   Requiere Android 8 (API 26) o superior. Si el dispositivo tiene instalada una versión debug, desinstalarla antes.
+6. Pruebas unitarias de la app: `./gradlew testDebugUnitTest` (184 pruebas).
+
+Si el backend no está disponible, la app funciona en modo local con los datos guardados en el dispositivo.
 
 **Cuentas de prueba** (contraseña ficticia `DemoOYL2026!`): `admin@admin.cl` (administrador) y `cliente@cliente.cl` (cliente).
 
-## APK firmado
+
 ## Captura del APK firmado y archivo .jks
 
 El APK de la versión release de **OYL Frutos Secos** fue firmado digitalmente utilizando una llave propia (*keystore* `.jks`), configurada en el archivo `app/build.gradle.kts`.
